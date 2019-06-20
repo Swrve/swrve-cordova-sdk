@@ -1,0 +1,1 @@
+# swrve-cordova-sdk
