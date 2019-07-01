@@ -1,0 +1,20 @@
+{
+	"name": "com.swrve.cordova.tests",
+	"version": "1.0.0",
+	"displayName": "UnitTests",
+	"cordova": {
+		"platforms": [
+			"ios",
+			"android"
+		],
+		"plugins": {
+			"cordova-plugin-swrve": {}
+		}
+	},
+	"dependencies": {
+		"cordova-plugin-swrve": "file:../SwrvePlugin",
+		"cordova-android": "^8.0.0",
+		"cordova-ios": "^5.0.1",
+		"shelljs": "^0.8.3"
+	}
+}

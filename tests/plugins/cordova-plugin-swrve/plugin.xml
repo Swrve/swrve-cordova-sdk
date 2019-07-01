@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:android="http://schemas.android.com/apk/res/android" id="cordova-plugin-swrve" version="1.0">
+  <name>SwrvePlugin</name>
+  <description>Android and iOS Cordova plugin for Swrve.</description>
+  <author>Swrve Mobile Inc</author>
+  <license>Apache 2.0</license>
+  <keywords>swrve,analytics,messaging</keywords>
+
+	<platform name="android">
+    <hook type="after_plugin_install" src="swrve-utils/hooks/android-after_plugin_install.js"/>
+    <js-module src="js/swrve-android.js" name="SwrvePlugin">
+      <clobbers target="SwrvePlugin"/>
+    </js-module>
+
+    <config-file target="res/xml/config.xml" parent="/*">
+  	  <feature name="SwrvePlugin">
+  		  <param name="android-package" value="com.swrve.SwrvePlugin"/>
+        <param name="onload" value="true" />
+  		</feature>
+  	</config-file>
+
+  	<source-file src="platforms/android/src/com/swrve/SwrvePlugin.java" target-dir="src/com/swrve/" />
+  	<framework src="platforms/android/build.gradle" custom="true" type="gradleReference" />
+
+    <config-file target="AndroidManifest.xml" parent="/manifest">
+      <uses-permission android:name="android.permission.INTERNET"/>
+      <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    </config-file>
+	</platform>
+
+	<platform name="ios">
+    <hook type="after_plugin_install" src="swrve-utils/hooks/ios-after_plugin_install.js"/>
+    <hook type="after_prepare" src="swrve-utils/hooks/ios-after-prepare.js"/>
+    <js-module src="js/swrve-ios.js" name="SwrvePlugin">
+      <clobbers target="SwrvePlugin"/>
+    </js-module>
+    <config-file target="config.xml" parent="/*">
+      <feature name="SwrvePlugin">
+        <param name="ios-package" value="SwrvePlugin"/>
+        <param name="onload" value="true" />
+      </feature>
+    </config-file>
+    <header-file src="platforms/ios/SwrvePlugin.h" />
+    <source-file src="platforms/ios/SwrvePlugin.m" />
+    <framework src="platforms/ios/Frameworks/SwrveSDKCommon.framework" custom="true" embed="true"/>
+    <framework src="platforms/ios/Frameworks/SwrveConversationSDK.framework" custom="true" embed="true"/>
+    <framework src="platforms/ios/Frameworks/SwrveSDK.framework" custom="true" embed="true"/>
+  </platform>
+</plugin>

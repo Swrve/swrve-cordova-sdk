@@ -1,0 +1,9 @@
+// SWRVE CHANGES
+    try {
+        SwrveConfig config = new SwrveConfig();
+        // config.setSelectedStack(SwrveStack.EU);
+            
+        SwrvePlugin.createInstance(this, <SwrveAppId>, "<SwrveKey>", config);
+        } catch (IllegalArgumentException exp) {
+    }
+// END OF CHANGES

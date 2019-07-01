@@ -1,0 +1,1021 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0207DA581B56EA530066E2B4 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0207DA571B56EA530066E2B4 /* Images.xcassets */; };
+		1D3623260D0F684500981E51 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 1D3623250D0F684500981E51 /* AppDelegate.m */; };
+		1D60589B0D05DD56006BFB54 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 29B97316FDCFA39411CA2CEA /* main.m */; };
+		301BF552109A68D80062928A /* libCordova.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 301BF535109A57CC0062928A /* libCordova.a */; settings = {ATTRIBUTES = (Required, ); }; };
+		302D95F114D2391D003F00A1 /* MainViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 302D95EF14D2391D003F00A1 /* MainViewController.m */; };
+		302D95F214D2391D003F00A1 /* MainViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 302D95F014D2391D003F00A1 /* MainViewController.xib */; };
+		430B2261012249B69F1A2154 /* SwrveSDK.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 0A4A7E54D551414EA1B3F82B /* SwrveSDK.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		5208C1B722B952FE003FCB52 /* SwrvePluginTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 5208C1B622B952FE003FCB52 /* SwrvePluginTests.m */; };
+		5208C21822B95360003FCB52 /* OCMock.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5208C1C122B9535F003FCB52 /* OCMock.framework */; };
+		5208C21922B95360003FCB52 /* HTTPDataResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = 5208C1CB22B9535F003FCB52 /* HTTPDataResponse.m */; settings = {COMPILER_FLAGS = "-w"; }; };
+		5208C21A22B95360003FCB52 /* HTTPDynamicFileResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = 5208C1CD22B9535F003FCB52 /* HTTPDynamicFileResponse.m */; settings = {COMPILER_FLAGS = "-w"; }; };
+		5208C21B22B95360003FCB52 /* HTTPFileResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = 5208C1CE22B9535F003FCB52 /* HTTPFileResponse.m */; settings = {COMPILER_FLAGS = "-w"; }; };
+		5208C21C22B95360003FCB52 /* HTTPAsyncFileResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = 5208C1CF22B9535F003FCB52 /* HTTPAsyncFileResponse.m */; settings = {COMPILER_FLAGS = "-w"; }; };
+		5208C21D22B95360003FCB52 /* HTTPRedirectResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = 5208C1D022B9535F003FCB52 /* HTTPRedirectResponse.m */; settings = {COMPILER_FLAGS = "-w"; }; };
+		5208C21E22B95360003FCB52 /* HTTPMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = 5208C1D522B9535F003FCB52 /* HTTPMessage.m */; settings = {COMPILER_FLAGS = "-w"; }; };
+		5208C21F22B95360003FCB52 /* HTTPConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = 5208C1D622B9535F003FCB52 /* HTTPConnection.m */; settings = {COMPILER_FLAGS = "-w"; }; };
+		5208C22022B95360003FCB52 /* WebSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 5208C1D722B9535F003FCB52 /* WebSocket.m */; settings = {COMPILER_FLAGS = "-w"; }; };
+		5208C22122B95360003FCB52 /* MultipartMessageHeaderField.m in Sources */ = {isa = PBXBuildFile; fileRef = 5208C1DC22B9535F003FCB52 /* MultipartMessageHeaderField.m */; settings = {COMPILER_FLAGS = "-w"; }; };
+		5208C22222B95360003FCB52 /* MultipartFormDataParser.m in Sources */ = {isa = PBXBuildFile; fileRef = 5208C1DD22B9535F003FCB52 /* MultipartFormDataParser.m */; settings = {COMPILER_FLAGS = "-w"; }; };
+		5208C22322B95360003FCB52 /* MultipartMessageHeader.m in Sources */ = {isa = PBXBuildFile; fileRef = 5208C1DE22B9535F003FCB52 /* MultipartMessageHeader.m */; settings = {COMPILER_FLAGS = "-w"; }; };
+		5208C22422B95360003FCB52 /* HTTPAuthenticationRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 5208C1E022B9535F003FCB52 /* HTTPAuthenticationRequest.m */; settings = {COMPILER_FLAGS = "-w"; }; };
+		5208C22522B95360003FCB52 /* DDNumber.m in Sources */ = {isa = PBXBuildFile; fileRef = 5208C1E222B9535F003FCB52 /* DDNumber.m */; settings = {COMPILER_FLAGS = "-w"; }; };
+		5208C22622B95360003FCB52 /* DDData.m in Sources */ = {isa = PBXBuildFile; fileRef = 5208C1E322B9535F003FCB52 /* DDData.m */; settings = {COMPILER_FLAGS = "-w"; }; };
+		5208C22722B95360003FCB52 /* DDRange.m in Sources */ = {isa = PBXBuildFile; fileRef = 5208C1E622B9535F003FCB52 /* DDRange.m */; settings = {COMPILER_FLAGS = "-w"; }; };
+		5208C22822B95360003FCB52 /* HTTPServer.m in Sources */ = {isa = PBXBuildFile; fileRef = 5208C1E822B9535F003FCB52 /* HTTPServer.m */; settings = {COMPILER_FLAGS = "-w"; }; };
+		5208C22A22B95360003FCB52 /* README.markdown in Resources */ = {isa = PBXBuildFile; fileRef = 5208C1EA22B9535F003FCB52 /* README.markdown */; };
+		5208C22C22B95360003FCB52 /* LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = 5208C1EC22B9535F003FCB52 /* LICENSE.txt */; };
+		5208C22E22B95360003FCB52 /* AsyncUdpSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 5208C1F022B9535F003FCB52 /* AsyncUdpSocket.m */; settings = {COMPILER_FLAGS = "-w"; }; };
+		5208C22F22B95360003FCB52 /* AsyncSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 5208C1F222B9535F003FCB52 /* AsyncSocket.m */; settings = {COMPILER_FLAGS = "-w"; }; };
+		5208C23122B95360003FCB52 /* GCDAsyncUdpSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 5208C1F622B9535F003FCB52 /* GCDAsyncUdpSocket.m */; settings = {COMPILER_FLAGS = "-w"; }; };
+		5208C23222B95360003FCB52 /* GCDAsyncSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 5208C1F722B9535F003FCB52 /* GCDAsyncSocket.m */; settings = {COMPILER_FLAGS = "-w"; }; };
+		5208C23422B95360003FCB52 /* DDTTYLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 5208C1FE22B9535F003FCB52 /* DDTTYLogger.m */; settings = {COMPILER_FLAGS = "-w"; }; };
+		5208C23522B95360003FCB52 /* DDASLLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 5208C20122B9535F003FCB52 /* DDASLLogger.m */; settings = {COMPILER_FLAGS = "-w"; }; };
+		5208C23622B95360003FCB52 /* DDContextFilterLogFormatter.m in Sources */ = {isa = PBXBuildFile; fileRef = 5208C20422B9535F003FCB52 /* DDContextFilterLogFormatter.m */; settings = {COMPILER_FLAGS = "-w"; }; };
+		5208C23722B95360003FCB52 /* DDDispatchQueueLogFormatter.m in Sources */ = {isa = PBXBuildFile; fileRef = 5208C20522B9535F003FCB52 /* DDDispatchQueueLogFormatter.m */; settings = {COMPILER_FLAGS = "-w"; }; };
+		5208C23822B95360003FCB52 /* DDMultiFormatter.m in Sources */ = {isa = PBXBuildFile; fileRef = 5208C20822B9535F003FCB52 /* DDMultiFormatter.m */; settings = {COMPILER_FLAGS = "-w"; }; };
+		5208C23922B95360003FCB52 /* README.txt in Resources */ = {isa = PBXBuildFile; fileRef = 5208C20A22B9535F003FCB52 /* README.txt */; };
+		5208C23A22B95360003FCB52 /* DDLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 5208C20B22B9535F003FCB52 /* DDLog.m */; settings = {COMPILER_FLAGS = "-w"; }; };
+		5208C23B22B95360003FCB52 /* DDAbstractDatabaseLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 5208C20E22B9535F003FCB52 /* DDAbstractDatabaseLogger.m */; settings = {COMPILER_FLAGS = "-w"; }; };
+		5208C23C22B95360003FCB52 /* DDFileLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 5208C20F22B9535F003FCB52 /* DDFileLogger.m */; settings = {COMPILER_FLAGS = "-w"; }; };
+		5208C23D22B95360003FCB52 /* test_campaigns_and_resources.json in Resources */ = {isa = PBXBuildFile; fileRef = 5208C21122B9535F003FCB52 /* test_campaigns_and_resources.json */; };
+		5208C23E22B95360003FCB52 /* 8721fd4e657980a5e12d498e73aed6e6a565dfca in Resources */ = {isa = PBXBuildFile; fileRef = 5208C21222B9535F003FCB52 /* 8721fd4e657980a5e12d498e73aed6e6a565dfca */; };
+		5208C23F22B95360003FCB52 /* TestHTTPResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = 5208C21522B9535F003FCB52 /* TestHTTPResponse.m */; };
+		5208C24022B95360003FCB52 /* TestHTTPConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = 5208C21622B95360003FCB52 /* TestHTTPConnection.m */; };
+		5208C24122B95360003FCB52 /* SwrveTestHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 5208C21722B95360003FCB52 /* SwrveTestHelper.m */; };
+		5208C24322B953A3003FCB52 /* OCMock.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 5208C1C122B9535F003FCB52 /* OCMock.framework */; };
+		5208C24422B95496003FCB52 /* SwrveSDKCommon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EB7920CC666B49EF9A0D2060 /* SwrveSDKCommon.framework */; };
+		5208C24522B95499003FCB52 /* SwrveConversationSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0802CD59CED145F595671E29 /* SwrveConversationSDK.framework */; };
+		5208C24622B9549B003FCB52 /* SwrveSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0A4A7E54D551414EA1B3F82B /* SwrveSDK.framework */; };
+		6AFF5BF91D6E424B00AB3073 /* CDVLaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6AFF5BF81D6E424B00AB3073 /* CDVLaunchScreen.storyboard */; };
+		6BFE2CD426664B9DB621A609 /* SwrveSDKCommon.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = EB7920CC666B49EF9A0D2060 /* SwrveSDKCommon.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		C361608FEDA84760A216EBA2 /* SwrveConversationSDK.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 0802CD59CED145F595671E29 /* SwrveConversationSDK.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		F3EBF71F5C354E98BFD8185C /* SwrvePlugin.m in Sources */ = {isa = PBXBuildFile; fileRef = ED310E2337AC4FB98F8C25BA /* SwrvePlugin.m */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		301BF534109A57CC0062928A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 301BF52D109A57CC0062928A /* CordovaLib/CordovaLib.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = D2AAC07E0554694100DB518D;
+			remoteInfo = CordovaLib;
+		};
+		301BF550109A68C00062928A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 301BF52D109A57CC0062928A /* CordovaLib/CordovaLib.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = D2AAC07D0554694100DB518D;
+			remoteInfo = CordovaLib;
+		};
+		5208C1B922B952FE003FCB52 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 29B97313FDCFA39411CA2CEA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 1D6058900D05DD3D006BFB54;
+			remoteInfo = UnitTests;
+		};
+		907D8123214C687600058A10 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 301BF52D109A57CC0062928A /* CordovaLib/CordovaLib.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = C0C01EB21E3911D50056E6CB;
+			remoteInfo = Cordova;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		5208C24222B95397003FCB52 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 12;
+			dstPath = "";
+			dstSubfolderSpec = 16;
+			files = (
+				5208C24322B953A3003FCB52 /* OCMock.framework in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AA888D464FD64AC997353197 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				6BFE2CD426664B9DB621A609 /* SwrveSDKCommon.framework in Embed Frameworks */,
+				C361608FEDA84760A216EBA2 /* SwrveConversationSDK.framework in Embed Frameworks */,
+				430B2261012249B69F1A2154 /* SwrveSDK.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		0207DA571B56EA530066E2B4 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = UnitTests/Images.xcassets; sourceTree = SOURCE_ROOT; };
+		0802CD59CED145F595671E29 /* SwrveConversationSDK.framework */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = wrapper.framework; name = SwrveConversationSDK.framework; path = "UnitTests/Plugins/cordova-plugin-swrve/SwrveConversationSDK.framework"; sourceTree = "<group>"; };
+		0A4A7E54D551414EA1B3F82B /* SwrveSDK.framework */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = wrapper.framework; name = SwrveSDK.framework; path = "UnitTests/Plugins/cordova-plugin-swrve/SwrveSDK.framework"; sourceTree = "<group>"; };
+		1D3623240D0F684500981E51 /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
+		1D3623250D0F684500981E51 /* AppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		1D6058910D05DD3D006BFB54 /* UnitTests.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = UnitTests.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		29B97316FDCFA39411CA2CEA /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		301BF52D109A57CC0062928A /* CordovaLib/CordovaLib.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = CordovaLib/CordovaLib.xcodeproj; sourceTree = "<group>"; };
+		301BF56E109A69640062928A /* www */ = {isa = PBXFileReference; lastKnownFileType = folder; path = www; sourceTree = SOURCE_ROOT; };
+		302D95EE14D2391D003F00A1 /* MainViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MainViewController.h; sourceTree = "<group>"; };
+		302D95EF14D2391D003F00A1 /* MainViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MainViewController.m; sourceTree = "<group>"; };
+		302D95F014D2391D003F00A1 /* MainViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = MainViewController.xib; sourceTree = "<group>"; };
+		3047A50F1AB8059700498E2A /* build-debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = "build-debug.xcconfig"; path = "cordova/build-debug.xcconfig"; sourceTree = SOURCE_ROOT; };
+		3047A5101AB8059700498E2A /* build-release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = "build-release.xcconfig"; path = "cordova/build-release.xcconfig"; sourceTree = SOURCE_ROOT; };
+		3047A5111AB8059700498E2A /* build.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = build.xcconfig; path = cordova/build.xcconfig; sourceTree = SOURCE_ROOT; };
+		32CA4F630368D1EE00C91783 /* UnitTests-Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UnitTests-Prefix.pch"; sourceTree = "<group>"; };
+		5208C1B422B952FD003FCB52 /* SwrvePluginTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SwrvePluginTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		5208C1B622B952FE003FCB52 /* SwrvePluginTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SwrvePluginTests.m; sourceTree = "<group>"; };
+		5208C1B822B952FE003FCB52 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		5208C1BF22B9535F003FCB52 /* TestHTTPResponse.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestHTTPResponse.h; sourceTree = "<group>"; };
+		5208C1C122B9535F003FCB52 /* OCMock.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OCMock.framework; sourceTree = "<group>"; };
+		5208C1C422B9535F003FCB52 /* HTTPConnection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HTTPConnection.h; sourceTree = "<group>"; };
+		5208C1C522B9535F003FCB52 /* HTTPLogging.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HTTPLogging.h; sourceTree = "<group>"; };
+		5208C1C622B9535F003FCB52 /* HTTPMessage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HTTPMessage.h; sourceTree = "<group>"; };
+		5208C1C722B9535F003FCB52 /* WebSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WebSocket.h; sourceTree = "<group>"; };
+		5208C1C822B9535F003FCB52 /* HTTPAuthenticationRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HTTPAuthenticationRequest.h; sourceTree = "<group>"; };
+		5208C1CA22B9535F003FCB52 /* HTTPAsyncFileResponse.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HTTPAsyncFileResponse.h; sourceTree = "<group>"; };
+		5208C1CB22B9535F003FCB52 /* HTTPDataResponse.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HTTPDataResponse.m; sourceTree = "<group>"; };
+		5208C1CC22B9535F003FCB52 /* HTTPRedirectResponse.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HTTPRedirectResponse.h; sourceTree = "<group>"; };
+		5208C1CD22B9535F003FCB52 /* HTTPDynamicFileResponse.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HTTPDynamicFileResponse.m; sourceTree = "<group>"; };
+		5208C1CE22B9535F003FCB52 /* HTTPFileResponse.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HTTPFileResponse.m; sourceTree = "<group>"; };
+		5208C1CF22B9535F003FCB52 /* HTTPAsyncFileResponse.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HTTPAsyncFileResponse.m; sourceTree = "<group>"; };
+		5208C1D022B9535F003FCB52 /* HTTPRedirectResponse.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HTTPRedirectResponse.m; sourceTree = "<group>"; };
+		5208C1D122B9535F003FCB52 /* HTTPDataResponse.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HTTPDataResponse.h; sourceTree = "<group>"; };
+		5208C1D222B9535F003FCB52 /* HTTPFileResponse.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HTTPFileResponse.h; sourceTree = "<group>"; };
+		5208C1D322B9535F003FCB52 /* HTTPDynamicFileResponse.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HTTPDynamicFileResponse.h; sourceTree = "<group>"; };
+		5208C1D422B9535F003FCB52 /* HTTPServer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HTTPServer.h; sourceTree = "<group>"; };
+		5208C1D522B9535F003FCB52 /* HTTPMessage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HTTPMessage.m; sourceTree = "<group>"; };
+		5208C1D622B9535F003FCB52 /* HTTPConnection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HTTPConnection.m; sourceTree = "<group>"; };
+		5208C1D722B9535F003FCB52 /* WebSocket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WebSocket.m; sourceTree = "<group>"; };
+		5208C1D822B9535F003FCB52 /* HTTPResponse.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HTTPResponse.h; sourceTree = "<group>"; };
+		5208C1DA22B9535F003FCB52 /* MultipartFormDataParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MultipartFormDataParser.h; sourceTree = "<group>"; };
+		5208C1DB22B9535F003FCB52 /* MultipartMessageHeader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MultipartMessageHeader.h; sourceTree = "<group>"; };
+		5208C1DC22B9535F003FCB52 /* MultipartMessageHeaderField.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MultipartMessageHeaderField.m; sourceTree = "<group>"; };
+		5208C1DD22B9535F003FCB52 /* MultipartFormDataParser.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MultipartFormDataParser.m; sourceTree = "<group>"; };
+		5208C1DE22B9535F003FCB52 /* MultipartMessageHeader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MultipartMessageHeader.m; sourceTree = "<group>"; };
+		5208C1DF22B9535F003FCB52 /* MultipartMessageHeaderField.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MultipartMessageHeaderField.h; sourceTree = "<group>"; };
+		5208C1E022B9535F003FCB52 /* HTTPAuthenticationRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HTTPAuthenticationRequest.m; sourceTree = "<group>"; };
+		5208C1E222B9535F003FCB52 /* DDNumber.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DDNumber.m; sourceTree = "<group>"; };
+		5208C1E322B9535F003FCB52 /* DDData.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DDData.m; sourceTree = "<group>"; };
+		5208C1E422B9535F003FCB52 /* DDRange.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DDRange.h; sourceTree = "<group>"; };
+		5208C1E522B9535F003FCB52 /* DDNumber.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DDNumber.h; sourceTree = "<group>"; };
+		5208C1E622B9535F003FCB52 /* DDRange.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DDRange.m; sourceTree = "<group>"; };
+		5208C1E722B9535F003FCB52 /* DDData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DDData.h; sourceTree = "<group>"; };
+		5208C1E822B9535F003FCB52 /* HTTPServer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HTTPServer.m; sourceTree = "<group>"; };
+		5208C1E922B9535F003FCB52 /* .hgignore */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = .hgignore; sourceTree = "<group>"; };
+		5208C1EA22B9535F003FCB52 /* README.markdown */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.markdown; sourceTree = "<group>"; };
+		5208C1EB22B9535F003FCB52 /* .gitignore */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
+		5208C1EC22B9535F003FCB52 /* LICENSE.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENSE.txt; sourceTree = "<group>"; };
+		5208C1EF22B9535F003FCB52 /* Documentation.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = Documentation.html; sourceTree = "<group>"; };
+		5208C1F022B9535F003FCB52 /* AsyncUdpSocket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AsyncUdpSocket.m; sourceTree = "<group>"; };
+		5208C1F122B9535F003FCB52 /* AsyncSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AsyncSocket.h; sourceTree = "<group>"; };
+		5208C1F222B9535F003FCB52 /* AsyncSocket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AsyncSocket.m; sourceTree = "<group>"; };
+		5208C1F322B9535F003FCB52 /* AsyncUdpSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AsyncUdpSocket.h; sourceTree = "<group>"; };
+		5208C1F522B9535F003FCB52 /* Documentation.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = Documentation.html; sourceTree = "<group>"; };
+		5208C1F622B9535F003FCB52 /* GCDAsyncUdpSocket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GCDAsyncUdpSocket.m; sourceTree = "<group>"; };
+		5208C1F722B9535F003FCB52 /* GCDAsyncSocket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GCDAsyncSocket.m; sourceTree = "<group>"; };
+		5208C1F822B9535F003FCB52 /* GCDAsyncUdpSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GCDAsyncUdpSocket.h; sourceTree = "<group>"; };
+		5208C1F922B9535F003FCB52 /* GCDAsyncSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GCDAsyncSocket.h; sourceTree = "<group>"; };
+		5208C1FA22B9535F003FCB52 /* CocoaAsyncSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CocoaAsyncSocket.h; sourceTree = "<group>"; };
+		5208C1FB22B9535F003FCB52 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		5208C1FE22B9535F003FCB52 /* DDTTYLogger.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DDTTYLogger.m; sourceTree = "<group>"; };
+		5208C1FF22B9535F003FCB52 /* DDLog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DDLog.h; sourceTree = "<group>"; };
+		5208C20022B9535F003FCB52 /* DDAbstractDatabaseLogger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DDAbstractDatabaseLogger.h; sourceTree = "<group>"; };
+		5208C20122B9535F003FCB52 /* DDASLLogger.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DDASLLogger.m; sourceTree = "<group>"; };
+		5208C20222B9535F003FCB52 /* DDFileLogger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DDFileLogger.h; sourceTree = "<group>"; };
+		5208C20422B9535F003FCB52 /* DDContextFilterLogFormatter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DDContextFilterLogFormatter.m; sourceTree = "<group>"; };
+		5208C20522B9535F003FCB52 /* DDDispatchQueueLogFormatter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DDDispatchQueueLogFormatter.m; sourceTree = "<group>"; };
+		5208C20622B9535F003FCB52 /* DDMultiFormatter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DDMultiFormatter.h; sourceTree = "<group>"; };
+		5208C20722B9535F003FCB52 /* DDContextFilterLogFormatter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DDContextFilterLogFormatter.h; sourceTree = "<group>"; };
+		5208C20822B9535F003FCB52 /* DDMultiFormatter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DDMultiFormatter.m; sourceTree = "<group>"; };
+		5208C20922B9535F003FCB52 /* DDDispatchQueueLogFormatter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DDDispatchQueueLogFormatter.h; sourceTree = "<group>"; };
+		5208C20A22B9535F003FCB52 /* README.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.txt; sourceTree = "<group>"; };
+		5208C20B22B9535F003FCB52 /* DDLog.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DDLog.m; sourceTree = "<group>"; };
+		5208C20C22B9535F003FCB52 /* DDTTYLogger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DDTTYLogger.h; sourceTree = "<group>"; };
+		5208C20D22B9535F003FCB52 /* DDLog+LOGV.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "DDLog+LOGV.h"; sourceTree = "<group>"; };
+		5208C20E22B9535F003FCB52 /* DDAbstractDatabaseLogger.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DDAbstractDatabaseLogger.m; sourceTree = "<group>"; };
+		5208C20F22B9535F003FCB52 /* DDFileLogger.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DDFileLogger.m; sourceTree = "<group>"; };
+		5208C21022B9535F003FCB52 /* DDASLLogger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DDASLLogger.h; sourceTree = "<group>"; };
+		5208C21122B9535F003FCB52 /* test_campaigns_and_resources.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = test_campaigns_and_resources.json; sourceTree = "<group>"; };
+		5208C21222B9535F003FCB52 /* 8721fd4e657980a5e12d498e73aed6e6a565dfca */ = {isa = PBXFileReference; lastKnownFileType = file; path = 8721fd4e657980a5e12d498e73aed6e6a565dfca; sourceTree = "<group>"; };
+		5208C21322B9535F003FCB52 /* SwrveTestHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SwrveTestHelper.h; sourceTree = "<group>"; };
+		5208C21422B9535F003FCB52 /* TestHTTPConnection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestHTTPConnection.h; sourceTree = "<group>"; };
+		5208C21522B9535F003FCB52 /* TestHTTPResponse.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TestHTTPResponse.m; sourceTree = "<group>"; };
+		5208C21622B95360003FCB52 /* TestHTTPConnection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TestHTTPConnection.m; sourceTree = "<group>"; };
+		5208C21722B95360003FCB52 /* SwrveTestHelper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SwrveTestHelper.m; sourceTree = "<group>"; };
+		6AFF5BF81D6E424B00AB3073 /* CDVLaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = CDVLaunchScreen.storyboard; path = UnitTests/CDVLaunchScreen.storyboard; sourceTree = SOURCE_ROOT; };
+		8D1107310486CEB800E47090 /* UnitTests-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "UnitTests-Info.plist"; path = "UnitTests/UnitTests-Info.plist"; plistStructureDefinitionIdentifier = "com.apple.xcode.plist.structure-definition.iphone.info-plist"; sourceTree = SOURCE_ROOT; };
+		EB7920CC666B49EF9A0D2060 /* SwrveSDKCommon.framework */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = wrapper.framework; name = SwrveSDKCommon.framework; path = "UnitTests/Plugins/cordova-plugin-swrve/SwrveSDKCommon.framework"; sourceTree = "<group>"; };
+		EB87FDF31871DA8E0020F90C /* www */ = {isa = PBXFileReference; lastKnownFileType = folder; name = www; path = ../../www; sourceTree = "<group>"; };
+		EB87FDF41871DAF40020F90C /* config.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = config.xml; path = ../../config.xml; sourceTree = "<group>"; };
+		ED310E2337AC4FB98F8C25BA /* SwrvePlugin.m */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.c.objc; name = SwrvePlugin.m; path = "cordova-plugin-swrve/SwrvePlugin.m"; sourceTree = "<group>"; };
+		ED33DF2A687741AEAF9F8254 /* Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "Bridging-Header.h"; sourceTree = "<group>"; };
+		F840E1F0165FE0F500CFE078 /* config.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = config.xml; path = UnitTests/config.xml; sourceTree = "<group>"; };
+		FAB2100B628A4E35B04AE3D5 /* SwrvePlugin.h */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.c.h; name = SwrvePlugin.h; path = "cordova-plugin-swrve/SwrvePlugin.h"; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		1D60588F0D05DD3D006BFB54 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				301BF552109A68D80062928A /* libCordova.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5208C1B122B952FD003FCB52 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5208C24422B95496003FCB52 /* SwrveSDKCommon.framework in Frameworks */,
+				5208C21822B95360003FCB52 /* OCMock.framework in Frameworks */,
+				5208C24522B95499003FCB52 /* SwrveConversationSDK.framework in Frameworks */,
+				5208C24622B9549B003FCB52 /* SwrveSDK.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		080E96DDFE201D6D7F000001 /* Classes */ = {
+			isa = PBXGroup;
+			children = (
+				302D95EE14D2391D003F00A1 /* MainViewController.h */,
+				302D95EF14D2391D003F00A1 /* MainViewController.m */,
+				302D95F014D2391D003F00A1 /* MainViewController.xib */,
+				1D3623240D0F684500981E51 /* AppDelegate.h */,
+				1D3623250D0F684500981E51 /* AppDelegate.m */,
+			);
+			name = Classes;
+			path = UnitTests/Classes;
+			sourceTree = SOURCE_ROOT;
+		};
+		19C28FACFE9D520D11CA2CBB /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				1D6058910D05DD3D006BFB54 /* UnitTests.app */,
+				5208C1B422B952FD003FCB52 /* SwrvePluginTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		29B97314FDCFA39411CA2CEA /* CustomTemplate */ = {
+			isa = PBXGroup;
+			children = (
+				EB87FDF41871DAF40020F90C /* config.xml */,
+				EB87FDF31871DA8E0020F90C /* www */,
+				EB87FDF11871DA420020F90C /* Staging */,
+				301BF52D109A57CC0062928A /* CordovaLib/CordovaLib.xcodeproj */,
+				080E96DDFE201D6D7F000001 /* Classes */,
+				307C750510C5A3420062BCA9 /* Plugins */,
+				29B97315FDCFA39411CA2CEA /* Other Sources */,
+				29B97317FDCFA39411CA2CEA /* Resources */,
+				5208C1B522B952FD003FCB52 /* SwrvePluginTests */,
+				29B97323FDCFA39411CA2CEA /* Frameworks */,
+				19C28FACFE9D520D11CA2CBB /* Products */,
+			);
+			name = CustomTemplate;
+			sourceTree = "<group>";
+		};
+		29B97315FDCFA39411CA2CEA /* Other Sources */ = {
+			isa = PBXGroup;
+			children = (
+				32CA4F630368D1EE00C91783 /* UnitTests-Prefix.pch */,
+				29B97316FDCFA39411CA2CEA /* main.m */,
+				ED33DF2A687741AEAF9F8254 /* Bridging-Header.h */,
+			);
+			name = "Other Sources";
+			path = UnitTests;
+			sourceTree = "<group>";
+		};
+		29B97317FDCFA39411CA2CEA /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				0207DA571B56EA530066E2B4 /* Images.xcassets */,
+				3047A50E1AB8057F00498E2A /* config */,
+				8D1107310486CEB800E47090 /* UnitTests-Info.plist */,
+				6AFF5BF81D6E424B00AB3073 /* CDVLaunchScreen.storyboard */,
+			);
+			name = Resources;
+			path = UnitTests/Resources;
+			sourceTree = "<group>";
+		};
+		29B97323FDCFA39411CA2CEA /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				EB7920CC666B49EF9A0D2060 /* SwrveSDKCommon.framework */,
+				0802CD59CED145F595671E29 /* SwrveConversationSDK.framework */,
+				0A4A7E54D551414EA1B3F82B /* SwrveSDK.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		301BF52E109A57CC0062928A /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				301BF535109A57CC0062928A /* libCordova.a */,
+				907D8124214C687600058A10 /* Cordova.framework */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		3047A50E1AB8057F00498E2A /* config */ = {
+			isa = PBXGroup;
+			children = (
+				3047A50F1AB8059700498E2A /* build-debug.xcconfig */,
+				3047A5101AB8059700498E2A /* build-release.xcconfig */,
+				3047A5111AB8059700498E2A /* build.xcconfig */,
+			);
+			name = config;
+			sourceTree = "<group>";
+		};
+		307C750510C5A3420062BCA9 /* Plugins */ = {
+			isa = PBXGroup;
+			children = (
+				ED310E2337AC4FB98F8C25BA /* SwrvePlugin.m */,
+				FAB2100B628A4E35B04AE3D5 /* SwrvePlugin.h */,
+			);
+			name = Plugins;
+			path = UnitTests/Plugins;
+			sourceTree = SOURCE_ROOT;
+		};
+		5208C1B522B952FD003FCB52 /* SwrvePluginTests */ = {
+			isa = PBXGroup;
+			children = (
+				5208C1C022B9535F003FCB52 /* Supporting Files */,
+				5208C21322B9535F003FCB52 /* SwrveTestHelper.h */,
+				5208C21722B95360003FCB52 /* SwrveTestHelper.m */,
+				5208C21422B9535F003FCB52 /* TestHTTPConnection.h */,
+				5208C21622B95360003FCB52 /* TestHTTPConnection.m */,
+				5208C1BF22B9535F003FCB52 /* TestHTTPResponse.h */,
+				5208C21522B9535F003FCB52 /* TestHTTPResponse.m */,
+				5208C1B622B952FE003FCB52 /* SwrvePluginTests.m */,
+				5208C1B822B952FE003FCB52 /* Info.plist */,
+			);
+			path = SwrvePluginTests;
+			sourceTree = "<group>";
+		};
+		5208C1C022B9535F003FCB52 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				5208C1C122B9535F003FCB52 /* OCMock.framework */,
+				5208C1C222B9535F003FCB52 /* CocoaHTTPServer-2.3 2 */,
+				5208C21122B9535F003FCB52 /* test_campaigns_and_resources.json */,
+				5208C21222B9535F003FCB52 /* 8721fd4e657980a5e12d498e73aed6e6a565dfca */,
+			);
+			path = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		5208C1C222B9535F003FCB52 /* CocoaHTTPServer-2.3 2 */ = {
+			isa = PBXGroup;
+			children = (
+				5208C1C322B9535F003FCB52 /* Core */,
+				5208C1E922B9535F003FCB52 /* .hgignore */,
+				5208C1EA22B9535F003FCB52 /* README.markdown */,
+				5208C1EB22B9535F003FCB52 /* .gitignore */,
+				5208C1EC22B9535F003FCB52 /* LICENSE.txt */,
+				5208C1ED22B9535F003FCB52 /* Vendor */,
+			);
+			path = "CocoaHTTPServer-2.3 2";
+			sourceTree = "<group>";
+		};
+		5208C1C322B9535F003FCB52 /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				5208C1C422B9535F003FCB52 /* HTTPConnection.h */,
+				5208C1C522B9535F003FCB52 /* HTTPLogging.h */,
+				5208C1C622B9535F003FCB52 /* HTTPMessage.h */,
+				5208C1C722B9535F003FCB52 /* WebSocket.h */,
+				5208C1C822B9535F003FCB52 /* HTTPAuthenticationRequest.h */,
+				5208C1C922B9535F003FCB52 /* Responses */,
+				5208C1D422B9535F003FCB52 /* HTTPServer.h */,
+				5208C1D522B9535F003FCB52 /* HTTPMessage.m */,
+				5208C1D622B9535F003FCB52 /* HTTPConnection.m */,
+				5208C1D722B9535F003FCB52 /* WebSocket.m */,
+				5208C1D822B9535F003FCB52 /* HTTPResponse.h */,
+				5208C1D922B9535F003FCB52 /* Mime */,
+				5208C1E022B9535F003FCB52 /* HTTPAuthenticationRequest.m */,
+				5208C1E122B9535F003FCB52 /* Categories */,
+				5208C1E822B9535F003FCB52 /* HTTPServer.m */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		5208C1C922B9535F003FCB52 /* Responses */ = {
+			isa = PBXGroup;
+			children = (
+				5208C1CA22B9535F003FCB52 /* HTTPAsyncFileResponse.h */,
+				5208C1CB22B9535F003FCB52 /* HTTPDataResponse.m */,
+				5208C1CC22B9535F003FCB52 /* HTTPRedirectResponse.h */,
+				5208C1CD22B9535F003FCB52 /* HTTPDynamicFileResponse.m */,
+				5208C1CE22B9535F003FCB52 /* HTTPFileResponse.m */,
+				5208C1CF22B9535F003FCB52 /* HTTPAsyncFileResponse.m */,
+				5208C1D022B9535F003FCB52 /* HTTPRedirectResponse.m */,
+				5208C1D122B9535F003FCB52 /* HTTPDataResponse.h */,
+				5208C1D222B9535F003FCB52 /* HTTPFileResponse.h */,
+				5208C1D322B9535F003FCB52 /* HTTPDynamicFileResponse.h */,
+			);
+			path = Responses;
+			sourceTree = "<group>";
+		};
+		5208C1D922B9535F003FCB52 /* Mime */ = {
+			isa = PBXGroup;
+			children = (
+				5208C1DA22B9535F003FCB52 /* MultipartFormDataParser.h */,
+				5208C1DB22B9535F003FCB52 /* MultipartMessageHeader.h */,
+				5208C1DC22B9535F003FCB52 /* MultipartMessageHeaderField.m */,
+				5208C1DD22B9535F003FCB52 /* MultipartFormDataParser.m */,
+				5208C1DE22B9535F003FCB52 /* MultipartMessageHeader.m */,
+				5208C1DF22B9535F003FCB52 /* MultipartMessageHeaderField.h */,
+			);
+			path = Mime;
+			sourceTree = "<group>";
+		};
+		5208C1E122B9535F003FCB52 /* Categories */ = {
+			isa = PBXGroup;
+			children = (
+				5208C1E222B9535F003FCB52 /* DDNumber.m */,
+				5208C1E322B9535F003FCB52 /* DDData.m */,
+				5208C1E422B9535F003FCB52 /* DDRange.h */,
+				5208C1E522B9535F003FCB52 /* DDNumber.h */,
+				5208C1E622B9535F003FCB52 /* DDRange.m */,
+				5208C1E722B9535F003FCB52 /* DDData.h */,
+			);
+			path = Categories;
+			sourceTree = "<group>";
+		};
+		5208C1ED22B9535F003FCB52 /* Vendor */ = {
+			isa = PBXGroup;
+			children = (
+				5208C1EE22B9535F003FCB52 /* RunLoop */,
+				5208C1F422B9535F003FCB52 /* GCD */,
+				5208C1FA22B9535F003FCB52 /* CocoaAsyncSocket.h */,
+				5208C1FB22B9535F003FCB52 /* Info.plist */,
+				5208C1FC22B9535F003FCB52 /* Vendor */,
+			);
+			path = Vendor;
+			sourceTree = "<group>";
+		};
+		5208C1EE22B9535F003FCB52 /* RunLoop */ = {
+			isa = PBXGroup;
+			children = (
+				5208C1EF22B9535F003FCB52 /* Documentation.html */,
+				5208C1F022B9535F003FCB52 /* AsyncUdpSocket.m */,
+				5208C1F122B9535F003FCB52 /* AsyncSocket.h */,
+				5208C1F222B9535F003FCB52 /* AsyncSocket.m */,
+				5208C1F322B9535F003FCB52 /* AsyncUdpSocket.h */,
+			);
+			path = RunLoop;
+			sourceTree = "<group>";
+		};
+		5208C1F422B9535F003FCB52 /* GCD */ = {
+			isa = PBXGroup;
+			children = (
+				5208C1F522B9535F003FCB52 /* Documentation.html */,
+				5208C1F622B9535F003FCB52 /* GCDAsyncUdpSocket.m */,
+				5208C1F722B9535F003FCB52 /* GCDAsyncSocket.m */,
+				5208C1F822B9535F003FCB52 /* GCDAsyncUdpSocket.h */,
+				5208C1F922B9535F003FCB52 /* GCDAsyncSocket.h */,
+			);
+			path = GCD;
+			sourceTree = "<group>";
+		};
+		5208C1FC22B9535F003FCB52 /* Vendor */ = {
+			isa = PBXGroup;
+			children = (
+				5208C1FD22B9535F003FCB52 /* CocoaLumberjack */,
+			);
+			path = Vendor;
+			sourceTree = "<group>";
+		};
+		5208C1FD22B9535F003FCB52 /* CocoaLumberjack */ = {
+			isa = PBXGroup;
+			children = (
+				5208C1FE22B9535F003FCB52 /* DDTTYLogger.m */,
+				5208C1FF22B9535F003FCB52 /* DDLog.h */,
+				5208C20022B9535F003FCB52 /* DDAbstractDatabaseLogger.h */,
+				5208C20122B9535F003FCB52 /* DDASLLogger.m */,
+				5208C20222B9535F003FCB52 /* DDFileLogger.h */,
+				5208C20322B9535F003FCB52 /* Extensions */,
+				5208C20B22B9535F003FCB52 /* DDLog.m */,
+				5208C20C22B9535F003FCB52 /* DDTTYLogger.h */,
+				5208C20D22B9535F003FCB52 /* DDLog+LOGV.h */,
+				5208C20E22B9535F003FCB52 /* DDAbstractDatabaseLogger.m */,
+				5208C20F22B9535F003FCB52 /* DDFileLogger.m */,
+				5208C21022B9535F003FCB52 /* DDASLLogger.h */,
+			);
+			path = CocoaLumberjack;
+			sourceTree = "<group>";
+		};
+		5208C20322B9535F003FCB52 /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				5208C20422B9535F003FCB52 /* DDContextFilterLogFormatter.m */,
+				5208C20522B9535F003FCB52 /* DDDispatchQueueLogFormatter.m */,
+				5208C20622B9535F003FCB52 /* DDMultiFormatter.h */,
+				5208C20722B9535F003FCB52 /* DDContextFilterLogFormatter.h */,
+				5208C20822B9535F003FCB52 /* DDMultiFormatter.m */,
+				5208C20922B9535F003FCB52 /* DDDispatchQueueLogFormatter.h */,
+				5208C20A22B9535F003FCB52 /* README.txt */,
+			);
+			path = Extensions;
+			sourceTree = "<group>";
+		};
+		EB87FDF11871DA420020F90C /* Staging */ = {
+			isa = PBXGroup;
+			children = (
+				F840E1F0165FE0F500CFE078 /* config.xml */,
+				301BF56E109A69640062928A /* www */,
+			);
+			name = Staging;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		1D6058900D05DD3D006BFB54 /* UnitTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1D6058960D05DD3E006BFB54 /* Build configuration list for PBXNativeTarget "UnitTests" */;
+			buildPhases = (
+				304B58A110DAC018002A0835 /* Copy www directory */,
+				1D60588D0D05DD3D006BFB54 /* Resources */,
+				1D60588E0D05DD3D006BFB54 /* Sources */,
+				1D60588F0D05DD3D006BFB54 /* Frameworks */,
+				AA888D464FD64AC997353197 /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				301BF551109A68C00062928A /* PBXTargetDependency */,
+			);
+			name = UnitTests;
+			productName = UnitTests;
+			productReference = 1D6058910D05DD3D006BFB54 /* UnitTests.app */;
+			productType = "com.apple.product-type.application";
+		};
+		5208C1B322B952FD003FCB52 /* SwrvePluginTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5208C1BE22B952FE003FCB52 /* Build configuration list for PBXNativeTarget "SwrvePluginTests" */;
+			buildPhases = (
+				5208C1B022B952FD003FCB52 /* Sources */,
+				5208C1B122B952FD003FCB52 /* Frameworks */,
+				5208C1B222B952FD003FCB52 /* Resources */,
+				5208C24222B95397003FCB52 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				5208C1BA22B952FE003FCB52 /* PBXTargetDependency */,
+			);
+			name = SwrvePluginTests;
+			productName = SwrvePluginTests;
+			productReference = 5208C1B422B952FD003FCB52 /* SwrvePluginTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		29B97313FDCFA39411CA2CEA /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 510;
+				TargetAttributes = {
+					1D6058900D05DD3D006BFB54 = {
+						ProvisioningStyle = Automatic;
+					};
+					5208C1B322B952FD003FCB52 = {
+						CreatedOnToolsVersion = 10.2.1;
+						DevelopmentTeam = 38YP67HQGE;
+						ProvisioningStyle = Automatic;
+						TestTargetID = 1D6058900D05DD3D006BFB54;
+					};
+				};
+			};
+			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "UnitTests" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 1;
+			knownRegions = (
+				English,
+				en,
+			);
+			mainGroup = 29B97314FDCFA39411CA2CEA /* CustomTemplate */;
+			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = 301BF52E109A57CC0062928A /* Products */;
+					ProjectRef = 301BF52D109A57CC0062928A /* CordovaLib/CordovaLib.xcodeproj */;
+				},
+			);
+			projectRoot = "";
+			targets = (
+				1D6058900D05DD3D006BFB54 /* UnitTests */,
+				5208C1B322B952FD003FCB52 /* SwrvePluginTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		301BF535109A57CC0062928A /* libCordova.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libCordova.a;
+			remoteRef = 301BF534109A57CC0062928A /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		907D8124214C687600058A10 /* Cordova.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = Cordova.framework;
+			remoteRef = 907D8123214C687600058A10 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
+
+/* Begin PBXResourcesBuildPhase section */
+		1D60588D0D05DD3D006BFB54 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				302D95F214D2391D003F00A1 /* MainViewController.xib in Resources */,
+				0207DA581B56EA530066E2B4 /* Images.xcassets in Resources */,
+				6AFF5BF91D6E424B00AB3073 /* CDVLaunchScreen.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5208C1B222B952FD003FCB52 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5208C22C22B95360003FCB52 /* LICENSE.txt in Resources */,
+				5208C22A22B95360003FCB52 /* README.markdown in Resources */,
+				5208C23E22B95360003FCB52 /* 8721fd4e657980a5e12d498e73aed6e6a565dfca in Resources */,
+				5208C23922B95360003FCB52 /* README.txt in Resources */,
+				5208C23D22B95360003FCB52 /* test_campaigns_and_resources.json in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		304B58A110DAC018002A0835 /* Copy www directory */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Copy www directory";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "NODEJS_PATH=/usr/local/bin; NVM_NODE_PATH=~/.nvm/versions/node/`nvm version 2>/dev/null`/bin; N_NODE_PATH=`find /usr/local/n/versions/node/* -maxdepth 0 -type d 2>/dev/null | tail -1`/bin; XCODE_NODE_PATH=`xcode-select --print-path`/usr/share/xcs/Node/bin; PATH=$NODEJS_PATH:$NVM_NODE_PATH:$N_NODE_PATH:$XCODE_NODE_PATH:$PATH && node cordova/lib/copy-www-build-step.js";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		1D60588E0D05DD3D006BFB54 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1D60589B0D05DD56006BFB54 /* main.m in Sources */,
+				1D3623260D0F684500981E51 /* AppDelegate.m in Sources */,
+				302D95F114D2391D003F00A1 /* MainViewController.m in Sources */,
+				F3EBF71F5C354E98BFD8185C /* SwrvePlugin.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5208C1B022B952FD003FCB52 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5208C24122B95360003FCB52 /* SwrveTestHelper.m in Sources */,
+				5208C1B722B952FE003FCB52 /* SwrvePluginTests.m in Sources */,
+				5208C23F22B95360003FCB52 /* TestHTTPResponse.m in Sources */,
+				5208C24022B95360003FCB52 /* TestHTTPConnection.m in Sources */,
+				5208C21C22B95360003FCB52 /* HTTPAsyncFileResponse.m in Sources */,
+				5208C21B22B95360003FCB52 /* HTTPFileResponse.m in Sources */,
+				5208C22222B95360003FCB52 /* MultipartFormDataParser.m in Sources */,
+				5208C22E22B95360003FCB52 /* AsyncUdpSocket.m in Sources */,
+				5208C22F22B95360003FCB52 /* AsyncSocket.m in Sources */,
+				5208C22622B95360003FCB52 /* DDData.m in Sources */,
+				5208C23A22B95360003FCB52 /* DDLog.m in Sources */,
+				5208C23522B95360003FCB52 /* DDASLLogger.m in Sources */,
+				5208C22322B95360003FCB52 /* MultipartMessageHeader.m in Sources */,
+				5208C21D22B95360003FCB52 /* HTTPRedirectResponse.m in Sources */,
+				5208C23622B95360003FCB52 /* DDContextFilterLogFormatter.m in Sources */,
+				5208C21F22B95360003FCB52 /* HTTPConnection.m in Sources */,
+				5208C21922B95360003FCB52 /* HTTPDataResponse.m in Sources */,
+				5208C23722B95360003FCB52 /* DDDispatchQueueLogFormatter.m in Sources */,
+				5208C22822B95360003FCB52 /* HTTPServer.m in Sources */,
+				5208C23222B95360003FCB52 /* GCDAsyncSocket.m in Sources */,
+				5208C22722B95360003FCB52 /* DDRange.m in Sources */,
+				5208C23B22B95360003FCB52 /* DDAbstractDatabaseLogger.m in Sources */,
+				5208C21A22B95360003FCB52 /* HTTPDynamicFileResponse.m in Sources */,
+				5208C23422B95360003FCB52 /* DDTTYLogger.m in Sources */,
+				5208C22422B95360003FCB52 /* HTTPAuthenticationRequest.m in Sources */,
+				5208C23822B95360003FCB52 /* DDMultiFormatter.m in Sources */,
+				5208C22522B95360003FCB52 /* DDNumber.m in Sources */,
+				5208C23122B95360003FCB52 /* GCDAsyncUdpSocket.m in Sources */,
+				5208C23C22B95360003FCB52 /* DDFileLogger.m in Sources */,
+				5208C21E22B95360003FCB52 /* HTTPMessage.m in Sources */,
+				5208C22122B95360003FCB52 /* MultipartMessageHeaderField.m in Sources */,
+				5208C22022B95360003FCB52 /* WebSocket.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		301BF551109A68C00062928A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = CordovaLib;
+			targetProxy = 301BF550109A68C00062928A /* PBXContainerItemProxy */;
+		};
+		5208C1BA22B952FE003FCB52 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 1D6058900D05DD3D006BFB54 /* UnitTests */;
+			targetProxy = 5208C1B922B952FE003FCB52 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		1D6058940D05DD3E006BFB54 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 3047A50F1AB8059700498E2A /* build-debug.xcconfig */;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"UnitTests/Plugins/cordova-plugin-swrve\"",
+					"\"UnitTests/Plugins/cordova-plugin-swrve\"",
+					"\"UnitTests/Plugins/cordova-plugin-swrve\"",
+				);
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "UnitTests/UnitTests-Prefix.pch";
+				GCC_THUMB_SUPPORT = NO;
+				GCC_VERSION = "";
+				INFOPLIST_FILE = "UnitTests/UnitTests-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = com.swrve.cordova.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		1D6058950D05DD3E006BFB54 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 3047A5101AB8059700498E2A /* build-release.xcconfig */;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"UnitTests/Plugins/cordova-plugin-swrve\"",
+					"\"UnitTests/Plugins/cordova-plugin-swrve\"",
+					"\"UnitTests/Plugins/cordova-plugin-swrve\"",
+				);
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "UnitTests/UnitTests-Prefix.pch";
+				GCC_THUMB_SUPPORT = NO;
+				GCC_VERSION = "";
+				INFOPLIST_FILE = "UnitTests/UnitTests-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = com.swrve.cordova.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		5208C1BB22B952FE003FCB52 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = 38YP67HQGE;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/SwrvePluginTests/Supporting\\ Files",
+					"$(PROJECT_DIR)/UnitTests/Plugins/cordova-plugin-swrve",
+				);
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				INFOPLIST_FILE = SwrvePluginTests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.swrve.SwrvePluginTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/UnitTests.app/UnitTests";
+			};
+			name = Debug;
+		};
+		5208C1BC22B952FE003FCB52 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = 38YP67HQGE;
+				ENABLE_NS_ASSERTIONS = NO;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/SwrvePluginTests/Supporting\\ Files",
+					"$(PROJECT_DIR)/UnitTests/Plugins/cordova-plugin-swrve",
+				);
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				INFOPLIST_FILE = SwrvePluginTests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.swrve.SwrvePluginTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/UnitTests.app/UnitTests";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		C01FCF4F08A954540054247B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 3047A5111AB8059700498E2A /* build.xcconfig */;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_THUMB_SUPPORT = NO;
+				GCC_VERSION = "";
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.swrve.cordova.tests;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = NO;
+			};
+			name = Debug;
+		};
+		C01FCF5008A954540054247B /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 3047A5111AB8059700498E2A /* build.xcconfig */;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_THUMB_SUPPORT = NO;
+				GCC_VERSION = "";
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.swrve.cordova.tests;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = NO;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1D6058960D05DD3E006BFB54 /* Build configuration list for PBXNativeTarget "UnitTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1D6058940D05DD3E006BFB54 /* Debug */,
+				1D6058950D05DD3E006BFB54 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		5208C1BE22B952FE003FCB52 /* Build configuration list for PBXNativeTarget "SwrvePluginTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5208C1BB22B952FE003FCB52 /* Debug */,
+				5208C1BC22B952FE003FCB52 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C01FCF4E08A954540054247B /* Build configuration list for PBXProject "UnitTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C01FCF4F08A954540054247B /* Debug */,
+				C01FCF5008A954540054247B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 29B97313FDCFA39411CA2CEA /* Project object */;
+}

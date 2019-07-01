@@ -1,0 +1,15 @@
+repositories {
+    jcenter{
+        url = 'http://dl.bintray.com/swrve-inc/android'
+    }
+}
+
+android {
+    lintOptions {
+        abortOnError false
+    }
+}
+
+dependencies {
+    implementation 'com.swrve.sdk.android:swrve-firebase:6.1.1'
+}

@@ -1,0 +1,6 @@
+framework module SwrveSDKCommon {
+  umbrella header "SwrveSDKCommon.h"
+
+  export *
+  module * { export * }
+}

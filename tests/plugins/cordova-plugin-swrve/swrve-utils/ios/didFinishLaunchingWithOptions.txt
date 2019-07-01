@@ -1,0 +1,8 @@
+    // SWRVE CHANGES
+    SwrveConfig *config = [[SwrveConfig alloc] init];
+    // config.stack = SWRVE_STACK_EU;
+    config.pushEnabled = false;
+    // Set your app id and api key here
+    [SwrvePlugin initWithAppID: <SwrveAppId> apiKey:@"<SwrveKey>" config:config viewController:self.viewController];
+    // END OF CHANGES
+    

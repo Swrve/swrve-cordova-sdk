@@ -1,0 +1,18 @@
+// SWRVE CHANGES
+SwrveConfig config = new SwrveConfig();
+// config.setSelectedStack(SwrveStack.EU);
+
+NotificationChannel channel = null;
+if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+   channel = new NotificationChannel("123", "<APPLICATION_NAME> default channel", NotificationManager.IMPORTANCE_DEFAULT);
+   if (getSystemService(Context.NOTIFICATION_SERVICE) != null) {
+      NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+      notificationManager.createNotificationChannel(channel);
+   }
+}
+
+SwrveNotificationConfig.Builder notificationConfig = new SwrveNotificationConfig.Builder(R.drawable.icon, R.drawable.material_icon, channel)
+         .activityClass(MainActivity.class);
+config.setNotificationConfig(notificationConfig.build());
+SwrvePlugin.createInstance(this, <SwrveAppId>, "<SwrveKey>", config);
+// END OF CHANGES
