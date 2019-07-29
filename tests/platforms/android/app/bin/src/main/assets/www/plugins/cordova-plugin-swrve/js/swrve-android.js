@@ -1,5 +1,4 @@
-cordova.define("cordova-plugin-swrve.SwrvePlugin", function(require, exports, module) {
-function SwrvePlugin() {}
+cordova.define("cordova-plugin-swrve.SwrvePlugin", function(require, exports, module) {function SwrvePlugin() {}
 
 SwrvePlugin.prototype.android = true;
 SwrvePlugin.prototype.ios = false;
@@ -156,5 +155,4 @@ SwrvePlugin.install = function() {
 };
 
 cordova.addConstructor(SwrvePlugin.install);
-
 });

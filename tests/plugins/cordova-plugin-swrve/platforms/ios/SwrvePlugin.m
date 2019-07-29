@@ -1,16 +1,21 @@
 #import "SwrvePlugin.h"
+#import "SwrvePluginPushHandler.h"
 #import <Cordova/CDV.h>
 #import <SwrveSDK/SwrveCampaign.h>
 #import <SwrveSDk/SwrveCampaignStatus.h>
 
-#define SWRVE_WRAPPER_VERSION "1.0.0"
+#define SWRVE_WRAPPER_VERSION "1.1.0"
 
 CDVViewController *globalViewController;
 
+NSString *const SwrveSilentPushPayloadKey = @"_s.SilentPayload";
 BOOL resourcesListenerReady;
 BOOL mustCallResourcesListener;
 BOOL pushNotificationListenerReady;
+BOOL silentPushNotificationListenerReady;
 NSMutableArray *pushNotificationsQueued;
+NSMutableArray *silentPushNotificationsQueued;
+SwrvePluginPushHandler *swrvePushHandler;
 
 @implementation SwrvePlugin
 
@@ -20,10 +25,17 @@ NSMutableArray *pushNotificationsQueued;
 
 + (void)initWithAppID:(int)appId apiKey:(NSString *)apiKey config:(SwrveConfig *)config viewController:(CDVViewController *)viewController {
     pushNotificationsQueued = [[NSMutableArray alloc] init];
+    silentPushNotificationsQueued = [[NSMutableArray alloc] init];
     globalViewController = viewController;
     if (config == nil) {
         config = [[SwrveConfig alloc] init];
         config.pushEnabled = YES;
+    }
+
+    // if the pushResponseDelegate is already set, don't override
+    if(config.pushResponseDelegate == nil){
+        swrvePushHandler = [[SwrvePluginPushHandler alloc] init];
+        config.pushResponseDelegate = swrvePushHandler;
     }
 
     // Set a resource callback
@@ -63,51 +75,92 @@ NSMutableArray *pushNotificationsQueued;
 #pragma clang diagnostic pop
 }
 
-+ (BOOL)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo withBackgroundCompletionHandler:(void (^)(UIBackgroundFetchResult, NSDictionary *))completionHandler {
-    UIApplicationState swrveState = [application applicationState];
-    if (swrveState == UIApplicationStateInactive || swrveState == UIApplicationStateBackground) {
-        return [SwrvePlugin didReceiveRemoteNotification:userInfo withBackgroundCompletionHandler:completionHandler];
-    } else {
-        return false;
+// Entry point from SwrvePluginPushHandler
++ (void) didReceiveNotificationResponse:(UNNotificationResponse *)response {
+    NSDictionary *userInfo = response.notification.request.content.userInfo;
+    if (userInfo) {
+        NSString *base64Json = [SwrvePlugin serializeDicToJson:userInfo withKey:nil];
+        if (base64Json) {
+            if (pushNotificationListenerReady) {
+                [SwrvePlugin notifySwrvePluginOfPushNotification:base64Json];
+            } else {
+                @synchronized(pushNotificationsQueued) {
+                    [pushNotificationsQueued addObject:base64Json];
+                }
+            }
+        }
     }
 }
 
-+ (void)notifySwrvePluginOfRemoteNotification:(NSString*)base64Json
-{
-    [SwrvePlugin evaluateString:[NSString stringWithFormat:@"if (window.swrveProcessPushNotification !== undefined) { window.swrveProcessPushNotification('%@'); }", base64Json] onWebView:globalViewController.webView];
-}
+// Entry point from AppDelegate
++ (BOOL)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo withBackgroundCompletionHandler:(void (^)(UIBackgroundFetchResult, NSDictionary *))completionHandler {
 
-+ (BOOL)didReceiveRemoteNotification:(NSDictionary *)userInfo withBackgroundCompletionHandler:(void (^)(UIBackgroundFetchResult, NSDictionary *))completionHandler {
     BOOL handled = [SwrveSDK didReceiveRemoteNotification:userInfo withBackgroundCompletionHandler:completionHandler];
-
-    // Notify the Swrve JS plugin of this remote notification
-    NSError *error;
-    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:userInfo options:0 error:&error];
-    if (!jsonData) {
-        NSLog(@"Could not serialize remote push notification payload: %@", error);
-    } else {
-        NSString* jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-        NSData* jsonData = [jsonString dataUsingEncoding:NSUTF8StringEncoding];
-        NSString *base64Json = [SwrvePlugin base64Encode:jsonData];
-        if (pushNotificationListenerReady) {
-            [SwrvePlugin notifySwrvePluginOfRemoteNotification:base64Json];
+    if (handled) {
+        if ([userInfo objectForKey:SwrveSilentPushPayloadKey]) {
+            NSString *base64Json = [SwrvePlugin serializeDicToJson:userInfo withKey:SwrveSilentPushPayloadKey];
+            if (base64Json) {
+                if (silentPushNotificationListenerReady) {
+                    [SwrvePlugin notifySwrvePluginOfSilentPushNotification:base64Json];
+                } else {
+                    @synchronized(silentPushNotificationsQueued) {
+                        [silentPushNotificationsQueued addObject:base64Json];
+                    }
+                }
+            }
         } else {
-            @synchronized(pushNotificationsQueued) {
-                [pushNotificationsQueued addObject:base64Json];
+            /** Legacy iOS Push Handling - to be deprecated soon **/
+            NSString *base64Json = [SwrvePlugin serializeDicToJson:userInfo withKey:nil];
+            if (base64Json) {
+                if (pushNotificationListenerReady) {
+                    [SwrvePlugin notifySwrvePluginOfPushNotification:base64Json];
+                } else {
+                    @synchronized(pushNotificationsQueued) {
+                        [pushNotificationsQueued addObject:base64Json];
+                    }
+                }
             }
         }
     }
     return handled;
 }
 
-- (void)event:(CDVInvokedUrlCommand*)command
-{
-    CDVPluginResult* pluginResult = nil;
-    NSString* eventName = [command.arguments objectAtIndex:0];
++ (void)notifySwrvePluginOfPushNotification:(NSString*)base64Json {
+    [SwrvePlugin evaluateString:[NSString stringWithFormat:@"if (window.swrveProcessPushNotification !== undefined) { window.swrveProcessPushNotification('%@'); }", base64Json] onWebView:globalViewController.webView];
+}
+
++ (void)notifySwrvePluginOfSilentPushNotification:(NSString*)base64Json {
+    [SwrvePlugin evaluateString:[NSString stringWithFormat:@"if (window.swrveProcessSilentPushNotification !== undefined) { window.swrveProcessSilentPushNotification('%@'); }", base64Json] onWebView:globalViewController.webView];
+}
+
+// Serrialize an entire dictionary or serrialize a key in the dic.
+// This method is used to serrialize the just the "SwrveSilentPushPayloadKey" payload content.
+// So we return to JS layer just the expected payload to our custumer.
++ (NSString *)serializeDicToJson:(NSDictionary *)dic withKey:(NSString *) key {
+    NSError *error;
+    NSData *jsonData;
+    if (key != nil) {
+        jsonData = [NSJSONSerialization dataWithJSONObject:[dic objectForKey:key] options:0 error:&error];
+    } else {
+        jsonData = [NSJSONSerialization dataWithJSONObject:dic options:0 error:&error];
+    }
+
+    if (!jsonData) {
+        NSLog(@"Could not serialize remote push notification payload: %@", error);
+        return nil;
+    }
+    NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+    jsonData = [jsonString dataUsingEncoding:NSUTF8StringEncoding];
+    return [SwrvePlugin base64Encode:jsonData];
+}
+
+- (void)event:(CDVInvokedUrlCommand *)command {
+    CDVPluginResult *pluginResult = nil;
+    NSString *eventName = [command.arguments objectAtIndex:0];
 
     if (eventName != nil) {
         if ([command.arguments count] == 2) {
-            NSDictionary* payload = [command.arguments objectAtIndex:1];
+            NSDictionary *payload = [command.arguments objectAtIndex:1];
             [SwrveSDK event:eventName payload:payload];
         } else {
             [SwrveSDK event:eventName];
@@ -119,10 +172,9 @@ NSMutableArray *pushNotificationsQueued;
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
-- (void)userUpdate:(CDVInvokedUrlCommand*)command
-{
-    CDVPluginResult* pluginResult = nil;
-    NSDictionary* attributes = [command.arguments objectAtIndex:0];
+- (void)userUpdate:(CDVInvokedUrlCommand *)command {
+    CDVPluginResult *pluginResult = nil;
+    NSDictionary *attributes = [command.arguments objectAtIndex:0];
 
     if (attributes != nil) {
         [SwrveSDK userUpdate:attributes];
@@ -133,9 +185,8 @@ NSMutableArray *pushNotificationsQueued;
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
-- (void)userUpdateDate:(CDVInvokedUrlCommand*)command
-{
-    CDVPluginResult* pluginResult = nil;
+- (void)userUpdateDate:(CDVInvokedUrlCommand *)command {
+    CDVPluginResult *pluginResult = nil;
     if ([command.arguments count] == 2) {
         NSString* propertyName = [command.arguments objectAtIndex:0];
         NSString* propertyValueRaw = [command.arguments objectAtIndex:1];
@@ -222,9 +273,10 @@ NSMutableArray *pushNotificationsQueued;
 
 - (void)getUserResources:(CDVInvokedUrlCommand *)command
 {
-    NSDictionary* userResourcesDic = [[SwrveSDK resourceManager] resources];
-    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:userResourcesDic];
-    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    [SwrveSDK userResources:^(NSDictionary *resources, NSString *resourcesAsJSON) {
+        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:resources];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    }];
 }
 
 - (void)getUserResourcesDiff:(CDVInvokedUrlCommand *)command
@@ -239,7 +291,7 @@ NSMutableArray *pushNotificationsQueued;
 - (void)refreshCampaignsAndResources:(CDVInvokedUrlCommand *)command
 {
     [SwrveSDK refreshCampaignsAndResources];
-    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+    CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
@@ -319,9 +371,9 @@ NSMutableArray *pushNotificationsQueued;
 
 - (void)removeMessageCenterCampaign:(CDVInvokedUrlCommand*)command 
 {
-    CDVPluginResult* pluginResult = nil;
+    CDVPluginResult *pluginResult = nil;
     if ([command.arguments count] == 1) {
-        NSNumber* identifier = [command.arguments objectAtIndex:0];
+        NSNumber *identifier = [command.arguments objectAtIndex:0];
         
         NSArray<SwrveCampaign *> *campaigns = [[SwrveSDK messaging] messageCenterCampaigns];
         
@@ -353,7 +405,7 @@ NSMutableArray *pushNotificationsQueued;
         NSDictionary* userResources = [[SwrveSDK resourceManager] resources];
         [SwrvePlugin resourcesListenerCall:userResources];
     }
-    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+    CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
@@ -380,31 +432,77 @@ NSMutableArray *pushNotificationsQueued;
     // Send queued notifications, if any
     @synchronized(pushNotificationsQueued) {
         if ([pushNotificationsQueued count] > 0) {
-            for(NSString* push64Payload in pushNotificationsQueued) {
-                [SwrvePlugin notifySwrvePluginOfRemoteNotification:push64Payload];
+            for(NSString *push64Payload in pushNotificationsQueued) {
+                [SwrvePlugin notifySwrvePluginOfPushNotification:push64Payload];
             }
             [pushNotificationsQueued removeAllObjects];
         }
     }
-    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+    CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
-- (void)customButtonListenerReady:(CDVInvokedUrlCommand *)command
+- (void)silentPushNotificationListenerReady:(CDVInvokedUrlCommand *)command
 {
+    silentPushNotificationListenerReady = YES;
+    // Send queued notifications, if any
+    @synchronized(silentPushNotificationsQueued) {
+        if ([silentPushNotificationsQueued count] > 0) {
+            for(NSString *silentPush64Payload in silentPushNotificationsQueued) {
+                [SwrvePlugin notifySwrvePluginOfSilentPushNotification:silentPush64Payload];
+            }
+            [silentPushNotificationsQueued removeAllObjects];
+        }
+    }
+    CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
+
+- (void)customButtonListenerReady:(CDVInvokedUrlCommand *)command {
     // Notify the Swrve JS plugin of the IAM custom button click
     [SwrveSDK messaging].customButtonCallback = ^(NSString* action) {
         [SwrvePlugin evaluateString:[NSString stringWithFormat:@"if (window.swrveCustomButtonListener !== undefined) { window.swrveCustomButtonListener('%@'); }", action] onWebView:globalViewController.webView];
     };
 
-    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+    CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
-- (void)getUserId:(CDVInvokedUrlCommand*)command
-{
-    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:[SwrveSDK userID]];
+- (void)getUserId:(CDVInvokedUrlCommand *)command {
+    CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:[SwrveSDK userID]];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
+
+- (void)getExternalUserId:(CDVInvokedUrlCommand *)command {
+    CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:[SwrveSDK externalUserId]];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
+
+- (void)identify:(CDVInvokedUrlCommand *)command {
+    __block CDVPluginResult *pluginResult;
+    if ([command.arguments count] == 1) {
+        NSString *externalUserId = [command.arguments objectAtIndex:0];
+        [SwrveSDK identify:externalUserId onSuccess:^(NSString * _Nonnull status, NSString * _Nonnull swrveUserId) {
+            NSDictionary *identifySuccess = @{
+                                     @"status": status,
+                                     @"swrveId": swrveUserId,
+                                     };
+
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:identifySuccess];
+            [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+        } onError:^(NSInteger httpCode, NSString * _Nonnull errorMessage) {
+            NSDictionary *identifyError = @{
+                                     // returning the "httpCode" as responseCode for consistent for both platforms iOS/Android.
+                                     @"responseCode": [NSNumber numberWithInteger:httpCode],
+                                     @"errorMessage": errorMessage,
+                                     };
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsDictionary:identifyError];
+            [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+        }];
+    } else {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Invalid Arguments"];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    }
 }
 
 @end

@@ -1,29 +1,22 @@
 const fs = require('fs');
 
-module.exports = {
-	searchAndReplace: function(fileUrl, arrayStringToSearch, arrayStringToReplace, fileUrldestination) {
+var self = (module.exports = {
+	searchAndReplace: function(filePath, arrayStringToSearch, arrayStringToReplace) {
 		if (arrayStringToSearch.length != arrayStringToReplace.length) {
-			return console.log(`arrayStringToSearch and arrayStringToReplace should be same size.`);
+			throw new Error('search/replace array lengths do not match');
 		}
 
-		fs.readFile(fileUrl, 'utf8', function(err, data) {
-			if (err) {
-				console.log('file not found');
-				return console.log(err);
-			}
+		let data = fs.readFileSync(filePath, 'utf8');
 
-			for (var i = 0; i < arrayStringToSearch.length; i++) {
-				const stringToSearch = arrayStringToSearch[i],
-					stringToReplace = arrayStringToReplace[i];
-				data = data.replace(stringToSearch, stringToReplace);
-			}
-			if (fileUrldestination == undefined) {
-				fileUrldestination = fileUrl;
-			}
-			fs.writeFile(fileUrldestination, data, 'utf8', function(err) {
-				if (err) return console.log(err);
-			});
-		});
+		if (self.isEmptyString(data)) {
+			throw new Error(`file at ${filePath} is empty`);
+		}
+
+		for (var i = 0; i < arrayStringToSearch.length; i++) {
+			data = data.replace(arrayStringToSearch[i], arrayStringToReplace[i]);
+		}
+
+		fs.writeFileSync(filePath, data, 'utf-8');
 	},
 
 	copyFileFrom: function(fileUrl, destination) {
@@ -50,10 +43,23 @@ module.exports = {
 		var found = false;
 		arrayOfKeys.forEach(function(key) {
 			let platformPreference = appConfig.getPlatformPreference(key, platform);
-			if (platformPreference != undefined) {
+			if (!self.isEmptyString(platformPreference.toString())) {
 				found = true;
 			}
 		});
 		return found;
+	},
+
+	isEmptyString: function(str) {
+		return !str || 0 === str.length;
+	},
+
+	convertToBoolean: function(str) {
+		if (str === undefined) {
+			return false;
+		}
+
+		let canditateStr = str.toLowerCase();
+		return canditateStr == 'true' ? true : false;
 	}
-};
+});

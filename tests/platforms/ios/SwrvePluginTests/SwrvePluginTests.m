@@ -1,24 +1,20 @@
 #import <XCTest/XCTest.h>
 #import <OCMock/OCMock.h>
-#import "HTTPServer.h"
 #import "SwrvePlugin.h"
 
 #import <SwrveSDK/Swrve.h>
 #import <SwrveSDK/SwrveSDK.h>
 #import <SwrveSDK/SwrveCampaign.h>
 #import <SwrveSDK/SwrveCampaignStatus.h>
+#import <SwrveSDKCommon/SwrveSDKCommon.h>
 
 #import "AppDelegate.h"
-#import "TestHTTPConnection.h"
-#import "TestHTTPResponse.h"
 #import "SwrveTestHelper.h"
 
 @interface SwrvePluginTests : XCTestCase {
-    HTTPServer *httpEventServer;
-    HTTPServer *httpContentServer;
-    NSMutableArray *lastEventBatches;
     AppDelegate *appDelegate;
     CDVViewController *controller;
+    id swrveMock;
 }
 @end
 
@@ -29,7 +25,7 @@
 - (void)waitForApplicationToStart:(void(^)(NSString *))callback {
     NSDate *timerStart = [NSDate date];
     NSString *pluginState = nil;
-    for (int i = 0; i < 30; i++) {
+    for (int i = 0; i < waitMedium; i++) {
         pluginState = [self runJS:@"((window !== undefined && 'plugins' in window && 'swrve' in window.plugins)? 'yes' : 'no')"];
         if (pluginState != nil && ![pluginState isEqualToString:@"no"]) {
             callback(pluginState);
@@ -44,7 +40,7 @@
 
 - (void)waitForActionReceivedForJavascript:(NSString *)javascript withCallback:(void(^)(NSString *))callback {
     BOOL responseReceived = NO;
-    for(int i = 0; i < 30 && !responseReceived; i++) {
+    for(int i = 0; i < waitMedium && !responseReceived; i++) {
         NSString *response = [self runJS:javascript];
         responseReceived = (response != nil && response.length > 0);
         if (!responseReceived) {
@@ -68,181 +64,52 @@
 
 - (void)setUp {
     [super setUp];
-    
-    // Setup local servers
-    NSString *rootPath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"UnitTestServer"];
-    httpEventServer = [[HTTPServer alloc] init];
-    [httpEventServer setConnectionClass:[TestHTTPConnection class]];
-    [httpEventServer setPort:8085];
-    [httpEventServer setDocumentRoot:rootPath];
-    NSError *error = nil;
-    if (![httpEventServer start:&error]) {
-        NSLog(@"Error starting event HTTP Server: %@", error);
-    }
-    
-    httpContentServer = [[HTTPServer alloc] init];
-    [httpContentServer setConnectionClass:[TestHTTPConnection class]];
-    [httpContentServer setPort:8083];
-    [httpContentServer setDocumentRoot:rootPath];
-    if (![httpContentServer start:&error]) {
-        NSLog(@"Error starting content HTTP Server: %@", error);
-    }
-    
-    // Emulate user resources and campaigns endpoints
-    NSURL *path = [[NSBundle bundleForClass:[SwrvePluginTests class]] URLForResource:@"test_campaigns_and_resources" withExtension:@"json"];
-    NSString *testresourcesAndCampaigns = [NSString stringWithContentsOfURL:path encoding:NSUTF8StringEncoding error:nil];
-    [TestHTTPConnection setHandler:@"api/1/user_resources_and_campaigns" handler:^NSObject<HTTPResponse>*(NSString *path, HTTPMessage *request) {
-        return [[TestHTTPResponse alloc] initWithString:testresourcesAndCampaigns];
-    }];
-    [TestHTTPConnection setHandler:@"api/1/user_resources_diff" handler:^NSObject<HTTPResponse>*(NSString *path, HTTPMessage *request) {
-        NSString *testResourcesDiff = @"[{ \"uid\": \"house\", \"diff\": { \"cost\": { \"old\": \"550\", \"new\": \"666\" }}}]";
-        return [[TestHTTPResponse alloc] initWithString:testResourcesDiff];
-    }];
-    
-    // Emulate event endpoint
-    lastEventBatches = [[NSMutableArray alloc] init];
-    [TestHTTPConnection setHandler:@"1/batch" handler:^NSObject<HTTPResponse>*(NSString *path, HTTPMessage *request) {
-        NSString *batchBody = [[NSString alloc] initWithData:request.body encoding:NSUTF8StringEncoding];
-        [self->lastEventBatches addObject:batchBody];
-        NSLog(@"Received event batch %@", batchBody);
-        return [[TestHTTPResponse alloc] initWithData:[@"OK" dataUsingEncoding:NSUTF8StringEncoding]];
-    }];
-    
-    // Image in CDN
-    [TestHTTPConnection setHandler:@"/cdn/" handler:^NSObject<HTTPResponse>*(NSString *urlPath, HTTPMessage *request) {
-        NSString *fileName = [urlPath stringByReplacingOccurrencesOfString:@"/cdn/" withString:@""];
-        NSURL *url = [[NSBundle bundleForClass:[SwrvePluginTests class]] URLForResource:fileName withExtension:nil];
-        TestHTTPResponse *response;
-        if (url != nil) {
-            NSData *imageData = [[NSData alloc]initWithContentsOfURL:url options:0 error:nil];
-            response = [[TestHTTPResponse alloc] initWithData:imageData];
-            response.contentType = @"image/png";
-        } else {
-            response = [[TestHTTPResponse alloc] initWithData:[@"404 Not Found" dataUsingEncoding:NSUTF8StringEncoding]];
-            response.responseStatus = 404;
-        }
-        return response;
-    }];
-    
     appDelegate = [[UIApplication sharedApplication] delegate];
     controller = appDelegate.viewController;
+    swrveMock = OCMPartialMock([SwrveSDK sharedInstance]);
 }
 
 - (void)tearDown {
     [super tearDown];
-    
-    if (httpEventServer != nil) {
-        [httpEventServer stop];
-        httpEventServer = nil;
-    }
-    
-    if (httpContentServer != nil) {
-        [httpContentServer stop];
-        httpContentServer = nil;
-    }
-    
-    // clear test data on teardown
-    [SwrveTestHelper removeSDKData];
+    [swrveMock stopMocking];
 }
 
 #pragma mark - tests
 
 - (void)testEvents {
+    OCMExpect([(Swrve*) swrveMock event:@"levelup"]).andDo(nil);
+    OCMExpect([swrveMock event:@"leveldown" payload:@{@"armor": @"disabled"}]).andDo(nil);
+    
+    OCMExpect([(Swrve*) swrveMock userUpdate:@{@"cordova": @"TRUE"}]).andDo(nil);
+    NSString *propertyValueRaw = @"2017-01-02T16:20:00.000Z";
+    NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+    dateFormatter.dateFormat = @"yyyy-MM-dd'T'HH:mm:ss.SSSZZZZZ";
+    NSDate* dateValue = [dateFormatter dateFromString:propertyValueRaw];
+    OCMExpect([swrveMock userUpdate:@"last_subscribed" withDate:dateValue]).andDo(nil);
+    OCMExpect([swrveMock currencyGiven:@"Gold" givenAmount:12.0]).andDo(nil);
+    OCMExpect([swrveMock purchaseItem:@"sword" currency:@"Gold" cost:15 quantity:2]).andDo(nil);
+    OCMExpect([swrveMock unvalidatedIap:nil localCost:99.2 localCurrency:@"USD" productId:@"iap_item" productIdQuantity:15]).andDo(nil);
+    OCMExpect([swrveMock sendQueuedEvents]).andDo(nil);
     
     XCTestExpectation *apploaded = [self expectationWithDescription:@"completionHandler"];
     [self waitForApplicationToStart:^(NSString  *callback) {
-        
-        // Send any previous events now
-        [self runJS:@"window.plugins.swrve.sendEvents(undefined, undefined);"];
-        [self waitForSeconds:waitShort];
-        
         // Send all instrumented events
         [self runJS:@"window.plugins.swrve.event(\"levelup\", undefined, undefined);"];
         [self runJS:@"window.plugins.swrve.event(\"leveldown\", {\"armor\":\"disabled\"}, undefined, undefined);"];
-        [self runJS:@"window.plugins.swrve.userUpdate({\"phonegap\":\"TRUE\"}, undefined, undefined);"];
+        [self runJS:@"window.plugins.swrve.userUpdate({\"cordova\":\"TRUE\"}, undefined, undefined);"];
         [self runJS:@"window.plugins.swrve.userUpdateDate(\"last_subscribed\", new Date(2016, 12, 2, 16, 20, 0, 0), undefined, undefined);"];
-        [self runJS:@"window.plugins.swrve.currencyGiven(\"Gold\", 20, undefined, undefined);"];
+        [self runJS:@"window.plugins.swrve.currencyGiven(\"Gold\", 12, undefined, undefined);"];
         [self runJS:@"window.plugins.swrve.purchase(\"sword\", \"Gold\", 2, 15, undefined, undefined);"];
         [self runJS:@"window.plugins.swrve.unvalidatedIap(99.2,\"USD\",\"iap_item\", 15, undefined, undefined);"];
-        [self runJS:@"window.plugins.swrve.sendEvents(undefined, undefined);"];
+        [self runJS:@"window.plugins.swrve.sendEvents(function(forceCallback) { window.sendEvents =\"finished\"}, undefined);"];
         
-        typedef BOOL (^EventChecker)(NSDictionary *event);
-        NSMutableArray *eventChecks = [[NSMutableArray alloc] init];
-        // Check for event
-        [eventChecks addObject:^BOOL(NSDictionary *event) {
-            return [[event objectForKey:@"name"] isEqualToString:@"levelup"]
-            && [[event objectForKey:@"payload"] count] == 0;
-        }];
-        // Check for event with payload
-        [eventChecks addObject:^BOOL(NSDictionary *event) {
-            return [[event objectForKey:@"name"] isEqualToString:@"leveldown"]
-            && [[[event objectForKey:@"payload"] objectForKey:@"armor"] isEqualToString:@"disabled"];
-        }];
-        // Check for user update event
-        [eventChecks addObject:^BOOL(NSDictionary *event) {
-            return [[event objectForKey:@"type"] isEqualToString:@"user"]
-            && [[[event objectForKey:@"attributes"] objectForKey:@"phonegap"] isEqualToString:@"TRUE"];
-        }];
-        // Check for currency given event
-        [eventChecks addObject:^BOOL(NSDictionary *event) {
-            return [[event objectForKey:@"type"] isEqualToString:@"currency_given"]
-            && [[event objectForKey:@"given_amount"] longValue] == 20
-            && [[event objectForKey:@"given_currency"] isEqualToString:@"Gold"];
-        }];
-        // Check for purchase event
-        [eventChecks addObject:^BOOL(NSDictionary *event) {
-            return [[event objectForKey:@"type"] isEqualToString:@"purchase"]
-            && [[event objectForKey:@"quantity"] longValue] == 2
-            && [[event objectForKey:@"cost"] longValue] == 15
-            && [[event objectForKey:@"currency"] isEqualToString:@"Gold"]
-            && [[event objectForKey:@"item"] isEqualToString:@"sword"];
-        }];
-        // Check for unvalidated IAP event
-        [eventChecks addObject:^BOOL(NSDictionary *event) {
-            return [[event objectForKey:@"type"] isEqualToString:@"iap"]
-            && [[event objectForKey:@"quantity"] longValue] == 15
-            && [[event objectForKey:@"cost"] doubleValue] == 99.2
-            && [[event objectForKey:@"local_currency"] isEqualToString:@"USD"]
-            && [[event objectForKey:@"product_id"] isEqualToString:@"iap_item"];
+        XCTestExpectation *responseReceived = [self expectationWithDescription:@"responseReceived"];
+        [self waitForActionReceivedForJavascript:@"window.sendEvents" withCallback:^(NSString *response) {
+            [responseReceived fulfill];
+            XCTAssertEqualObjects(response, @"finished");
+            [self->swrveMock verify];
         }];
         
-        // Check for user update event
-        [eventChecks addObject:^BOOL(NSDictionary *event) {
-            return [[event objectForKey:@"type"] isEqualToString:@"user"]
-            && [[[event objectForKey:@"attributes"] objectForKey:@"last_subscribed"] isEqualToString:@"2017-01-02T16:20:00.000Z"];
-        }];
-        
-        // Search for the event in all sent batches
-        BOOL allChecksPass = NO;
-        for(int i = 0; i < 30 && !allChecksPass; i++) {
-            allChecksPass = YES;
-            for(int k = 0; k < eventChecks.count; k++) {
-                EventChecker check = eventChecks[k];
-                BOOL checkPasses = NO;
-                for (NSString *batchJSON in lastEventBatches) {
-                    NSDictionary *batchDictionary = [NSJSONSerialization JSONObjectWithData:[batchJSON dataUsingEncoding:NSUTF8StringEncoding] options:kNilOptions error:nil];
-                    NSArray *batchEvents = [batchDictionary objectForKey:@"data"];
-                    for (NSDictionary *event in batchEvents) {
-                        if (check(event)) {
-                            checkPasses = YES;
-                            break;
-                        }
-                    }
-                    if (checkPasses) {
-                        break;
-                    }
-                }
-                if (!checkPasses) {
-                    allChecksPass = NO;
-                }
-            }
-            
-            if (!allChecksPass) {
-                [self waitForSeconds:1];
-            }
-        }
-        
-        XCTAssertTrue(allChecksPass);
         [apploaded fulfill];
     }];
     
@@ -255,6 +122,8 @@
 }
 
 - (void)testEvent {
+    OCMExpect([(Swrve*) swrveMock event:@"my_event"]).andDo(nil);
+    
     XCTestExpectation *apploaded = [self expectationWithDescription:@"completionHandler"];
     [self waitForApplicationToStart:^(NSString *callback) {
         // Inject javascript listeners
@@ -264,6 +133,7 @@
         [self waitForActionReceivedForJavascript:@"window.testEvent" withCallback:^(NSString *response) {
             [responseReceived fulfill];
             XCTAssertEqualObjects(response, @"success");
+            [self->swrveMock verify];
         }];
         
         [apploaded fulfill];
@@ -278,6 +148,8 @@
 }
 
 - (void)testEventWithPayload {
+    OCMExpect([swrveMock event:@"leveldown" payload:@{@"armor": @"disabled"}]).andDo(nil);
+    
     XCTestExpectation *apploaded = [self expectationWithDescription:@"completionHandler"];
     [self waitForApplicationToStart:^(NSString *callback) {
         // Inject javascript listeners
@@ -287,6 +159,7 @@
         [self waitForActionReceivedForJavascript:@"window.testEventPayload" withCallback:^(NSString *response) {
             [responseReceived fulfill];
             XCTAssertEqualObjects(response, @"success");
+            [self->swrveMock verify];
         }];
         
         [apploaded fulfill];
@@ -301,6 +174,8 @@
 }
 
 - (void)testUserUpdate {
+    OCMExpect([(Swrve*) swrveMock userUpdate:@{@"cordova": @"TRUE"}]).andDo(nil);
+    
     XCTestExpectation *apploaded = [self expectationWithDescription:@"completionHandler"];
     [self waitForApplicationToStart:^(NSString *callback) {
         // Inject javascript listeners
@@ -310,6 +185,7 @@
         [self waitForActionReceivedForJavascript:@"window.testUserUpdate" withCallback:^(NSString *response) {
             [responseReceived fulfill];
             XCTAssertEqualObjects(response, @"success");
+            [self->swrveMock verify];
         }];
         
         [apploaded fulfill];
@@ -324,15 +200,23 @@
 }
 
 - (void)testUserUpdateDate {
+    NSString *propertyValueRaw = @"2017-01-02T16:20:00.000Z";
+    NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+    dateFormatter.dateFormat = @"yyyy-MM-dd'T'HH:mm:ss.SSSZZZZZ";
+    NSDate* dateValue = [dateFormatter dateFromString:propertyValueRaw];
+    
+    OCMExpect([swrveMock userUpdate:@"last_subscribed" withDate:dateValue]).andDo(nil);
+    
     XCTestExpectation *apploaded = [self expectationWithDescription:@"completionHandler"];
     [self waitForApplicationToStart:^(NSString *callback) {
         // Inject javascript listeners
-        [self runJS:@"window.plugins.swrve.userUpdateDate(\"last_subscribed\", new Date(2016, 12, 2, 16, 20, 0, 0), function(forceCallback) { window.testUserUpdateDate = `success`}, undefined);"];
+        [self runJS:@"window.plugins.swrve.userUpdateDate(\"last_subscribed\", new Date('2017-01-02T16:20:00'), function(forceCallback) { window.testUserUpdateDate = `success`}, undefined);"];
         
         XCTestExpectation *responseReceived = [self expectationWithDescription:@"responseReceived"];
         [self waitForActionReceivedForJavascript:@"window.testUserUpdateDate" withCallback:^(NSString *response) {
             [responseReceived fulfill];
             XCTAssertEqualObjects(response, @"success");
+            [self->swrveMock verify];
         }];
         
         [apploaded fulfill];
@@ -347,6 +231,8 @@
 }
 
 - (void)testCurrencyGiven {
+    OCMExpect([swrveMock currencyGiven:@"Gold" givenAmount:20.0]).andDo(nil);
+    
     XCTestExpectation *apploaded = [self expectationWithDescription:@"completionHandler"];
     [self waitForApplicationToStart:^(NSString *callback) {
         // Inject javascript listeners
@@ -355,6 +241,7 @@
         [self waitForActionReceivedForJavascript:@"window.testCurrencyGiven" withCallback:^(NSString *response) {
             [responseReceived fulfill];
             XCTAssertEqualObjects(response, @"success");
+            [self->swrveMock verify];
         }];
         [apploaded fulfill];
     }];
@@ -368,6 +255,8 @@
 }
 
 - (void)testPurchase {
+    OCMExpect([swrveMock purchaseItem:@"sword" currency:@"Gold" cost:15 quantity:2]).andDo(nil);
+    
     XCTestExpectation *apploaded = [self expectationWithDescription:@"completionHandler"];
     [self waitForApplicationToStart:^(NSString *callback) {
         // Inject javascript listeners
@@ -376,6 +265,7 @@
         [self waitForActionReceivedForJavascript:@"window.testPurchase" withCallback:^(NSString *response) {
             [responseReceived fulfill];
             XCTAssertEqualObjects(response, @"success");
+            [self->swrveMock verify];
         }];
         [apploaded fulfill];
     }];
@@ -389,6 +279,8 @@
 }
 
 - (void)testIAP {
+    OCMExpect([swrveMock unvalidatedIap:nil localCost:99.2 localCurrency:@"USD" productId:@"iap_item" productIdQuantity:15]).andDo(nil);
+    
     XCTestExpectation *apploaded = [self expectationWithDescription:@"completionHandler"];
     [self waitForApplicationToStart:^(NSString *callback) {
         // Inject javascript listeners
@@ -397,6 +289,7 @@
         [self waitForActionReceivedForJavascript:@"window.testIAP" withCallback:^(NSString *response) {
             [responseReceived fulfill];
             XCTAssertEqualObjects(response, @"success");
+            [self->swrveMock verify];
         }];
         [apploaded fulfill];
     }];
@@ -408,8 +301,75 @@
     }];
 }
 
-- (void)testUserResourcesAndResourcesDiff {
+- (void)testUserResources {
     
+    // Mock the Async callback for User Resources
+    [[[swrveMock expect] andDo:^(NSInvocation *invocation) {
+        
+        // define the new resourceCallback
+        void (^SwrveUserResourcesCallback)(NSDictionary *resources, NSString *resourcesAsJSON) = nil;
+        
+        // The block is the last argument that is passed into the given function
+        [invocation getArgument:&SwrveUserResourcesCallback atIndex:[[invocation methodSignature]numberOfArguments] - 1];
+        
+        //populate the mocked callback with content
+        SwrveUserResourcesCallback(@{@"house": @{@"uid": @"house", @"name": @"house", @"cost": @"999"}}, @"test string");
+        
+    }] userResources:OCMOCK_ANY];
+    
+    XCTestExpectation *apploaded = [self expectationWithDescription:@"completionHandler"];
+    [self waitForApplicationToStart:^(NSString  *callback) {
+        // Call resources methods
+
+        [self runJS:
+         @"window.plugins.swrve.getUserResources(function(resources) {"
+         @"window.testResources = resources;"
+         @"}, function () {});"];
+        
+        // Give 5 seconds for the response to be received by the Javascript callbacks
+        NSString *userResourcesObtainedJSON = nil;
+        
+        BOOL resourcesReceived = NO;
+        for(int i = 0; i < waitShort && !resourcesReceived; i++) {
+            userResourcesObtainedJSON = [self runJS:@"JSON.stringify(window.testResources)"];
+            resourcesReceived = (userResourcesObtainedJSON != nil && ![userResourcesObtainedJSON isEqualToString:@""]);
+            if (!resourcesReceived) {
+                [self waitForSeconds:1];
+            }
+        }
+        
+        XCTAssertTrue(resourcesReceived);
+        
+        // Check user resources obtained through the plugin
+        NSDictionary *userResourcesObtained = [NSJSONSerialization JSONObjectWithData:[userResourcesObtainedJSON dataUsingEncoding:NSUTF8StringEncoding] options:kNilOptions error:nil];
+        XCTAssertEqual([[[userResourcesObtained objectForKey:@"house"] objectForKey:@"cost"] integerValue], 999);
+        
+        [apploaded fulfill];
+    }];
+    
+    /// waiting for waitForApplicationToStart
+    [self waitForExpectationsWithTimeout:waitLong handler:^(NSError *error) {
+        if (error) {
+            XCTFail(@"Ran out of time: testEvents");
+        }
+    }];
+}
+
+- (void)testUserResourcesDiff {
+    // Mock the Async callback for User Resources
+    [[[swrveMock expect] andDo:^(NSInvocation *invocation) {
+        
+        // define the new diffCallback
+        void (^SwrveUserResourcesDiffCallback)(NSDictionary * oldResourcesValues, NSDictionary * newResourcesValues, NSString * resourcesAsJSON) = nil;
+        
+        // The block is the last argument that is passed into the given function
+        [invocation getArgument:&SwrveUserResourcesDiffCallback atIndex:[[invocation methodSignature]numberOfArguments] - 1];
+        
+        //populate the mocked callback with content
+        SwrveUserResourcesDiffCallback(@{@"house":@{@"cost": @"550"}}, @{@"house":@{@"cost": @"666"}}, @"test string");
+        
+    }] userResourcesDiff:OCMOCK_ANY];
+
     XCTestExpectation *apploaded = [self expectationWithDescription:@"completionHandler"];
     [self waitForApplicationToStart:^(NSString  *callback) {
         // Call resources methods
@@ -418,40 +378,18 @@
          @"window.testResourcesDiff = resourcesDiff;"
          @"}, function () {});"];
         
-        [self runJS:
-         @"window.plugins.swrve.getUserResources(function(resources) {"
-         @"window.testResources = resources;"
-         @"}, function () {});"];
-        
-        [self runJS:
-         @"window.plugins.swrve.setResourcesListener(function(resources) {"
-         @"window.testResourcesListener = resources;"
-         @"});"];
-        
-        // Give 30 seconds for the response to be received by the Javascript callbacks
-        NSString *userResourcesObtainedJSON = nil;
-        NSString *userResourcesListenerObtainedJSON = nil;
+        // Give 15 seconds for the response to be received by the Javascript callbacks
         NSString *userResourcesDiffObtainedJSON = nil;
         
         BOOL resourcesReceived = NO;
-        for(int i = 0; i < waitLong && !resourcesReceived; i++) {
-            userResourcesObtainedJSON = [self runJS:@"JSON.stringify(window.testResources)"];
-            userResourcesListenerObtainedJSON = [self runJS:@"JSON.stringify(window.testResourcesListener)"];
+        for(int i = 0; i < waitShort && !resourcesReceived; i++) {
             userResourcesDiffObtainedJSON = [self runJS:@"JSON.stringify(window.testResourcesDiff)"];
-            resourcesReceived = (userResourcesObtainedJSON != nil && ![userResourcesObtainedJSON isEqualToString:@""] && userResourcesDiffObtainedJSON != nil && ![userResourcesDiffObtainedJSON isEqualToString:@""] && userResourcesListenerObtainedJSON != nil && ![userResourcesListenerObtainedJSON isEqualToString:@""]);
+            resourcesReceived = ( userResourcesDiffObtainedJSON != nil && ![userResourcesDiffObtainedJSON isEqualToString:@""]);
             if (!resourcesReceived) {
                 [self waitForSeconds:1];
             }
         }
         XCTAssertTrue(resourcesReceived);
-        
-        // Check user resources obtained through the plugin
-        NSDictionary *userResourcesObtained = [NSJSONSerialization JSONObjectWithData:[userResourcesObtainedJSON dataUsingEncoding:NSUTF8StringEncoding] options:kNilOptions error:nil];
-        XCTAssertEqual([[[userResourcesObtained objectForKey:@"house"] objectForKey:@"cost"] integerValue], 999);
-        
-        // Check user resources obtained through the listener
-        NSDictionary *userResourcesListenerObtained = [NSJSONSerialization JSONObjectWithData:[userResourcesListenerObtainedJSON dataUsingEncoding:NSUTF8StringEncoding] options:kNilOptions error:nil];
-        XCTAssertEqual([[[userResourcesListenerObtained objectForKey:@"house"] objectForKey:@"cost"] integerValue], 999);
         
         // Check user resources diff obtained through the plugin
         NSDictionary *userResourcesDiffObtained = [NSJSONSerialization JSONObjectWithData:[userResourcesDiffObtainedJSON dataUsingEncoding:NSUTF8StringEncoding] options:kNilOptions error:nil];
@@ -468,39 +406,78 @@
     }];
 }
 
-- (void)testCustomButtonListener {
+
+- (void)testUserResourcesListener {
+    
+    id swrveResourcesMock = OCMClassMock([SwrveResourceManager class]);
+    NSDictionary *mockedUserResources = @{@"house": @{@"uid": @"house", @"name": @"house", @"cost": @"888"}};
+    OCMStub([swrveResourcesMock resources]).andReturn(mockedUserResources);
+    
+    OCMStub([swrveMock resourceManager]).andReturn(swrveResourcesMock);
+    
     XCTestExpectation *apploaded = [self expectationWithDescription:@"completionHandler"];
     [self waitForApplicationToStart:^(NSString  *callback) {
+        // Call resources methods
         
-        // Display IAM to check that the custom button listener works
-        // Inject javascript listeners
-        [self runJS:@"window.plugins.swrve.setCustomButtonListener(function(action) { window.testCustomAction = action; });"];
+        [self runJS:
+         @"window.plugins.swrve.setResourcesListener(function(resources) {"
+         @"window.testResourcesListener = resources;"
+         @"});"];
         
-        UIViewController *viewController = nil;
-        int retries = 10;
-        while((viewController == nil || ![viewController isKindOfClass:[SwrveMessageViewController class]]) && retries-- > 0) {
-            // Launch IAM campaign
-            [self runJS:@"window.plugins.swrve.event('campaign_trigger', undefined, undefined);"];
-            [self waitForSeconds:1];
-            // Detect view controller
-            viewController = [UIApplication sharedApplication].keyWindow.rootViewController;
+        // Give 15 seconds for the response to be received by the Javascript callbacks
+        NSString *userResourcesListenerObtainedJSON = nil;
+        
+        BOOL resourcesReceived = NO;
+        for(int i = 0; i < waitShort && !resourcesReceived; i++) {
+            userResourcesListenerObtainedJSON = [self runJS:@"JSON.stringify(window.testResourcesListener)"];
+            resourcesReceived = (userResourcesListenerObtainedJSON != nil && ![userResourcesListenerObtainedJSON isEqualToString:@""]);
+            if (!resourcesReceived) {
+                [self waitForSeconds:1];
+            }
         }
+        XCTAssertTrue(resourcesReceived);
         
-        SwrveMessageViewController *iamController = (SwrveMessageViewController*)viewController;
-        UIView *messageView = [iamController.view.subviews firstObject];
-        UIButton *customButton = [messageView.subviews firstObject];
-        [iamController onButtonPressed:customButton];
-        
-        XCTestExpectation *responseReceived = [self expectationWithDescription:@"responseReceived"];
-        [self waitForActionReceivedForJavascript:@"window.testCustomAction" withCallback:^(NSString  *response) {
-            BOOL customActionReceived = [response isEqualToString:@"custom_action_from_server"];
-            XCTAssert(customActionReceived);
-            [responseReceived fulfill];
-        }];
+        // Check user resources obtained through the listener
+        NSDictionary *userResourcesListenerObtained = [NSJSONSerialization JSONObjectWithData:[userResourcesListenerObtainedJSON dataUsingEncoding:NSUTF8StringEncoding] options:kNilOptions error:nil];
+        XCTAssertEqual([[[userResourcesListenerObtained objectForKey:@"house"] objectForKey:@"cost"] integerValue], 888);
         
         [apploaded fulfill];
     }];
     
+    /// waiting for waitForApplicationToStart
+    [self waitForExpectationsWithTimeout:waitLong handler:^(NSError *error) {
+        if (error) {
+            XCTFail(@"Ran out of time: testEvents");
+        }
+    }];
+}
+
+
+- (void)testCustomButtonListener {
+    NSString *expectedAction = @"custom_action_from_server";
+
+    XCTestExpectation *apploaded = [self expectationWithDescription:@"completionHandler"];
+    [self waitForApplicationToStart:^(NSString  *callback) {
+
+    [self runJS:@"window.plugins.swrve.setCustomButtonListener(function(action) { window.testCustomAction = action; });"];
+    [self waitForSeconds:2];
+
+    XCTAssertNotNil([self->swrveMock messaging].customButtonCallback, @"customButtonCallback should NOT be null");
+
+    void (^testCallback)(NSString *action) = [self->swrveMock messaging].customButtonCallback;
+
+    testCallback(expectedAction);
+
+    XCTestExpectation *responseReceived = [self expectationWithDescription:@"responseReceived"];
+    [self waitForActionReceivedForJavascript:@"window.testCustomAction" withCallback:^(NSString  *response) {
+        BOOL customActionReceived = [response isEqualToString:expectedAction];
+        XCTAssert(customActionReceived);
+        [responseReceived fulfill];
+    }];
+
+    [apploaded fulfill];
+    }];
+
     /// waiting for waitForApplicationToStart & waitForActionReceivedForJavascript
     [self waitForExpectationsWithTimeout:waitLong handler:^(NSError *error) {
         if (error) {
@@ -521,6 +498,7 @@
         // Mock state of the app to be in the background
         UIApplication *backgroundStateApp = OCMClassMock([UIApplication class]);
         OCMStub([backgroundStateApp applicationState]).andReturn(UIApplicationStateBackground);
+        OCMStub([self->swrveMock didReceiveRemoteNotification:OCMOCK_ANY withBackgroundCompletionHandler:OCMOCK_ANY]).andReturn(YES);
         
         NSDictionary *userInfo = [NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithInt:0], @"_p", @"custom", @"custom_payload", nil];
         [self->appDelegate application:backgroundStateApp didReceiveRemoteNotification:userInfo fetchCompletionHandler:^(UIBackgroundFetchResult result) {
@@ -545,9 +523,50 @@
     }];
 }
 
-- (void)testGetUserId {
+- (void)testSilentPushPayloadListener {
     XCTestExpectation *apploaded = [self expectationWithDescription:@"completionHandler"];
     [self waitForApplicationToStart:^(NSString  *callback) {
+
+        // Send fake remote notification to check that the custom push payload listener works
+        // Inject javascript listeners
+        [self runJS:@"window.testSilentPushPayload = {};"];
+        [self runJS:@"window.plugins.swrve.setSilentPushNotificationListener(function(payload) { window.testSilentPushPayload = payload; });"];
+        [self waitForSeconds:1];
+        // Mock state of the app to be in the background
+        UIApplication *backgroundStateApp = OCMClassMock([UIApplication class]);
+        OCMStub([backgroundStateApp applicationState]).andReturn(UIApplicationStateBackground);
+        OCMStub([self->swrveMock didReceiveRemoteNotification:OCMOCK_ANY withBackgroundCompletionHandler:OCMOCK_ANY]).andReturn(YES);
+
+        NSDictionary *userInfo = [NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithInt:0], @"_p", @{@"custom_payload": @"custom"}, @"_s.SilentPayload", nil];
+
+        [self->appDelegate application:backgroundStateApp didReceiveRemoteNotification:userInfo fetchCompletionHandler:^(UIBackgroundFetchResult result) {
+
+        }];
+
+        XCTestExpectation *responseReceived = [self expectationWithDescription:@"responseReceived"];
+        [self waitForActionReceivedForJavascript:@"window.testSilentPushPayload.custom_payload" withCallback:^(NSString *response) {
+            BOOL customPayloadReceived = [response isEqualToString:@"custom"];
+            XCTAssert(customPayloadReceived);
+            [responseReceived fulfill];
+        }];
+
+        [apploaded fulfill];
+    }];
+
+    /// waiting for waitForApplicationToStart & waitForActionReceivedForJavascript
+    [self waitForExpectationsWithTimeout:waitLong handler:^(NSError *error) {
+        if (error) {
+            XCTFail(@"Ran out of time: testSilentPushListener");
+        }
+    }];
+}
+
+- (void)testGetUserId {
+    NSString *falseUserID = @"testUserID";
+    OCMStub([swrveMock userID]).andReturn(falseUserID);
+
+    XCTestExpectation *apploaded = [self expectationWithDescription:@"completionHandler"];
+    [self waitForApplicationToStart:^(NSString *callback) {
         // Inject javascript listeners
         [self runJS:@"window.plugins.swrve.getUserId(function(userId) { window.testUserId = userId; });"];
         
@@ -556,6 +575,7 @@
         [self waitForActionReceivedForJavascript:@"window.testUserId" withCallback:^(NSString  *response) {
             [responseReceived fulfill];
             XCTAssert(response != nil);
+            XCTAssertEqualObjects(response, falseUserID);
         }];
         
         [apploaded fulfill];
@@ -565,6 +585,133 @@
     [self waitForExpectationsWithTimeout:waitLong handler:^(NSError *error) {
         if (error) {
             XCTFail(@"Ran out of time: testGetUserId");
+        }
+    }];
+}
+
+- (void)testGetExternalUserId {
+    NSString *falseExternalUserID = @"testExternalUserID";
+    OCMStub([swrveMock externalUserId]).andReturn(falseExternalUserID);
+
+    XCTestExpectation *apploaded = [self expectationWithDescription:@"completionHandler"];
+    [self waitForApplicationToStart:^(NSString *callback) {
+        // Inject javascript listeners
+        [self runJS:@"window.plugins.swrve.getExternalUserId(function(externalUserId) { window.testExternalUserId = externalUserId; });"];
+
+        XCTestExpectation *responseReceived = [self expectationWithDescription:@"responseReceived"];
+
+        [self waitForActionReceivedForJavascript:@"window.testExternalUserId" withCallback:^(NSString  *response) {
+            [responseReceived fulfill];
+            XCTAssert(response != nil);
+            XCTAssertEqualObjects(response, falseExternalUserID);
+        }];
+
+        [apploaded fulfill];
+    }];
+
+    // waiting for waitForApplicationToStart & waitForActionReceivedForJavascript
+    [self waitForExpectationsWithTimeout:waitLong handler:^(NSError *error) {
+        if (error) {
+            XCTFail(@"Ran out of time: testGetExternalUserId");
+        }
+    }];
+}
+
+- (void)testIdentifyOnSuccess {
+    // Mocked variables
+    NSString *userIdMocked = @"swrveInternal";
+    NSString *statusMocked = @"loaded from cache";
+    NSDictionary *expectedIdentify = @{
+                             @"status": statusMocked,
+                             @"swrveId": userIdMocked,
+                             };
+
+    // Mock the Async callback for User identity
+    [[[swrveMock expect] andDo:^(NSInvocation *invocation) {
+        // define the New on Success
+        void (^onSuccess)(NSString *status, NSString *swrveUserId) = nil;
+        [invocation getArgument:&onSuccess atIndex:[[invocation methodSignature]numberOfArguments] - 2];
+        onSuccess(statusMocked, userIdMocked);
+    }] identify:OCMOCK_ANY onSuccess:OCMOCK_ANY onError:OCMOCK_ANY];
+
+    XCTestExpectation *apploaded = [self expectationWithDescription:@"completionHandler"];
+    [self waitForApplicationToStart:^(NSString *callback) {
+        // Call identify method
+        [self runJS:@"window.plugins.swrve.identify('MyExternalUserId', function(onSuccess) { window.testIdentifyOnSuccess = onSuccess; }, undefined);"];
+
+        // Give 15 seconds for the response to be received by the Javascript callbacks
+        NSString *identifyJSON = nil;
+        BOOL identityReceived = NO;
+        for(int i = 0; i < waitShort && !identityReceived; i++) {
+            identifyJSON = [self runJS:@"JSON.stringify(window.testIdentifyOnSuccess)"];
+            identityReceived = ( identifyJSON != nil && ![identifyJSON isEqualToString:@""]);
+            if (!identityReceived) {
+                [self waitForSeconds:1];
+            }
+        }
+        XCTAssertTrue(identityReceived);
+        // Check identity json obtained through the plugin
+        NSDictionary *identityCallback = [NSJSONSerialization JSONObjectWithData:[identifyJSON dataUsingEncoding:NSUTF8StringEncoding] options:kNilOptions error:nil];
+        XCTAssertEqualObjects(identityCallback, expectedIdentify);
+        XCTAssertEqualObjects([identityCallback objectForKey:@"status"], statusMocked);
+        XCTAssertEqualObjects([identityCallback objectForKey:@"swrveId"], userIdMocked);
+        [apploaded fulfill];
+
+    }];
+
+    /// waiting for waitForApplicationToStart & waitForActionReceivedForJavascript
+    [self waitForExpectationsWithTimeout:waitLong handler:^(NSError *error) {
+        if (error) {
+            XCTFail(@"Ran out of time: testIdentifyOnSuccess");
+        }
+    }];
+}
+
+- (void)testIdentifyOnError {
+    NSInteger responseCodeMocked = 403;
+    NSString *errorMsgMocked = @"Email forbidden";
+    NSDictionary *expectedIdentify = @{
+                                       @"responseCode": [NSNumber numberWithInteger:responseCodeMocked],
+                                       @"errorMessage": errorMsgMocked,
+                                       };
+
+    // Mock the Async callback for User identity
+    [[[swrveMock expect] andDo:^(NSInvocation *invocation) {
+        // define the New onError.
+        void (^onError)(NSInteger httpCode, NSString *errorMessage) = nil;
+        [invocation getArgument:&onError atIndex:[[invocation methodSignature]numberOfArguments] - 1];
+        onError(responseCodeMocked, errorMsgMocked);
+    }] identify:OCMOCK_ANY onSuccess:OCMOCK_ANY onError:OCMOCK_ANY];
+
+    XCTestExpectation *apploaded = [self expectationWithDescription:@"completionHandler"];
+    [self waitForApplicationToStart:^(NSString *callback) {
+        // Call identify method
+        [self runJS:@"window.plugins.swrve.identify('MyExternalUserId', undefined, function(onError) { window.testIdentifyOnError = onError; });"];
+
+        // Give 15 seconds for the response to be received by the Javascript callbacks
+        NSString *identifyJSON = nil;
+        BOOL identityReceived = NO;
+        for(int i = 0; i < waitShort && !identityReceived; i++) {
+            identifyJSON = [self runJS:@"JSON.stringify(window.testIdentifyOnError)"];
+            identityReceived = ( identifyJSON != nil && ![identifyJSON isEqualToString:@""]);
+            if (!identityReceived) {
+                [self waitForSeconds:1];
+            }
+        }
+        XCTAssertTrue(identityReceived);
+        // Check identity json obtained through the plugin
+        NSDictionary *identityCallback = [NSJSONSerialization JSONObjectWithData:[identifyJSON dataUsingEncoding:NSUTF8StringEncoding] options:kNilOptions error:nil];
+        XCTAssertEqualObjects(identityCallback, expectedIdentify);
+        XCTAssertEqualObjects([identityCallback objectForKey:@"responseCode"], [NSNumber numberWithInteger:responseCodeMocked]);
+        XCTAssertEqualObjects([identityCallback objectForKey:@"errorMessage"], errorMsgMocked);
+        [apploaded fulfill];
+
+    }];
+
+    /// waiting for waitForApplicationToStart & waitForActionReceivedForJavascript
+    [self waitForExpectationsWithTimeout:waitLong handler:^(NSError *error) {
+        if (error) {
+            XCTFail(@"Ran out of time: testIdentifyOnError");
         }
     }];
 }
@@ -593,7 +740,6 @@
     NSArray *mockList = [NSArray arrayWithObject:campaignMock];
     OCMExpect([swrveMessagingMock messageCenterCampaigns]).andReturn(mockList);
     
-    id swrveMock = OCMPartialMock([SwrveSDK sharedInstance]);
     OCMStub([swrveMock messaging]).andReturn(swrveMessagingMock);
     
     XCTestExpectation *apploaded = [self expectationWithDescription:@"completionHandler"];
@@ -638,32 +784,25 @@
     }];
     
     [swrveMessagingMock stopMocking];
-    [swrveMock stopMocking];
 }
 
 - (void)testShowMessageCenterCampaign {
     
+    id swrveMessagingMock = OCMClassMock([SwrveMessageController class]);
+    SwrveCampaign *campaignMock = OCMClassMock([SwrveCampaign class]);
+    OCMStub([campaignMock ID]).andReturn(88);
+    
+    NSArray *mockList = [NSArray arrayWithObject:campaignMock];
+    OCMExpect([swrveMessagingMock messageCenterCampaigns]).andReturn(mockList);
+    OCMExpect([(SwrveMessageController*) swrveMessagingMock showMessageCenterCampaign:campaignMock]).andDo(nil);
+    
+    OCMStub([swrveMock messaging]).andReturn(swrveMessagingMock);
+    
     XCTestExpectation *apploaded = [self expectationWithDescription:@"completionHandler"];
     [self waitForApplicationToStart:^(NSString  *callback) {
-        
-        UIViewController *viewController = nil;
-        int retries = 10;
-        while((viewController == nil || ![viewController isKindOfClass:[SwrveMessageViewController class]]) && retries-- > 0) {
-            // Launch IAM campaign
-            [self runJS:@"window.plugins.swrve.showMessageCenterCampaign(123, undefined, undefined);"];
-            [self waitForSeconds:1];
-            // Detect view controller
-            viewController = [UIApplication sharedApplication].keyWindow.rootViewController;
-        }
-        
-        XCTAssertTrue([viewController isKindOfClass:[SwrveMessageViewController class]], @"IAM should be appearing on screen");
-        
-        // press the button and close it
-        SwrveMessageViewController *iamController = (SwrveMessageViewController*)viewController;
-        UIView *messageView = [iamController.view.subviews firstObject];
-        UIButton *customButton = [messageView.subviews firstObject];
-        [iamController onButtonPressed:customButton];
-        
+        [self runJS:@"window.plugins.swrve.showMessageCenterCampaign(88, undefined, undefined);"];
+        [self waitForSeconds:1];
+        [swrveMessagingMock verify];
         [apploaded fulfill];
     }];
     
@@ -673,6 +812,7 @@
             XCTFail(@"Ran out of time: testShowMessageCenterCampaign");
         }
     }];
+    [swrveMessagingMock stopMocking];
 }
 
 - (void)testRemoveMessageCenterCampaign {
@@ -683,9 +823,8 @@
     
     NSArray *mockList = [NSArray arrayWithObject:campaignMock];
     OCMExpect([swrveMessagingMock messageCenterCampaigns]).andReturn(mockList);
-    OCMExpect([swrveMessagingMock removeMessageCenterCampaign:campaignMock]).andDo(nil);
+    OCMExpect([(SwrveMessageController*) swrveMessagingMock removeMessageCenterCampaign:campaignMock]).andDo(nil);
     
-    id swrveMock = OCMPartialMock([SwrveSDK sharedInstance]);
     OCMStub([swrveMock messaging]).andReturn(swrveMessagingMock);
     
     XCTestExpectation *apploaded = [self expectationWithDescription:@"completionHandler"];
@@ -702,9 +841,7 @@
             XCTFail(@"Ran out of time: testRemoveMessageCenterCampaign");
         }
     }];
-    
     [swrveMessagingMock stopMocking];
-    [swrveMock stopMocking];
 }
 
 @end

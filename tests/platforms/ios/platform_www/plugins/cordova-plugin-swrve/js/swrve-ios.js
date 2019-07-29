@@ -95,12 +95,16 @@ SwrvePlugin.prototype.setCustomButtonListener = function(listener) {
 	window.plugins.swrve.customButtonListenerReady();
 };
 
+SwrvePlugin.prototype.customButtonListenerReady = function() {
+	return cordova.exec(undefined, undefined, 'SwrvePlugin', 'customButtonListenerReady', []);
+};
+
 SwrvePlugin.prototype.pushNotificationListenerReady = function() {
 	return cordova.exec(undefined, undefined, 'SwrvePlugin', 'pushNotificationListenerReady', []);
 };
 
-SwrvePlugin.prototype.customButtonListenerReady = function() {
-	return cordova.exec(undefined, undefined, 'SwrvePlugin', 'customButtonListenerReady', []);
+SwrvePlugin.prototype.silentPushNotificationListenerReady = function() {
+	return cordova.exec(undefined, undefined, 'SwrvePlugin', 'silentPushNotificationListenerReady', []);
 };
 
 SwrvePlugin.prototype.setPushNotificationListener = function(listener) {
@@ -108,8 +112,22 @@ SwrvePlugin.prototype.setPushNotificationListener = function(listener) {
 	window.plugins.swrve.pushNotificationListenerReady();
 };
 
+SwrvePlugin.prototype.setSilentPushNotificationListener = function(listener) {
+	window.swrveSilentPushNotificationListener = listener;
+	window.plugins.swrve.silentPushNotificationListenerReady();
+};
+
 SwrvePlugin.prototype.getUserId = function(success, fail) {
 	return cordova.exec(success, fail, 'SwrvePlugin', 'getUserId', []);
+};
+
+SwrvePlugin.prototype.getExternalUserId = function(success, fail) {
+	return cordova.exec(success, fail, 'SwrvePlugin', 'getExternalUserId', []);
+};
+
+// userId is a string
+SwrvePlugin.prototype.identify = function(userId, success, fail) {
+	return cordova.exec(success, fail, 'SwrvePlugin', 'identify', [ userId ]);
 };
 
 SwrvePlugin.install = function() {
@@ -124,13 +142,24 @@ SwrvePlugin.install = function() {
 		// Decode the base64 encoded string sent by the plugin
 		window.swrveResourcesUpdatedListener(JSON.parse(window.atob(resourcesJson)));
 	};
+
 	// Empty callback, override this to listen to custom IAM buttons
 	window.swrveCustomButtonListener = function(action) {};
+
+	// Empty callback, override this to listen to silent push notifications
+	window.swrveSilentPushNotificationListener = function(payload) {};
+
 	// Empty callback, override this to listen to push notifications
 	window.swrvePushNotificationListener = function(payload) {};
+
 	window.swrveProcessPushNotification = function(base64Payload) {
 		// Decode the base64 encoded string sent by the plugin
 		window.swrvePushNotificationListener(JSON.parse(window.atob(base64Payload)));
+	};
+
+	window.swrveProcessSilentPushNotification = function(base64Payload) {
+		// Decode the base64 encoded string sent by the plugin
+		window.swrveSilentPushNotificationListener(JSON.parse(window.atob(base64Payload)));
 	};
 
 	return window.plugins.swrve;

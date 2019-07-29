@@ -36,58 +36,53 @@ async function androidSetupApplicationWithoutPush() {
 	try {
 		await produceApplicationFile(targetApplicationDirectory);
 
-		fs.readFile(`${targetApplicationDirectory}${applicationFileName}`, 'utf8', function(err, data) {
-			if (err) {
-				return console.log(err);
-			}
+		let searchforApplication = [ 'package <PACKAGE_NAME>' ];
+		let replacewithApplication = [ `package ${packageName};` ];
 
-			// set the Application.java package to match the config package name
-			var applicationJava = data.replace('package <PACKAGE_NAME>', `package ${packageName};`);
+		// Add Swrve init code
+		var applicationWithoutPush = fs.readFileSync(
+			path.join('plugins', 'cordova-plugin-swrve', 'swrve-utils', 'android', 'ApplicationWithoutPush.txt')
+		);
+		searchforApplication.push('//<swrve_application_content>');
+		replacewithApplication.push(applicationWithoutPush);
 
-			// Add Swrve init code
-			var applicationWithoutPush = fs.readFileSync(
-				path.join('plugins', 'cordova-plugin-swrve', 'swrve-utils', 'android', 'ApplicationWithoutPush.txt')
-			);
-			applicationJava = applicationJava.replace('//<swrve_application_content>', applicationWithoutPush);
+		// Set the AppId and API key (if present)
+		if (!swrveUtils.isEmptyString(appId)) {
+			searchforApplication.push('<SwrveAppId>');
+			replacewithApplication.push(appId);
+		}
 
-			// Set the AppId and API key (if present)
-			if (!swrveUtils.isEmptyString(appId)) {
-				applicationJava = applicationJava.replace('<SwrveAppId>', appId);
-			}
+		if (!swrveUtils.isEmptyString(apiKey)) {
+			searchforApplication.push('<SwrveKey>');
+			replacewithApplication.push(apiKey);
+		}
 
-			if (!swrveUtils.isEmptyString(apiKey)) {
-				applicationJava = applicationJava.replace('<SwrveKey>', apiKey);
-			}
+		// Enable EU Swrve stack (if needed)
+		if (!swrveUtils.isEmptyString(swrveStack) && swrveStack === 'EU') {
+			searchforApplication.push('// config.setSelectedStack(SwrveStack.EU);');
+			replacewithApplication.push('config.setSelectedStack(SwrveStack.EU);');
+		}
 
-			// Enable EU Swrve stack (if needed)
-			if (!swrveUtils.isEmptyString(swrveStack) && swrveStack === 'EU') {
-				applicationJava = applicationJava.replace(
-					'// config.setSelectedStack(SwrveStack.EU);',
-					'config.setSelectedStack(SwrveStack.EU);'
-				);
-			}
-
-			// finally, write to the file
-			fs.writeFileSync(`${targetApplicationDirectory}${applicationFileName}`, applicationJava, 'utf-8');
-		});
+		// Finally, write all of it to Application.java
+		swrveUtils.searchAndReplace(
+			`${targetApplicationDirectory}${applicationFileName}`,
+			searchforApplication,
+			replacewithApplication
+		);
 
 		//modify manifest.xml
 		const manifestFilePath = path.join('platforms', 'android', 'app', 'src', 'main', 'AndroidManifest.xml');
-		fs.readFile(manifestFilePath, 'utf8', function(err, data) {
-			if (err) {
-				return console.log(err);
-			}
+		var manifestData = fs.readFileSync(manifestFilePath, 'utf8');
 
-			if (!data.includes('android:name=".Application"')) {
-				var modfiedManifest = data.replace(
-					'android:supportsRtl="true">',
-					'android:name=".Application" android:supportsRtl="true">'
-				);
-				fs.writeFileSync(manifestFilePath, modfiedManifest, 'utf-8');
-			} else {
-				console.log('Swrve: Manifest.xml already has .Application added to it');
-			}
-		});
+		if (!manifestData.includes('android:name=".Application"')) {
+			swrveUtils.searchAndReplace(
+				manifestFilePath,
+				[ 'android:supportsRtl="true">' ],
+				[ 'android:name=".Application" android:supportsRtl="true">' ]
+			);
+		} else {
+			console.log('Swrve: Manifest.xml already has .Application added to it');
+		}
 	} catch (err) {
 		console.error(err);
 	}
@@ -106,70 +101,75 @@ async function androidSetupApplicationFirebase() {
 	try {
 		await produceApplicationFile(targetApplicationDirectory);
 
-		fs.readFile(`${targetApplicationDirectory}${applicationFileName}`, 'utf8', function(err, data) {
-			if (err) {
-				return console.log(err);
-			}
+		let searchforApplication = [ 'package <PACKAGE_NAME>' ];
+		let replacewithApplication = [ `package ${packageName};` ];
 
-			// set the Application.java package to match the config package name
-			var applicationJava = data.replace('package <PACKAGE_NAME>', `package ${packageName};`);
-			var applicationImports = fs.readFileSync(
-				path.join('plugins', 'cordova-plugin-swrve', 'swrve-utils', 'android', 'ApplicationPushImports.txt')
-			);
-			applicationJava = applicationJava.replace('//<swrve_application_imports>', applicationImports);
+		var applicationImports = fs.readFileSync(
+			path.join('plugins', 'cordova-plugin-swrve', 'swrve-utils', 'android', 'ApplicationPushImports.txt')
+		);
 
-			// Add Swrve init code
-			var applicationWithPush = fs.readFileSync(
-				path.join('plugins', 'cordova-plugin-swrve', 'swrve-utils', 'android', 'ApplicationWithPush.txt')
-			);
-			applicationJava = applicationJava.replace('//<swrve_application_content>', applicationWithPush);
+		// Start with adding the appropriate imports to Application.java
+		searchforApplication.push('//<swrve_application_imports>');
+		replacewithApplication.push(applicationImports);
 
-			// Set the AppId and API key (if present)
-			if (!swrveUtils.isEmptyString(appId)) {
-				applicationJava = applicationJava.replace('<SwrveAppId>', appId);
-			}
+		// Add Swrve init code
+		var applicationWithPush = fs.readFileSync(
+			path.join('plugins', 'cordova-plugin-swrve', 'swrve-utils', 'android', 'ApplicationWithPush.txt')
+		);
 
-			if (!swrveUtils.isEmptyString(apiKey)) {
-				applicationJava = applicationJava.replace('<SwrveKey>', apiKey);
-			}
+		searchforApplication.push('//<swrve_application_content>');
+		replacewithApplication.push(applicationWithPush);
 
-			if (!swrveUtils.isEmptyString(appName)) {
-				applicationJava = applicationJava.replace('<APPLICATION_NAME>', `${appName}`);
-			}
+		// Set the AppId and API key (if present)
+		if (!swrveUtils.isEmptyString(appId)) {
+			searchforApplication.push('<SwrveAppId>');
+			replacewithApplication.push(appId);
+		}
 
-			// Enable EU Swrve stack (if needed)
-			if (!swrveUtils.isEmptyString(swrveStack) && swrveStack === 'EU') {
-				applicationJava = applicationJava.replace(
-					'// config.setSelectedStack(SwrveStack.EU);',
-					'config.setSelectedStack(SwrveStack.EU);'
-				);
-			}
+		if (!swrveUtils.isEmptyString(apiKey)) {
+			searchforApplication.push('<SwrveKey>');
+			replacewithApplication.push(apiKey);
+		}
 
-			// finally, write to the file
-			fs.writeFileSync(`${targetApplicationDirectory}${applicationFileName}`, applicationJava, 'utf-8');
-		});
+		if (!swrveUtils.isEmptyString(appName)) {
+			searchforApplication.push('<APPLICATION_NAME>');
+			replacewithApplication.push(`${appName}`);
+		}
 
-		//modify manifest.xml
+		// Enable EU Swrve stack (if needed)
+		if (!swrveUtils.isEmptyString(swrveStack) && swrveStack === 'EU') {
+			searchforApplication.push('// config.setSelectedStack(SwrveStack.EU);');
+			replacewithApplication.push('config.setSelectedStack(SwrveStack.EU);');
+		}
+
+		// Finally, write all of it to the Application.java
+		swrveUtils.searchAndReplace(
+			`${targetApplicationDirectory}${applicationFileName}`,
+			searchforApplication,
+			replacewithApplication
+		);
+
+		// Manifest.xml
 		const manifestFilePath = path.join('platforms', 'android', 'app', 'src', 'main', 'AndroidManifest.xml');
-		fs.readFile(manifestFilePath, 'utf8', function(err, data) {
-			if (err) {
-				return console.log(err);
-			}
+		let manifestData = fs.readFileSync(manifestFilePath, 'utf8');
 
-			if (!data.includes('com.swrve.sdk.SwrveFirebaseMessagingService')) {
-				var firebasePushManifest = fs.readFileSync(
-					path.join('plugins', 'cordova-plugin-swrve', 'swrve-utils', 'android', 'FirebasePushManifest.txt')
-				);
-				var modfiedManifest = data.replace(
-					'android:supportsRtl="true">',
-					'android:name=".Application" android:supportsRtl="true">'
-				);
-				modfiedManifest = modfiedManifest.replace('</activity>', firebasePushManifest);
-				fs.writeFileSync(manifestFilePath, modfiedManifest, 'utf-8');
-			} else {
-				console.log('Swrve: Manifest.xml already has .Application added to it');
-			}
-		});
+		if (!manifestData.includes('com.swrve.sdk.SwrveFirebaseMessagingService')) {
+			let searchForManifest = [ 'android:supportsRtl="true">' ];
+			let replaceWithManifest = [ 'android:name=".Application" android:supportsRtl="true">' ];
+
+			// Add MessagingServices
+			var firebasePushManifest = fs.readFileSync(
+				path.join('plugins', 'cordova-plugin-swrve', 'swrve-utils', 'android', 'FirebasePushManifest.txt')
+			);
+
+			searchForManifest.push('</activity>');
+			replaceWithManifest.push(firebasePushManifest);
+
+			// Finally, write all of it to the Manifest.xml
+			swrveUtils.searchAndReplace(manifestFilePath, searchForManifest, replaceWithManifest);
+		} else {
+			console.log('Swrve: Manifest.xml already has MessagingServices added to it');
+		}
 
 		// Copy in the extension files
 		fs.mkdirSync(`${targetDirectory}/res/drawable`);

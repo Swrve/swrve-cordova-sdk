@@ -39,14 +39,20 @@ async function iosSetupServiceExtension() {
 	const swrveSDKCommonDirectory = path.join(`${appName}`, 'Plugins', 'cordova-plugin-swrve');
 	const proj = xcode.project(projPath);
 	proj.parseSync();
+	let NoServiceExtensionYet = true;
 
 	if (!fs.existsSync(`${iosPath}${extName}`)) {
 		console.log(`Adding ${extName} Push Service Extension to ${appName}...`);
 		// Copy in the extension files
 		fs.mkdirSync(`${iosPath}${extName}`);
+	} else {
+		NoServiceExtensionYet = false;
+		console.log(`Swrve: ${extName} already exists at ${iosPath}`);
+	}
 
-		try {
-			// using a promise to ensure all files finished copying before moving on
+	try {
+		// using a promise to ensure all files finished copying before moving on
+		if (NoServiceExtensionYet) {
 			await Promise.all(
 				extFiles.map((file) => copyFilePromisify(`${sourceDir}${file}`, `${iosPath}${extName}/${file}`))
 			);
@@ -68,54 +74,70 @@ async function iosSetupServiceExtension() {
 			// Add build phases
 			proj.addBuildPhase([ 'NotificationService.m' ], 'PBXSourcesBuildPhase', 'Sources', extTarget.uuid);
 			proj.addBuildPhase([], 'PBXResourcesBuildPhase', 'Resources', extTarget.uuid);
+		}
 
-			// Iterate through the entire XCBuildConfig for config of the new target PRODUCT_NAME and modify it
-			var config = proj.hash.project.objects['XCBuildConfiguration'];
-			for (var ref in config) {
+		// Iterate through the entire XCBuildConfig for config of the new target PRODUCT_NAME and modify it
+		var config = proj.hash.project.objects['XCBuildConfiguration'];
+		for (var ref in config) {
+			if (
+				config[ref].buildSettings !== undefined &&
+				config[ref].buildSettings.PRODUCT_NAME !== undefined &&
+				config[ref].buildSettings.PRODUCT_NAME.includes(extName)
+			) {
+				console.log(`entered the setting: ${config[ref].buildSettings.PRODUCT_NAME} of ${ref}`);
+
+				var INHERITED = '"$(inherited)"';
 				if (
-					config[ref].buildSettings !== undefined &&
-					config[ref].buildSettings.PRODUCT_NAME !== undefined &&
-					config[ref].buildSettings.PRODUCT_NAME.includes(extTarget.pbxNativeTarget.productName)
+					!config[ref].buildSettings['FRAMEWORK_SEARCH_PATHS'] ||
+					config[ref].buildSettings['FRAMEWORK_SEARCH_PATHS'] === INHERITED
 				) {
-					var INHERITED = '"$(inherited)"';
-					if (
-						!config[ref].buildSettings['FRAMEWORK_SEARCH_PATHS'] ||
-						config[ref].buildSettings['FRAMEWORK_SEARCH_PATHS'] === INHERITED
-					) {
-						proj.hash.project.objects['XCBuildConfiguration'][ref].buildSettings[
-							'FRAMEWORK_SEARCH_PATHS'
-						] = [ INHERITED ];
-					}
+					proj.hash.project.objects['XCBuildConfiguration'][ref].buildSettings['FRAMEWORK_SEARCH_PATHS'] = [
+						INHERITED
+					];
+				}
 
-					// Set entitlements
-					if (!swrveUtils.isEmptyString(appGroupIdentifier)) {
-						proj.hash.project.objects['XCBuildConfiguration'][ref].buildSettings[
-							'CODE_SIGN_ENTITLEMENTS'
-						] = `"$(PROJECT_DIR)/SwrvePushExtension/Entitlements-SwrvePushExtension.plist"`;
-					}
+				// Set entitlements
+				if (!swrveUtils.isEmptyString(appGroupIdentifier)) {
+					proj.hash.project.objects['XCBuildConfiguration'][ref].buildSettings[
+						'CODE_SIGN_ENTITLEMENTS'
+					] = `"$(PROJECT_DIR)/${extName}/Entitlements-${extName}.plist"`;
+				}
 
-					// Fix issues with the framework search paths, deployment target and bundle id
-					proj.hash.project.objects['XCBuildConfiguration'][ref].buildSettings['FRAMEWORK_SEARCH_PATHS'].push(
-						`"${swrveSDKCommonDirectory}"`
-					);
-					proj.hash.project.objects['XCBuildConfiguration'][ref].buildSettings['IPHONEOS_DEPLOYMENT_TARGET'] =
-						'10.0';
+				// Fix issues with the framework search paths, deployment target and bundle id
+				proj.hash.project.objects['XCBuildConfiguration'][ref].buildSettings['FRAMEWORK_SEARCH_PATHS'].push(
+					`"${swrveSDKCommonDirectory}"`
+				);
+				proj.hash.project.objects['XCBuildConfiguration'][ref].buildSettings['IPHONEOS_DEPLOYMENT_TARGET'] =
+					'10.0';
+
+				var currentBundleID =
+					proj.hash.project.objects['XCBuildConfiguration'][ref].buildSettings['PRODUCT_BUNDLE_IDENTIFIER'];
+
+				if (
+					swrveUtils.isEmptyString(currentBundleID) ||
+					!currentBundleID.includes(`${packageName}.NotificationService`)
+				) {
 					proj.hash.project.objects['XCBuildConfiguration'][ref].buildSettings[
 						'PRODUCT_BUNDLE_IDENTIFIER'
-					] = `${packageName}.ServiceExtension`;
+					] = `${packageName}.NotificationService`;
 				}
+
+				// ensure code signing identity is pointed correctly
+				proj.hash.project.objects['XCBuildConfiguration'][ref].buildSettings[
+					'CODE_SIGN_IDENTITY'
+				] = `"iPhone Distribution"`;
+
+				proj.hash.project.objects['XCBuildConfiguration'][ref].buildSettings['PRODUCT_NAME'] = `${extName}`;
 			}
-
-			fs.writeFileSync(projPath, proj.writeSync());
-			console.log(`Successfully added ${extName} service extension to ${appName}`);
-
-			// now that everything is setup, modify included files to config.json
-			iosSetupServiceExtensionAppGroup();
-		} catch (err) {
-			console.error(`There was an issue creating the Swrve Service Extension: ${err}`);
 		}
-	} else {
-		console.log(`Swrve: ${extName} already exists at ${iosPath}`);
+
+		fs.writeFileSync(projPath, proj.writeSync());
+		console.log(`Successfully added ${extName} service extension to ${appName}`);
+
+		// now that everything is setup, modify included files to config.json
+		iosSetupServiceExtensionAppGroup();
+	} catch (err) {
+		console.error(`There was an issue creating the Swrve Service Extension: ${err}`);
 	}
 }
 
@@ -132,30 +154,28 @@ function iosSetupServiceExtensionAppGroup() {
 		);
 
 		// modify NotificationService.m
-		fs.readFile(notificationServicePath, 'utf-8', (err, data) => {
-			if (!data.includes(`withAppGroupIdentifier:@"${appGroupIdentifier}"`)) {
-				var updatedServiceNotification = data.replace(
-					'withAppGroupIdentifier:nil',
-					`withAppGroupIdentifier:@"${appGroupIdentifier}"`
-				);
-				fs.writeFileSync(notificationServicePath, updatedServiceNotification, 'utf-8');
-			} else {
-				console.log('AppGroup was already inside the NotificationService.m file');
-			}
-		});
+		var notificationServiceData = fs.readFileSync(notificationServicePath, 'utf-8');
+		if (!notificationServiceData.includes(`withAppGroupIdentifier:@"${appGroupIdentifier}"`)) {
+			swrveUtils.searchAndReplace(
+				notificationServicePath,
+				[ 'withAppGroupIdentifier:nil' ],
+				[ `withAppGroupIdentifier:@"${appGroupIdentifier}"` ]
+			);
+		} else {
+			console.log('AppGroup was already inside the NotificationService.m file');
+		}
 
 		// modify entitlements file
-		fs.readFile(notificationServiceEntitlementsPath, 'utf-8', (err, data) => {
-			if (!data.includes(`<string>${appGroupIdentifier}</string>`)) {
-				var updatedEntitlements = data.replace(
-					'<string>APP_GROUP_TEMP</string>',
-					`<string>${appGroupIdentifier}</string>`
-				);
-				fs.writeFileSync(notificationServiceEntitlementsPath, updatedEntitlements, 'utf-8');
-			} else {
-				console.log('AppGroup was already on the entitlements file');
-			}
-		});
+		var entitlementsData = fs.readFileSync(notificationServiceEntitlementsPath, 'utf-8');
+		if (!entitlementsData.includes(`<string>${appGroupIdentifier}</string>`)) {
+			swrveUtils.searchAndReplace(
+				notificationServiceEntitlementsPath,
+				[ '<string>APP_GROUP_TEMP</string>' ],
+				[ `<string>${appGroupIdentifier}</string>` ]
+			);
+		} else {
+			console.log('AppGroup was already on the entitlements file');
+		}
 	} else {
 		console.warn('There was no appGroupIdentifier found in config.xml');
 	}

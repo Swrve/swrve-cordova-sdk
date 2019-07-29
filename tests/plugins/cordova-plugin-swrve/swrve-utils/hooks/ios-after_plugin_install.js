@@ -24,98 +24,90 @@ function iosSetupAppDelegate() {
 	const appGroupIdentifier = appConfig.getPlatformPreference('swrve.appGroupIdentifier', 'ios');
 	const swrveStack = appConfig.getPlatformPreference('swrve.stack', 'ios');
 
-	fs.readFile(appDelegatePath, 'utf8', function(err, data) {
-		if (err) {
-			return console.log(err);
+	var appDelegateData = fs.readFileSync(appDelegatePath, 'utf8');
+	if (!appDelegateData.includes('"SwrvePlugin.h"')) {
+		// import SwrvePlugin.
+
+		let searchForAppDelegate = [ '#import "AppDelegate.h"' ];
+		let replaceWithAppDelegate = [ '#import "AppDelegate.h"\n#import "SwrvePlugin.h"' ];
+
+		searchForAppDelegate.push('self.viewController = [[MainViewController alloc] init];');
+		replaceWithAppDelegate.push(
+			'self.viewController = [[MainViewController alloc] init]; \n//<Swrve_didFinishLaunchingWithOptions>'
+		);
+
+		// insert didFinishLaunchingWithOptions method SwrveSDK init code.
+		const didFinishLaunchingWithOptions = fs.readFileSync(
+			path.join('plugins', 'cordova-plugin-swrve', 'swrve-utils', 'ios', 'didFinishLaunchingWithOptions.txt')
+		);
+
+		searchForAppDelegate.push('//<Swrve_didFinishLaunchingWithOptions>');
+		replaceWithAppDelegate.push(didFinishLaunchingWithOptions);
+
+		// Set the AppId and API key (if present)
+		if (!swrveUtils.isEmptyString(appId)) {
+			searchForAppDelegate.push('<SwrveAppId>');
+			replaceWithAppDelegate.push(appId);
 		}
-		if (!data.includes('"SwrvePlugin.h"')) {
-			// import SwrvePlugin.
-			var updatedAppDelegate = data.replace(
-				'#import "AppDelegate.h"',
-				'#import "AppDelegate.h"\n#import "SwrvePlugin.h"'
-			);
 
-			// insert didFinishLaunchingWithOptions method SwrveSDK init code.
-			const didFinishLaunchingWithOptions = fs.readFileSync(
-				path.join('plugins', 'cordova-plugin-swrve', 'swrve-utils', 'ios', 'didFinishLaunchingWithOptions.txt')
-			);
-			updatedAppDelegate = updatedAppDelegate.replace(
-				'self.viewController = [[MainViewController alloc] init];',
-				'self.viewController = [[MainViewController alloc] init]; \n//<Swrve_didFinishLaunchingWithOptions>'
-			);
-			updatedAppDelegate = updatedAppDelegate.replace(
-				'//<Swrve_didFinishLaunchingWithOptions>',
-				didFinishLaunchingWithOptions
-			);
+		if (!swrveUtils.isEmptyString(apiKey)) {
+			searchForAppDelegate.push('<SwrveKey>');
+			replaceWithAppDelegate.push(apiKey);
+		}
 
-			// Set the AppId and API key (if present)
-			if (appId != undefined) {
-				updatedAppDelegate = updatedAppDelegate.replace('<SwrveAppId>', appId);
-			}
+		// Enable EU Swrve stack (if needed)
+		if (!swrveUtils.isEmptyString(swrveStack) && swrveStack === 'EU') {
+			searchForAppDelegate.push('// config.stack = SWRVE_STACK_EU;');
+			replaceWithAppDelegate.push('config.stack = SWRVE_STACK_EU;');
+		}
 
-			if (apiKey != undefined) {
-				updatedAppDelegate = updatedAppDelegate.replace('<SwrveKey>', apiKey);
-			}
+		// check if we need to integrate Push Code.
+		if (!swrveUtils.isEmptyString(hasPushEnabled) && swrveUtils.convertToBoolean(hasPushEnabled)) {
+			const didReceiveRemoteNotificationSwrveImplementation = fs.readFileSync(
+					path.join(
+						'plugins',
+						'cordova-plugin-swrve',
+						'swrve-utils',
+						'ios',
+						'didReceiveRemoteNotification.txt'
+					)
+				),
+				didReceiveRemoteNotification = `- (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo fetchCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler {`;
 
-			// Enable EU Swrve stack (if needed)
-			if (swrveStack != undefined && swrveStack === 'EU') {
-				updatedAppDelegate = updatedAppDelegate.replace(
-					'// config.stack = SWRVE_STACK_EU;',
-					'config.stack = SWRVE_STACK_EU;'
+			if (appDelegateData.includes(didReceiveRemoteNotification)) {
+				// we need to include our integration inside the custumer "didReceiveRemoteNotification" method.
+				searchForAppDelegate.push(didReceiveRemoteNotification);
+				replaceWithAppDelegate.push(
+					`${didReceiveRemoteNotification} \n\n//<Swrve_didReceiveRemoteNotification>`
+				);
+			} else {
+				searchForAppDelegate.push('@end');
+				replaceWithAppDelegate.push(
+					`${didReceiveRemoteNotification}\n//<Swrve_didReceiveRemoteNotification> \n }\n@end`
 				);
 			}
 
-			// check if we need to integrate Push Code.
-			if (hasPushEnabled != undefined && hasPushEnabled) {
-				const didReceiveRemoteNotificationSwrveImplementation = fs.readFileSync(
-						path.join(
-							'plugins',
-							'cordova-plugin-swrve',
-							'swrve-utils',
-							'ios',
-							'didReceiveRemoteNotification.txt'
-						)
-					),
-					didReceiveRemoteNotification = `- (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo fetchCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler {`;
+			// Add the Swrve_didReceiveRemoteNotification body content.
+			searchForAppDelegate.push('//<Swrve_didReceiveRemoteNotification>');
+			replaceWithAppDelegate.push(didReceiveRemoteNotificationSwrveImplementation);
 
-				if (data.includes(didReceiveRemoteNotification)) {
-					// it means that we need to include our integration inside the custumer "didReceiveRemoteNotification" method.
-					updatedAppDelegate = updatedAppDelegate.replace(
-						didReceiveRemoteNotification,
-						`${didReceiveRemoteNotification} \n\n//<Swrve_didReceiveRemoteNotification>`
-					);
-				} else {
-					// otherwise we add all of the method in the end of the file.
-					updatedAppDelegate = updatedAppDelegate.replace(
-						'@end',
-						`${didReceiveRemoteNotification}\n//<Swrve_didReceiveRemoteNotification> \n }\n@end`
-					);
-				}
-				// Add the Swrve_didReceiveRemoteNotification body content.
-				updatedAppDelegate = updatedAppDelegate.replace(
-					'//<Swrve_didReceiveRemoteNotification>',
-					didReceiveRemoteNotificationSwrveImplementation
+			// determine if we need to add appGroup information as well as modify pushEnabled
+			if (!swrveUtils.isEmptyString(appGroupIdentifier)) {
+				searchForAppDelegate.push('config.pushEnabled = false;');
+				replaceWithAppDelegate.push(
+					`config.pushEnabled = true; \n    config.appGroupIdentifier = @"${appGroupIdentifier}";`
 				);
-
-				// determine if we need to add appGroup information as well as modify pushEnabled
-				if (appGroupIdentifier != undefined) {
-					updatedAppDelegate = updatedAppDelegate.replace(
-						'config.pushEnabled = false;',
-						`config.pushEnabled = true; \n    config.appGroupIdentifier = @"${appGroupIdentifier}";`
-					);
-				} else {
-					updatedAppDelegate = updatedAppDelegate.replace(
-						'config.pushEnabled = false;',
-						'config.pushEnabled = true;'
-					);
-				}
+			} else {
+				searchForAppDelegate.push('config.pushEnabled = false;');
+				replaceWithAppDelegate.push('config.pushEnabled = true;');
 			}
-
-			// finally, write to the file
-			fs.writeFileSync(appDelegatePath, updatedAppDelegate, 'utf-8');
-			console.log('Swrve: Successfully added custom Swrve integration into AppDelegate file');
-		} else {
-			console.log('Swrve: iOS appDelegate already has Swrve Features.');
 		}
-	});
+
+		// finally, write to the AppDelegate.m
+		swrveUtils.searchAndReplace(appDelegatePath, searchForAppDelegate, replaceWithAppDelegate);
+
+		console.log('Swrve: Successfully added custom Swrve integration into AppDelegate file');
+	} else {
+		console.log('Swrve: iOS appDelegate already has Swrve Features.');
+	}
 }
