@@ -45,7 +45,7 @@ import org.apache.cordova.CordovaWebView;
 
 public class SwrvePlugin extends CordovaPlugin {
 
-    public String VERSION = "1.1.0";
+    public String VERSION = "1.1.1";
     private static SwrvePlugin instance;
 
     private boolean resourcesListenerReady;
@@ -57,12 +57,12 @@ public class SwrvePlugin extends CordovaPlugin {
     private static List<String> pushNotificationsQueued = new ArrayList<>();
     private static List<String> silentPushNotificationsQueued = new ArrayList<>();
 
-
     public static synchronized void createInstance(Application application, int appId, String apiKey) {
         createInstance(application, appId, apiKey, null);
     }
 
-    public static synchronized void createInstance(Application application, int appId, String apiKey, SwrveConfig config) {
+    public static synchronized void createInstance(Application application, int appId, String apiKey,
+            SwrveConfig config) {
         if (config == null) {
             config = new SwrveConfig();
         }
@@ -74,7 +74,7 @@ public class SwrvePlugin extends CordovaPlugin {
     }
 
     // Used when instantiated via reflection by PluginManager
-    public SwrvePlugin () {
+    public SwrvePlugin() {
         super();
         instance = this;
     }
@@ -578,13 +578,14 @@ public class SwrvePlugin extends CordovaPlugin {
     private static SwrveCustomButtonListener customButtonListener = new SwrveCustomButtonListener() {
         @Override
         public void onAction(final String action) {
-            instance.cordova.getActivity().runOnUiThread(() -> instance.runJS(
-                    "if (window.swrveCustomButtonListener !== undefined) { window.swrveCustomButtonListener('"
-                            + action + "'); }"));
+            instance.cordova.getActivity()
+                    .runOnUiThread(() -> instance.runJS(
+                            "if (window.swrveCustomButtonListener !== undefined) { window.swrveCustomButtonListener('"
+                                    + action + "'); }"));
         }
     };
 
-    //region Method for CustomPush and SilentPush handlers.
+    // region Method for CustomPush and SilentPush handlers.
 
     private void setPushNotificationListenerReady() {
         pushNotificationListenerReady = true;
@@ -601,17 +602,15 @@ public class SwrvePlugin extends CordovaPlugin {
     private synchronized void sendQueuedPushNotifications(List<String> queue) {
         if (queue.size() > 0) {
             if (queue == silentPushNotificationsQueued) {
-                instance.cordova.getActivity().runOnUiThread(() -> {
-                    for (int i = 0; i < queue.size(); i++) {
-                        notifyOfSilentPushPayload(queue.get(i));
-                    }
-                });
+                for (int i = 0; i < queue.size(); i++) {
+                    String payload = queue.get(i);
+                    instance.cordova.getActivity().runOnUiThread(() -> instance.notifyOfSilentPushPayload(payload));
+                }
             } else {
-                instance.cordova.getActivity().runOnUiThread(() -> {
-                    for (int i = 0; i < queue.size(); i++) {
-                        notifyOfPushPayload(queue.get(i));
-                    }
-                });
+                for (int i = 0; i < queue.size(); i++) {
+                    String payload = queue.get(i);
+                    instance.cordova.getActivity().runOnUiThread(() -> instance.notifyOfPushPayload(payload));
+                }
             }
         }
     }
@@ -638,7 +637,6 @@ public class SwrvePlugin extends CordovaPlugin {
         }
     };
 
-
     private static SwrvePushNotificationListener pushNotificationListener = new SwrvePushNotificationListener() {
         @Override
         public void onPushNotification(JSONObject json) {
@@ -651,7 +649,7 @@ public class SwrvePlugin extends CordovaPlugin {
         }
     };
 
-    //endregion
+    // endregion
 
     private static String encodeJsonToBase64(JSONObject json) {
         String jsonString = json.toString();
