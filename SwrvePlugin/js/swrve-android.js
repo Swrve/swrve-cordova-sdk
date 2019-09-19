@@ -38,34 +38,39 @@ SwrvePlugin.prototype.purchase = function(itemName, currency, quantity, cost, su
 	return cordova.exec(success, fail, 'SwrvePlugin', 'purchase', [ itemName, currency, quantity, cost ]);
 };
 
-// quantity is an int
+// localCost is a double
+// localCurrency is a string
 // productId is a string
-// price is double
-// currency is a string
-SwrvePlugin.prototype.iap = function(quantity, productId, price, currency, success, fail) {
-	return cordova.exec(success, fail, 'SwrvePlugin', 'iap', [ quantity, productId, price, currency ]);
+// quantity is an int
+SwrvePlugin.prototype.unvalidatedIap = function(localCost, localCurrency, productId, quantity, success, fail) {
+	return cordova.exec(success, fail, 'SwrvePlugin', 'unvalidatedIap', [
+		localCost,
+		localCurrency,
+		productId,
+		quantity
+	]);
 };
 
+// localCost is a double
+// localCurrency is a string
 // productId is a string
-// productPrice is a double
-// currency is a string
-// purchaseData is a string
-// dataSignature is a string
-SwrvePlugin.prototype.iapPlay = function(
+// quantity is an int
+// reward is a JSONString
+SwrvePlugin.prototype.unvalidatedIapWithReward = function(
+	localCost,
+	localCurrency,
 	productId,
-	productPrice,
-	currency,
-	purchaseData,
-	dataSignature,
+	quantity,
+	reward,
 	success,
 	fail
 ) {
-	return cordova.exec(success, fail, 'SwrvePlugin', 'iapPlay', [
+	return cordova.exec(success, fail, 'SwrvePlugin', 'unvalidatedIapWithReward', [
+		localCost,
+		localCurrency,
 		productId,
-		productPrice,
-		currency,
-		purchaseData,
-		dataSignature
+		quantity,
+		reward
 	]);
 };
 
@@ -108,9 +113,23 @@ SwrvePlugin.prototype.setResourcesListener = function(listener) {
 	window.plugins.swrve.resourcesListenerReady();
 };
 
+// customPayload is a JSON object
+SwrvePlugin.prototype.setCustomPayloadForConversationInput = function(customPayload, success, fail) {
+	return cordova.exec(success, fail, 'SwrvePlugin', 'setCustomPayloadForConversationInput', [ customPayload ]);
+};
+
 SwrvePlugin.prototype.setCustomButtonListener = function(listener) {
 	window.swrveCustomButtonListener = listener;
 	window.plugins.swrve.customButtonListenerReady();
+};
+
+SwrvePlugin.prototype.setDismissButtonListener = function(listener) {
+	window.swrveDismissButtonListener = listener;
+	window.plugins.swrve.dismissButtonListenerReady();
+};
+
+SwrvePlugin.prototype.dismissButtonListenerReady = function() {
+	return cordova.exec(undefined, undefined, 'SwrvePlugin', 'dismissButtonListenerReady', []);
 };
 
 SwrvePlugin.prototype.customButtonListenerReady = function() {
@@ -139,6 +158,10 @@ SwrvePlugin.prototype.getUserId = function(success, fail) {
 	return cordova.exec(success, fail, 'SwrvePlugin', 'getUserId', []);
 };
 
+SwrvePlugin.prototype.getApiKey = function(success, fail) {
+	return cordova.exec(success, fail, 'SwrvePlugin', 'getApiKey', []);
+};
+
 SwrvePlugin.prototype.getExternalUserId = function(success, fail) {
 	return cordova.exec(success, fail, 'SwrvePlugin', 'getExternalUserId', []);
 };
@@ -163,6 +186,9 @@ SwrvePlugin.install = function() {
 
 	// Empty callback, override this to listen to custom IAM buttons
 	window.swrveCustomButtonListener = function(action) {};
+
+	// Empty callback, override this to listen to custom dismiss action
+	window.swrveDismissButtonListener = function(action) {};
 
 	// Empty callback, override this to listen to silent push notifications
 	window.swrveSilentPushNotificationListener = function(payload) {};

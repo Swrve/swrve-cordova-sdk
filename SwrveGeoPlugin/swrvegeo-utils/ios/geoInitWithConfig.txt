@@ -1,0 +1,3 @@
+SwrveGeoConfig *geoConfig = [[SwrveGeoConfig alloc] init];    
+    [geoConfig setDelayStart:YES];    
+    [SwrveGeoPlugin initWithApiKey:@"<SWRVE_GEO_API_KEY>" config:geoConfig];

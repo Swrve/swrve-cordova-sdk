@@ -1,0 +1,17 @@
+repositories {
+    jcenter{
+        url = 'http://dl.bintray.com/swrve-inc/android'
+    }
+    maven { url 'https://jitpack.io' }
+}
+
+android {
+    lintOptions {
+        abortOnError false
+    }
+}
+
+dependencies {
+    implementation 'com.github.Bluedot-Innovation:PointSDK-Android:1.13.1'
+    implementation 'com.swrve.sdk.android:swrve-geo-bluedot:2.3.0'
+}

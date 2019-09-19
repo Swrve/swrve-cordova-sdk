@@ -22,5 +22,13 @@
     },
     "is_top_level": true,
     "variables": {}
+  },
+  "cordova-plugin-swrvegeo": {
+    "source": {
+      "type": "local",
+      "path": "/Users/adamgovan/Work/sdk-tools/cordova-sdk/public/tests/node_modules/cordova-plugin-swrvegeo"
+    },
+    "is_top_level": true,
+    "variables": {}
   }
 }

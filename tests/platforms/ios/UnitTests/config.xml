@@ -23,6 +23,10 @@
         <param name="ios-package" value="SwrvePlugin" />
         <param name="onload" value="true" />
     </feature>
+    <feature name="SwrveGeoPlugin">
+        <param name="ios-package" value="SwrveGeoPlugin" />
+        <param name="onload" value="true" />
+    </feature>
     <name>UnitTests</name>
     <description>
         Swrve Cordova SDK Test Project

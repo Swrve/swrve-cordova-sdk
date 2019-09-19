@@ -6,9 +6,11 @@ node_modules2/
 *.logcat
 cordova-plugin-whitelist
 cordova-plugin-x-toast
+*.class
 
 # Platforms - Android
 tests/platforms/android/CordovaLib/build/
+tests/platforms/android/app/bin/
 tests/platforms/android/.gradle/
 
 # Platforms - iOS

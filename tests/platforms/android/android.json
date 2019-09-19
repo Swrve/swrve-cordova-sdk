@@ -11,6 +11,10 @@
             {
               "xml": "<feature name=\"SwrvePlugin\"><param name=\"android-package\" value=\"com.swrve.SwrvePlugin\" /><param name=\"onload\" value=\"true\" /></feature>",
               "count": 1
+            },
+            {
+              "xml": "<feature name=\"SwrveGeoPlugin\"><param name=\"android-package\" value=\"com.swrve.SwrveGeoPlugin\" /><param name=\"onload\" value=\"true\" /></feature>",
+              "count": 1
             }
           ]
         }
@@ -20,11 +24,11 @@
           "/manifest": [
             {
               "xml": "<uses-permission android:name=\"android.permission.INTERNET\" />",
-              "count": 1
+              "count": 2
             },
             {
               "xml": "<uses-permission android:name=\"android.permission.WRITE_EXTERNAL_STORAGE\" />",
-              "count": 1
+              "count": 2
             }
           ]
         }
@@ -33,6 +37,9 @@
   },
   "installed_plugins": {
     "cordova-plugin-swrve": {
+      "PACKAGE_NAME": "com.swrve.cordova.tests"
+    },
+    "cordova-plugin-swrvegeo": {
       "PACKAGE_NAME": "com.swrve.cordova.tests"
     }
   },
@@ -45,9 +52,18 @@
       "clobbers": [
         "SwrvePlugin"
       ]
+    },
+    {
+      "id": "cordova-plugin-swrvegeo.SwrveGeoPlugin",
+      "file": "plugins/cordova-plugin-swrvegeo/js/swrvegeo-android.js",
+      "pluginId": "cordova-plugin-swrvegeo",
+      "clobbers": [
+        "SwrveGeoPlugin"
+      ]
     }
   ],
   "plugin_metadata": {
-    "cordova-plugin-swrve": "1.0"
+    "cordova-plugin-swrve": "1.0",
+    "cordova-plugin-swrvegeo": "1.0"
   }
 }

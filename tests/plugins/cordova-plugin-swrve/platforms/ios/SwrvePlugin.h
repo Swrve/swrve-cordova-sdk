@@ -8,6 +8,11 @@
 + (void)didReceiveNotificationResponse:(UNNotificationResponse *)response;
 + (BOOL)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo withBackgroundCompletionHandler:(void (^)(UIBackgroundFetchResult, NSDictionary *))completionHandler API_AVAILABLE(ios(7.0));
 
+// ad journey and deeplink.
++ (void)handleDeeplink:(NSURL *)url;
++ (void)handleDeferredDeeplink:(NSURL *)url;
++ (void)installAction:(NSURL *)url;
+
 - (void)event:(CDVInvokedUrlCommand *)command;
 - (void)userUpdate:(CDVInvokedUrlCommand *)command;
 - (void)userUpdateDate:(CDVInvokedUrlCommand *)command;
@@ -23,6 +28,7 @@
 - (void)removeMessageCenterCampaign:(CDVInvokedUrlCommand *)command;
 
 - (void)getUserId:(CDVInvokedUrlCommand *)command;
+- (void)getApiKey:(CDVInvokedUrlCommand *)command;
 - (void)getExternalUserId:(CDVInvokedUrlCommand *)command;
 - (void)identify:(CDVInvokedUrlCommand *)command;
 

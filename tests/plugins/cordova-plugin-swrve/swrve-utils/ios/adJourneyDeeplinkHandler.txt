@@ -1,0 +1,7 @@
+
+- (BOOL)application:(UIApplication *)app openURL:(NSURL *)url options:(NSDictionary<UIApplicationOpenURLOptionsKey, id> *)options {
+ 
+    [SwrvePlugin handleDeeplink:url];
+ 
+    return YES;
+}

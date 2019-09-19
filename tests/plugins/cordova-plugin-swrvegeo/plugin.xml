@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:android="http://schemas.android.com/apk/res/android" id="cordova-plugin-swrvegeo" version="1.0">
+  <name>SwrveGeoPlugin</name>
+  <description>Android and iOS Cordova plugin for Swrve Geo.</description>
+  <author>Swrve Mobile Inc</author>
+  <license>Apache 2.0</license>
+  <keywords>swrve,location,geo</keywords>
+
+	<platform name="android">
+    <hook type="after_prepare" src="swrvegeo-utils/hooks/android-after-prepare.js"/>
+    <js-module src="js/swrvegeo-android.js" name="SwrveGeoPlugin">
+      <clobbers target="SwrveGeoPlugin"/>
+    </js-module>
+
+    <config-file target="res/xml/config.xml" parent="/*">
+  	  <feature name="SwrveGeoPlugin">
+  		  <param name="android-package" value="com.swrve.SwrveGeoPlugin"/>
+        <param name="onload" value="true" />
+  		</feature>
+  	</config-file>
+
+  	<source-file src="platforms/android/src/com/swrve/SwrveGeoPlugin.java" target-dir="src/com/swrve/" />
+  	<framework src="platforms/android/build.gradle" custom="true" type="gradleReference" />
+
+    <config-file target="AndroidManifest.xml" parent="/manifest">
+      <uses-permission android:name="android.permission.INTERNET"/>
+      <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    </config-file>
+	</platform>
+
+	<platform name="ios">
+    <hook type="after_prepare" src="swrvegeo-utils/hooks/ios-after-prepare.js"/>
+    <js-module src="js/swrvegeo-ios.js" name="SwrveGeoPlugin">
+      <clobbers target="SwrveGeoPlugin"/>
+    </js-module>
+    <config-file target="config.xml" parent="/*">
+      <feature name="SwrveGeoPlugin">
+        <param name="ios-package" value="SwrveGeoPlugin"/>
+        <param name="onload" value="true" />
+      </feature>
+    </config-file>
+    <header-file src="platforms/ios/SwrveGeoPlugin.h" />
+    <source-file src="platforms/ios/SwrveGeoPlugin.m" />
+    <framework src="platforms/ios/Frameworks/SwrveGeoSDK.framework" custom="true" embed="true"/>
+    <framework src="platforms/ios/Frameworks/BDPointSDK.framework" custom="true" embed="true"/>
+  </platform>
+</plugin>

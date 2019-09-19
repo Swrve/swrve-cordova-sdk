@@ -1,0 +1,13 @@
+        AppLinkData.fetchDeferredAppLinkData(this, new AppLinkData.CompletionHandler() {
+            @Override
+            public void onDeferredAppLinkDataFetched(AppLinkData appLinkData) {
+                if (appLinkData != null) {
+                    SwrvePlugin.handleDeferredDeeplink(appLinkData.getArgumentBundle());
+                }
+            } 
+        });
+        
+        AppLinkData appLinkData = AppLinkData.createFromActivity(this);
+        if (appLinkData != null) {
+            SwrvePlugin.handleDeeplink(appLinkData.getArgumentBundle());
+        }

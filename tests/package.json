@@ -1,20 +1,31 @@
 {
-	"name": "com.swrve.cordova.tests",
-	"version": "1.0.0",
-	"displayName": "UnitTests",
-	"cordova": {
-		"platforms": [
-			"ios",
-			"android"
-		],
-		"plugins": {
-			"cordova-plugin-swrve": {}
-		}
-	},
-	"dependencies": {
-		"cordova-plugin-swrve": "file:../SwrvePlugin",
-		"cordova-android": "^8.0.0",
-		"cordova-ios": "^5.0.1",
-		"shelljs": "^0.8.3"
-	}
+  "name": "com.swrve.cordova.tests",
+  "version": "1.0.0",
+  "displayName": "UnitTests",
+  "cordova": {
+    "platforms": [
+      "android",
+      "ios"
+    ],
+    "plugins": {
+      "cordova-plugin-swrve": {},
+      "cordova-plugin-swrvegeo": {}
+    }
+  },
+  "dependencies": {
+    "cordova-android": "^8.0.0",
+    "cordova-ios": "^5.0.1",
+    "cordova-plugin-swrve": "file:../SwrvePlugin",
+    "shelljs": "^0.8.3"
+  },
+  "scripts": {
+    "test": "jest"
+  },
+  "devDependencies": {
+    "jest": "^24.9.0",
+    "cordova-plugin-swrvegeo": "../SwrveGeoPlugin"
+  },
+  "jest": {
+    "testURL": "http://localhost/"
+  }
 }

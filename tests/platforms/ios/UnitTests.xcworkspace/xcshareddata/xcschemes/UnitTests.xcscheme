@@ -32,7 +32,7 @@
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "5208C1B322B952FD003FCB52"
+               BlueprintIdentifier = "525791162322AE9D00CF7200"
                BuildableName = "SwrvePluginTests.xctest"
                BlueprintName = "SwrvePluginTests"
                ReferencedContainer = "container:UnitTests.xcodeproj">

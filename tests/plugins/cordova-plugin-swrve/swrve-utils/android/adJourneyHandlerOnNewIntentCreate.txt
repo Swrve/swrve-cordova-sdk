@@ -1,0 +1,10 @@
+    @Override
+    protected void onNewIntent(Intent intent) 
+    {
+        super.onNewIntent(intent);
+ 
+        AppLinkData appLinkData = AppLinkData.createFromAlApplinkData(intent);
+        if (appLinkData != null) {
+            SwrvePlugin.handleDeeplink(appLinkData.getArgumentBundle());
+        }
+    }

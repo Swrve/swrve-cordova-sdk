@@ -1,4 +1,5 @@
-cordova.define("cordova-plugin-swrve.SwrvePlugin", function(require, exports, module) {function SwrvePlugin() {}
+cordova.define("cordova-plugin-swrve.SwrvePlugin", function(require, exports, module) {
+function SwrvePlugin() {}
 
 SwrvePlugin.prototype.android = false;
 SwrvePlugin.prototype.ios = true;
@@ -51,6 +52,29 @@ SwrvePlugin.prototype.unvalidatedIap = function(localCost, localCurrency, produc
 	]);
 };
 
+// localCost is a double
+// localCurrency is a string
+// productId is a string
+// quantity is an int
+// reward is a JSONString
+SwrvePlugin.prototype.unvalidatedIapWithReward = function(
+	localCost,
+	localCurrency,
+	productId,
+	quantity,
+	reward,
+	success,
+	fail
+) {
+	return cordova.exec(success, fail, 'SwrvePlugin', 'unvalidatedIap', [
+		localCost,
+		localCurrency,
+		productId,
+		quantity,
+		reward
+	]);
+};
+
 SwrvePlugin.prototype.sendEvents = function(success, fail) {
 	return cordova.exec(success, fail, 'SwrvePlugin', 'sendEvents', []);
 };
@@ -90,9 +114,23 @@ SwrvePlugin.prototype.setResourcesListener = function(listener) {
 	window.plugins.swrve.resourcesListenerReady();
 };
 
+// customPayload is a JSON object
+SwrvePlugin.prototype.setCustomPayloadForConversationInput = function(customPayload, success, fail) {
+	return cordova.exec(success, fail, 'SwrvePlugin', 'setCustomPayloadForConversationInput', [ customPayload ]);
+};
+
 SwrvePlugin.prototype.setCustomButtonListener = function(listener) {
 	window.swrveCustomButtonListener = listener;
 	window.plugins.swrve.customButtonListenerReady();
+};
+
+SwrvePlugin.prototype.setDismissButtonListener = function(listener) {
+	window.swrveDismissButtonListener = listener;
+	window.plugins.swrve.dismissButtonListenerReady();
+};
+
+SwrvePlugin.prototype.dismissButtonListenerReady = function() {
+	return cordova.exec(undefined, undefined, 'SwrvePlugin', 'dismissButtonListenerReady', []);
 };
 
 SwrvePlugin.prototype.customButtonListenerReady = function() {
@@ -121,6 +159,10 @@ SwrvePlugin.prototype.getUserId = function(success, fail) {
 	return cordova.exec(success, fail, 'SwrvePlugin', 'getUserId', []);
 };
 
+SwrvePlugin.prototype.getApiKey = function(success, fail) {
+	return cordova.exec(success, fail, 'SwrvePlugin', 'getApiKey', []);
+};
+
 SwrvePlugin.prototype.getExternalUserId = function(success, fail) {
 	return cordova.exec(success, fail, 'SwrvePlugin', 'getExternalUserId', []);
 };
@@ -146,6 +188,9 @@ SwrvePlugin.install = function() {
 	// Empty callback, override this to listen to custom IAM buttons
 	window.swrveCustomButtonListener = function(action) {};
 
+	// Empty callback, override this to listen to custom dismiss action
+	window.swrveDismissButtonListener = function(action) {};
+
 	// Empty callback, override this to listen to silent push notifications
 	window.swrveSilentPushNotificationListener = function(payload) {};
 
@@ -166,4 +211,5 @@ SwrvePlugin.install = function() {
 };
 
 cordova.addConstructor(SwrvePlugin.install);
+
 });

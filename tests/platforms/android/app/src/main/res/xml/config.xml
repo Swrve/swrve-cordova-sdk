@@ -4,6 +4,10 @@
         <param name="android-package" value="com.swrve.SwrvePlugin" />
         <param name="onload" value="true" />
     </feature>
+    <feature name="SwrveGeoPlugin">
+        <param name="android-package" value="com.swrve.SwrveGeoPlugin" />
+        <param name="onload" value="true" />
+    </feature>
     <name>UnitTests</name>
     <description>
         Swrve Cordova SDK Test Project

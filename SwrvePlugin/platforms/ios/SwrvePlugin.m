@@ -4,7 +4,7 @@
 #import <SwrveSDK/SwrveCampaign.h>
 #import <SwrveSDk/SwrveCampaignStatus.h>
 
-#define SWRVE_WRAPPER_VERSION "1.1.1"
+#define SWRVE_WRAPPER_VERSION "2.0.0"
 
 CDVViewController *globalViewController;
 
@@ -41,7 +41,7 @@ SwrvePluginPushHandler *swrvePushHandler;
     // Set a resource callback
     config.resourcesUpdatedCallback = ^() {
         if (resourcesListenerReady) {
-            NSDictionary* userResources = [[SwrveSDK resourceManager] resources];
+            NSDictionary *userResources = [[SwrveSDK resourceManager] resources];
             [SwrvePlugin resourcesListenerCall:userResources];
         } else {
             mustCallResourcesListener = YES;
@@ -53,8 +53,7 @@ SwrvePluginPushHandler *swrvePushHandler;
     [SwrveSDK userUpdate:[[NSDictionary alloc] initWithObjectsAndKeys:@SWRVE_WRAPPER_VERSION, @"swrve.cordova_plugin_version", nil]];
 }
 
-+ (void) evaluateString:(NSString*)jsString onWebView:(UIView*)webView
-{
++ (void)evaluateString:(NSString *)jsString onWebView:(UIView *)webView {
     if ([webView respondsToSelector:@selector(stringByEvaluatingJavaScriptFromString:)]) {
         [webView performSelectorOnMainThread:@selector(stringByEvaluatingJavaScriptFromString:) withObject:jsString waitUntilDone:NO];
     } else {
@@ -62,9 +61,8 @@ SwrvePluginPushHandler *swrvePushHandler;
     }
 }
 
-+ (NSString*)base64Encode:(NSData*)data
-{
-    NSString* currentVersion = [[UIDevice currentDevice] systemVersion];
++ (NSString *)base64Encode:(NSData *)data {
+    NSString *currentVersion = [[UIDevice currentDevice] systemVersion];
     if ([currentVersion compare:@"7.0" options:NSNumericSearch] != NSOrderedAscending) {
         return [data base64EncodedStringWithOptions:0];
     }
@@ -125,11 +123,23 @@ SwrvePluginPushHandler *swrvePushHandler;
     return handled;
 }
 
-+ (void)notifySwrvePluginOfPushNotification:(NSString*)base64Json {
++ (void)handleDeeplink:(NSURL *)url {
+    [SwrveSDK handleDeeplink:url];
+}
+
++ (void)handleDeferredDeeplink:(NSURL *)url {
+    [SwrveSDK handleDeferredDeeplink:url];
+}
+
++ (void)installAction:(NSURL *)url {
+    [SwrveSDK installAction:url];
+}
+
++ (void)notifySwrvePluginOfPushNotification:(NSString *)base64Json {
     [SwrvePlugin evaluateString:[NSString stringWithFormat:@"if (window.swrveProcessPushNotification !== undefined) { window.swrveProcessPushNotification('%@'); }", base64Json] onWebView:globalViewController.webView];
 }
 
-+ (void)notifySwrvePluginOfSilentPushNotification:(NSString*)base64Json {
++ (void)notifySwrvePluginOfSilentPushNotification:(NSString *)base64Json {
     [SwrvePlugin evaluateString:[NSString stringWithFormat:@"if (window.swrveProcessSilentPushNotification !== undefined) { window.swrveProcessSilentPushNotification('%@'); }", base64Json] onWebView:globalViewController.webView];
 }
 
@@ -180,7 +190,7 @@ SwrvePluginPushHandler *swrvePushHandler;
         [SwrveSDK userUpdate:attributes];
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
     } else {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Attributes were null"];
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Attibutes cannot be null"];
     }
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
@@ -188,14 +198,14 @@ SwrvePluginPushHandler *swrvePushHandler;
 - (void)userUpdateDate:(CDVInvokedUrlCommand *)command {
     CDVPluginResult *pluginResult = nil;
     if ([command.arguments count] == 2) {
-        NSString* propertyName = [command.arguments objectAtIndex:0];
-        NSString* propertyValueRaw = [command.arguments objectAtIndex:1];
+        NSString *propertyName = [command.arguments objectAtIndex:0];
+        NSString *propertyValueRaw = [command.arguments objectAtIndex:1];
 
         // Parse date coming in (for example "2016-12-02T15:39:47.608Z")
         NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
         dateFormatter.dateFormat = @"yyyy-MM-dd'T'HH:mm:ss.SSSZZZZZ";
 
-        NSDate* propertyValue = [dateFormatter dateFromString:propertyValueRaw];
+        NSDate *propertyValue = [dateFormatter dateFromString:propertyValueRaw];
         if (propertyValue != nil) {
             [SwrveSDK userUpdate:propertyName withDate:propertyValue];
             pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
@@ -208,12 +218,11 @@ SwrvePluginPushHandler *swrvePushHandler;
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
-- (void)currencyGiven:(CDVInvokedUrlCommand*)command
-{
-    CDVPluginResult* pluginResult = nil;
+- (void)currencyGiven:(CDVInvokedUrlCommand *)command {
+    CDVPluginResult *pluginResult = nil;
     if ([command.arguments count] == 2) {
-        NSString* currencyName = [command.arguments objectAtIndex:0];
-        NSNumber* amount = [command.arguments objectAtIndex:1];
+        NSString *currencyName = [command.arguments objectAtIndex:0];
+        NSNumber *amount = [command.arguments objectAtIndex:1];
 
         [SwrveSDK currencyGiven:currencyName givenAmount:[amount doubleValue]];
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
@@ -223,14 +232,13 @@ SwrvePluginPushHandler *swrvePushHandler;
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
-- (void)purchase:(CDVInvokedUrlCommand*)command
-{
-    CDVPluginResult* pluginResult = nil;
+- (void)purchase:(CDVInvokedUrlCommand *)command {
+    CDVPluginResult *pluginResult = nil;
     if ([command.arguments count] == 4) {
-        NSString* itemName = [command.arguments objectAtIndex:0];
-        NSString* currencyName = [command.arguments objectAtIndex:1];
-        NSNumber* quantity = [command.arguments objectAtIndex:2];
-        NSNumber* cost = [command.arguments objectAtIndex:3];
+        NSString *itemName = [command.arguments objectAtIndex:0];
+        NSString *currencyName = [command.arguments objectAtIndex:1];
+        NSNumber *quantity = [command.arguments objectAtIndex:2];
+        NSNumber *cost = [command.arguments objectAtIndex:3];
 
         [SwrveSDK purchaseItem:itemName currency:currencyName cost:[cost intValue] quantity:[quantity intValue]];
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
@@ -240,63 +248,80 @@ SwrvePluginPushHandler *swrvePushHandler;
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
--(void)unvalidatedIap:(CDVInvokedUrlCommand *)command
-{
-    CDVPluginResult* pluginResult = nil;
-    if ([command.arguments count] == 4) {
-        NSNumber* localCost = [command.arguments objectAtIndex:0];
-        NSString* localCurrency = [command.arguments objectAtIndex:1];
-        NSString* productId = [command.arguments objectAtIndex:2];
-        NSNumber* quantity = [command.arguments objectAtIndex:3];
+-(void)unvalidatedIap:(CDVInvokedUrlCommand *)command {
+    CDVPluginResult *pluginResult = nil;
+    if (([command.arguments count] == 4) || ([command.arguments count] == 5)) {
+        
+        SwrveIAPRewards *reward = nil;
+        NSNumber *localCost = [command.arguments objectAtIndex:0];
+        NSString *localCurrency = [command.arguments objectAtIndex:1];
+        NSString *productId = [command.arguments objectAtIndex:2];
+        NSNumber *quantity = [command.arguments objectAtIndex:3];
+        
+        if([command.arguments count] == 5) {
+            // since we could potentially have a reward, convert it for sending up
+            NSDictionary *rewardsDict = [command.arguments objectAtIndex:4];
+            reward = [[SwrveIAPRewards alloc] init];
+            
+            NSArray *items = [rewardsDict objectForKey:@"items"];
+            
+            if(items != nil && [items count] != 0) {
+                for (NSDictionary *item in items) {
+                    [reward addItem:[item objectForKey:@"name"] withQuantity:[[item objectForKey:@"amount"] longValue]];
+                }
+            }
+            
+            NSArray *currencies = [rewardsDict objectForKey:@"currencies"];
+            
+            if(currencies != nil && [currencies count] != 0) {
+                for (NSDictionary *currency in currencies) {
+                    [reward addCurrency:[currency objectForKey:@"name"] withAmount:[[currency objectForKey:@"amount"] longValue]];
+                }
+            }
+        }
 
-        [SwrveSDK unvalidatedIap:nil localCost:[localCost doubleValue] localCurrency:localCurrency productId:productId productIdQuantity:[quantity intValue]];
+        [SwrveSDK unvalidatedIap:reward localCost:[localCost doubleValue] localCurrency:localCurrency productId:productId productIdQuantity:[quantity intValue]];
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
-    } else {
+    }else {
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Not enough args"];
     }
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
-- (void)sendEvents:(CDVInvokedUrlCommand *)command
-{
+- (void)sendEvents:(CDVInvokedUrlCommand *)command {
     @try {
         [SwrveSDK sendQueuedEvents];
-
-        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"OK"];
+        CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"OK"];
         [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     }
 
-    @catch ( NSException *e ) {
+    @catch (NSException *e) {
         [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR];
     }
 }
 
-- (void)getUserResources:(CDVInvokedUrlCommand *)command
-{
+- (void)getUserResources:(CDVInvokedUrlCommand *)command {
     [SwrveSDK userResources:^(NSDictionary *resources, NSString *resourcesAsJSON) {
-        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:resources];
+        CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:resources];
         [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     }];
 }
 
-- (void)getUserResourcesDiff:(CDVInvokedUrlCommand *)command
-{
+- (void)getUserResourcesDiff:(CDVInvokedUrlCommand *)command {
     [SwrveSDK userResourcesDiff:^(NSDictionary *oldResourcesValues, NSDictionary *newResourcesValues, NSString *resourcesAsJSON) {
-        NSMutableDictionary* resourcesDictionary = [[NSMutableDictionary alloc] initWithObjectsAndKeys:newResourcesValues, @"new", oldResourcesValues, @"old", nil];
-        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:resourcesDictionary];
+        NSMutableDictionary *resourcesDictionary = [[NSMutableDictionary alloc] initWithObjectsAndKeys:newResourcesValues, @"new", oldResourcesValues, @"old", nil];
+        CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:resourcesDictionary];
         [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     }];
 }
 
-- (void)refreshCampaignsAndResources:(CDVInvokedUrlCommand *)command
-{
+- (void)refreshCampaignsAndResources:(CDVInvokedUrlCommand *)command {
     [SwrveSDK refreshCampaignsAndResources];
     CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
-- (void)getMessageCenterCampaigns:(CDVInvokedUrlCommand *)command
-{
+- (void)getMessageCenterCampaigns:(CDVInvokedUrlCommand *)command {
     NSArray<SwrveCampaign *> *campaigns = [[SwrveSDK messaging] messageCenterCampaigns];
     NSMutableArray *messageAsArray = [[NSMutableArray alloc] init];
     
@@ -320,11 +345,11 @@ SwrvePluginPushHandler *swrvePushHandler;
         [messageAsArray addObject:campaignDictionary];
     }
     
-    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:messageAsArray];
+    CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:messageAsArray];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
-- (NSString *) translateCampaignStatus:(NSUInteger) status {
+- (NSString *)translateCampaignStatus:(NSUInteger) status {
     switch (status){
         case SWRVE_CAMPAIGN_STATUS_UNSEEN:
             return @"Unseen";
@@ -340,43 +365,11 @@ SwrvePluginPushHandler *swrvePushHandler;
     }
 }
 
-- (void)showMessageCenterCampaign:(CDVInvokedUrlCommand*)command
-{
-    CDVPluginResult* pluginResult = nil;
-    if ([command.arguments count] == 1) {
-        NSNumber* identifier = [command.arguments objectAtIndex:0];
-        
-        NSArray<SwrveCampaign *> *campaigns = [[SwrveSDK messaging] messageCenterCampaigns];
-        
-        SwrveCampaign *canditiate;
-        
-        for (SwrveCampaign *campaign in campaigns) {
-            if ([campaign ID] == [identifier unsignedIntegerValue]) {
-                canditiate = campaign;
-            }
-        }
-        
-        if(canditiate){
-            [[SwrveSDK messaging] showMessageCenterCampaign:canditiate];
-            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
-        }else{
-            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:[NSString stringWithFormat:@"No campaign with ID: %@ found.", identifier]];
-        }
-        
-    } else {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Invalid Arguments"];
-    }
-    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-}
-
-- (void)removeMessageCenterCampaign:(CDVInvokedUrlCommand*)command 
-{
+- (void)showMessageCenterCampaign:(CDVInvokedUrlCommand *) command {
     CDVPluginResult *pluginResult = nil;
     if ([command.arguments count] == 1) {
         NSNumber *identifier = [command.arguments objectAtIndex:0];
-        
         NSArray<SwrveCampaign *> *campaigns = [[SwrveSDK messaging] messageCenterCampaigns];
-        
         SwrveCampaign *canditiate;
         
         for (SwrveCampaign *campaign in campaigns) {
@@ -385,10 +378,10 @@ SwrvePluginPushHandler *swrvePushHandler;
             }
         }
         
-        if(canditiate){
-            [[SwrveSDK messaging] removeMessageCenterCampaign:canditiate];
+        if (canditiate) {
+            [[SwrveSDK messaging] showMessageCenterCampaign:canditiate];
             pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
-        }else{
+        } else {
             pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:[NSString stringWithFormat:@"No campaign with ID: %@ found.", identifier]];
         }
         
@@ -398,27 +391,51 @@ SwrvePluginPushHandler *swrvePushHandler;
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
-- (void)resourcesListenerReady:(CDVInvokedUrlCommand *)command
-{
+- (void)removeMessageCenterCampaign:(CDVInvokedUrlCommand *) command  {
+    CDVPluginResult *pluginResult = nil;
+    if ([command.arguments count] == 1) {
+        NSNumber *identifier = [command.arguments objectAtIndex:0];
+        NSArray<SwrveCampaign *> *campaigns = [[SwrveSDK messaging] messageCenterCampaigns];
+        SwrveCampaign *canditiate;
+        
+        for (SwrveCampaign *campaign in campaigns) {
+            if ([campaign ID] == [identifier unsignedIntegerValue]) {
+                canditiate = campaign;
+            }
+        }
+        
+        if (canditiate){
+            [[SwrveSDK messaging] removeMessageCenterCampaign:canditiate];
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+        } else{
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:[NSString stringWithFormat:@"No campaign with ID: %@ found.", identifier]];
+        }
+        
+    } else {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Invalid Arguments"];
+    }
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
+
+- (void)resourcesListenerReady:(CDVInvokedUrlCommand *)command {
     resourcesListenerReady = YES;
     if (mustCallResourcesListener) {
-        NSDictionary* userResources = [[SwrveSDK resourceManager] resources];
+        NSDictionary *userResources = [[SwrveSDK resourceManager] resources];
         [SwrvePlugin resourcesListenerCall:userResources];
     }
     CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
-+(void)resourcesListenerCall:(NSDictionary*)userResources
-{
++ (void)resourcesListenerCall:(NSDictionary *)userResources {
     // Notify the Swrve JS plugin of the lates user resources
     NSError *error;
     NSData *jsonData = [NSJSONSerialization dataWithJSONObject:userResources options:0 error:&error];
     if (!jsonData) {
         NSLog(@"Could not serialize latest user resources: %@", error);
     } else {
-        NSString* jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-        NSData* jsonData = [jsonString dataUsingEncoding:NSUTF8StringEncoding];
+        NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+        NSData *jsonData = [jsonString dataUsingEncoding:NSUTF8StringEncoding];
         NSString *base64Json = [SwrvePlugin base64Encode:jsonData];
         dispatch_async(dispatch_get_main_queue(), ^{
             [SwrvePlugin evaluateString:[NSString stringWithFormat:@"if (window.swrveProcessResourcesUpdated !== undefined) { swrveProcessResourcesUpdated('%@'); }", base64Json] onWebView:globalViewController.webView];
@@ -426,8 +443,7 @@ SwrvePluginPushHandler *swrvePushHandler;
     }
 }
 
-- (void)pushNotificationListenerReady:(CDVInvokedUrlCommand *)command
-{
+- (void)pushNotificationListenerReady:(CDVInvokedUrlCommand *)command {
     pushNotificationListenerReady = YES;
     // Send queued notifications, if any
     @synchronized(pushNotificationsQueued) {
@@ -442,8 +458,7 @@ SwrvePluginPushHandler *swrvePushHandler;
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
-- (void)silentPushNotificationListenerReady:(CDVInvokedUrlCommand *)command
-{
+- (void)silentPushNotificationListenerReady:(CDVInvokedUrlCommand *)command {
     silentPushNotificationListenerReady = YES;
     // Send queued notifications, if any
     @synchronized(silentPushNotificationsQueued) {
@@ -468,8 +483,54 @@ SwrvePluginPushHandler *swrvePushHandler;
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
+- (void)setCustomPayloadForConversationInput:(CDVInvokedUrlCommand *)command {
+    CDVPluginResult *pluginResult = nil;
+    NSMutableDictionary *customPayload = [command.arguments objectAtIndex:0];
+    if ([command.arguments count] == 1) {
+        if (customPayload == nil || [customPayload isKindOfClass:[NSNull class]]) {
+            [SwrveSDK setCustomPayloadForConversationInput:[NSMutableDictionary new]];
+        } else {
+            [SwrveSDK setCustomPayloadForConversationInput:customPayload];
+        }
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+    } else {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Its necessary to provide at least 1 parameter."];
+    }
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
+
+- (void)dismissButtonListenerReady:(CDVInvokedUrlCommand *)command {
+    [SwrveSDK messaging].dismissButtonCallback = ^(NSString *campaignSubject, NSString *buttonName) {
+        // Check what are the available infos from our callback to return to JS layer.
+        NSMutableDictionary *callback = [NSMutableDictionary new];
+        if (campaignSubject != nil && ![campaignSubject isEqualToString:@""]) {
+            [callback setObject:campaignSubject forKey:@"campaignSubject"];
+        }
+        if (buttonName != nil && ![buttonName isEqualToString:@""]) {
+            [callback setObject:buttonName forKey:@"buttonName"];
+        }
+
+        NSError *error;
+        NSData *jsonData = [NSJSONSerialization dataWithJSONObject:callback options:0 error:&error];
+        if (!jsonData) {
+            NSLog(@"Could not serialize callback from Dismiss Button: %@", error);
+        } else {
+            // Notify the Swrve JS plugin of the dismiss button click
+            NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+            [SwrvePlugin evaluateString:[NSString stringWithFormat:@"if (window.swrveDismissButtonListener !== undefined) { window.swrveDismissButtonListener('%@'); }", jsonString] onWebView:globalViewController.webView];
+        }
+    };
+    CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
+
 - (void)getUserId:(CDVInvokedUrlCommand *)command {
     CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:[SwrveSDK userID]];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
+
+- (void)getApiKey:(CDVInvokedUrlCommand *)command {
+    CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:[SwrveSDK apiKey]];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 

@@ -2,7 +2,6 @@ const fs = require('fs');
 const path = require('path');
 const xcode = require('xcode');
 const swrveUtils = require('./swrve-utils');
-const util = require('util'); // requires Node 8.16+
 var appConfig;
 
 module.exports = function(context) {
@@ -23,11 +22,10 @@ module.exports = function(context) {
 async function iosSetupServiceExtension() {
 	const appGroupIdentifier = appConfig.getPlatformPreference('swrve.appGroupIdentifier', 'ios');
 	const appName = appConfig.name();
-	const packageName = appConfig.packageName();
+	const packageName = swrveUtils.cordovaPackageNameForPlatform(appConfig, 'ios');
 	const iosPath = 'platforms/ios/';
 	const projPath = `${iosPath}${appName}.xcodeproj/project.pbxproj`;
 	const extName = 'SwrvePushExtension';
-	const copyFilePromisify = util.promisify(fs.copyFile);
 	var extFiles = [ 'NotificationService.h', 'NotificationService.m', `${extName}-Info.plist` ];
 
 	if (!swrveUtils.isEmptyString(appGroupIdentifier)) {
@@ -51,11 +49,8 @@ async function iosSetupServiceExtension() {
 	}
 
 	try {
-		// using a promise to ensure all files finished copying before moving on
 		if (NoServiceExtensionYet) {
-			await Promise.all(
-				extFiles.map((file) => copyFilePromisify(`${sourceDir}${file}`, `${iosPath}${extName}/${file}`))
-			);
+			extFiles.map((file) => swrveUtils.copyRecursiveSync(`${sourceDir}${file}`, `${iosPath}${extName}/${file}`));
 
 			// Add a target for the extension
 			let extTarget = proj.addTarget(extName, 'app_extension');

@@ -1,6 +1,7 @@
 var fs = require('fs'),
 	path = require('path'),
-	swrveUtils = require('./swrve-utils');
+	swrveUtils = require('./swrve-utils'),
+	swrveIntegration = require('./swrve-ios-integration');
 var appConfig;
 
 module.exports = function(context) {
@@ -20,91 +21,52 @@ function iosSetupAppDelegate() {
 	// pull added preferences
 	const appId = appConfig.getPlatformPreference('swrve.appId', 'ios');
 	const apiKey = appConfig.getPlatformPreference('swrve.apiKey', 'ios');
+	const hasAdJourneyEnabled = appConfig.getPlatformPreference('swrve.adJourneyEnabled', 'ios');
+	const hasAdJourneyProcessOtherLinksEnabled = appConfig.getPlatformPreference(
+		'swrve.adJourneyProcessOtherLinksEnabled',
+		'ios'
+	);
+
 	const hasPushEnabled = appConfig.getPlatformPreference('swrve.pushEnabled', 'ios');
 	const appGroupIdentifier = appConfig.getPlatformPreference('swrve.appGroupIdentifier', 'ios');
+	const pushNotificationEvent = appConfig.getPlatformPreference('swrve.pushNotificationEvent', 'ios');
+	const provisionalPushNotificationEvent = appConfig.getPlatformPreference(
+		'swrve.provisionalPushNotificationEvent',
+		'ios'
+	);
 	const swrveStack = appConfig.getPlatformPreference('swrve.stack', 'ios');
+	const clearPushBadgeOnStartup = appConfig.getPlatformPreference('swrve.clearPushBadgeOnStartup', 'ios');
 
-	var appDelegateData = fs.readFileSync(appDelegatePath, 'utf8');
-	if (!appDelegateData.includes('"SwrvePlugin.h"')) {
-		// import SwrvePlugin.
+	// returns 'true' if the appDelegate had to be modified
+	var needsModification = swrveIntegration.modifyAppDelegate(appDelegatePath);
 
-		let searchForAppDelegate = [ '#import "AppDelegate.h"' ];
-		let replaceWithAppDelegate = [ '#import "AppDelegate.h"\n#import "SwrvePlugin.h"' ];
+	if (needsModification) {
+		// set the correct native stack
+		swrveIntegration.setStackPreferences(appDelegatePath, swrveStack);
 
-		searchForAppDelegate.push('self.viewController = [[MainViewController alloc] init];');
-		replaceWithAppDelegate.push(
-			'self.viewController = [[MainViewController alloc] init]; \n//<Swrve_didFinishLaunchingWithOptions>'
-		);
-
-		// insert didFinishLaunchingWithOptions method SwrveSDK init code.
-		const didFinishLaunchingWithOptions = fs.readFileSync(
-			path.join('plugins', 'cordova-plugin-swrve', 'swrve-utils', 'ios', 'didFinishLaunchingWithOptions.txt')
-		);
-
-		searchForAppDelegate.push('//<Swrve_didFinishLaunchingWithOptions>');
-		replaceWithAppDelegate.push(didFinishLaunchingWithOptions);
-
-		// Set the AppId and API key (if present)
-		if (!swrveUtils.isEmptyString(appId)) {
-			searchForAppDelegate.push('<SwrveAppId>');
-			replaceWithAppDelegate.push(appId);
-		}
-
-		if (!swrveUtils.isEmptyString(apiKey)) {
-			searchForAppDelegate.push('<SwrveKey>');
-			replaceWithAppDelegate.push(apiKey);
-		}
-
-		// Enable EU Swrve stack (if needed)
-		if (!swrveUtils.isEmptyString(swrveStack) && swrveStack === 'EU') {
-			searchForAppDelegate.push('// config.stack = SWRVE_STACK_EU;');
-			replaceWithAppDelegate.push('config.stack = SWRVE_STACK_EU;');
-		}
+		// set appId and ApiKey
+		swrveUtils.setAppIdAndApiKey(appDelegatePath, appId, apiKey);
 
 		// check if we need to integrate Push Code.
 		if (!swrveUtils.isEmptyString(hasPushEnabled) && swrveUtils.convertToBoolean(hasPushEnabled)) {
-			const didReceiveRemoteNotificationSwrveImplementation = fs.readFileSync(
-					path.join(
-						'plugins',
-						'cordova-plugin-swrve',
-						'swrve-utils',
-						'ios',
-						'didReceiveRemoteNotification.txt'
-					)
-				),
-				didReceiveRemoteNotification = `- (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo fetchCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler {`;
+			swrveIntegration.setPushCapabilities(
+				appDelegatePath,
+				appGroupIdentifier,
+				swrveUtils.convertToBoolean(clearPushBadgeOnStartup)
+			);
 
-			if (appDelegateData.includes(didReceiveRemoteNotification)) {
-				// we need to include our integration inside the custumer "didReceiveRemoteNotification" method.
-				searchForAppDelegate.push(didReceiveRemoteNotification);
-				replaceWithAppDelegate.push(
-					`${didReceiveRemoteNotification} \n\n//<Swrve_didReceiveRemoteNotification>`
-				);
-			} else {
-				searchForAppDelegate.push('@end');
-				replaceWithAppDelegate.push(
-					`${didReceiveRemoteNotification}\n//<Swrve_didReceiveRemoteNotification> \n }\n@end`
-				);
-			}
-
-			// Add the Swrve_didReceiveRemoteNotification body content.
-			searchForAppDelegate.push('//<Swrve_didReceiveRemoteNotification>');
-			replaceWithAppDelegate.push(didReceiveRemoteNotificationSwrveImplementation);
-
-			// determine if we need to add appGroup information as well as modify pushEnabled
-			if (!swrveUtils.isEmptyString(appGroupIdentifier)) {
-				searchForAppDelegate.push('config.pushEnabled = false;');
-				replaceWithAppDelegate.push(
-					`config.pushEnabled = true; \n    config.appGroupIdentifier = @"${appGroupIdentifier}";`
-				);
-			} else {
-				searchForAppDelegate.push('config.pushEnabled = false;');
-				replaceWithAppDelegate.push('config.pushEnabled = true;');
-			}
+			// if pushEnabled is set to true, we should try processing provisional events
+			swrveIntegration.setPushNotificationEvents(
+				appDelegatePath,
+				pushNotificationEvent,
+				provisionalPushNotificationEvent
+			);
 		}
 
-		// finally, write to the AppDelegate.m
-		swrveUtils.searchAndReplace(appDelegatePath, searchForAppDelegate, replaceWithAppDelegate);
+		// check if we need to integrate adJourney handler code into App Delegate
+		if (!swrveUtils.isEmptyString(hasAdJourneyEnabled) && swrveUtils.convertToBoolean(hasAdJourneyEnabled)) {
+			swrveIntegration.setAdJourney(appDelegatePath, hasAdJourneyProcessOtherLinksEnabled);
+		}
 
 		console.log('Swrve: Successfully added custom Swrve integration into AppDelegate file');
 	} else {

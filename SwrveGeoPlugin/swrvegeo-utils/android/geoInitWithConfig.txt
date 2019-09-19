@@ -1,0 +1,3 @@
+SwrveGeoConfig geoConfig = new SwrveGeoConfig();
+      geoConfig.setDelayStart(true);
+      SwrveGeoPlugin.createInstance(this.getApplicationContext(), "<SWRVE_GEO_API_KEY>", geoConfig);

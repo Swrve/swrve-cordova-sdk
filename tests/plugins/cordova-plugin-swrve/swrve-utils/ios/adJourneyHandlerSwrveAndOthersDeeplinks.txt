@@ -1,0 +1,15 @@
+
+    if (launchOptions[UIApplicationLaunchOptionsURLKey] == nil) {
+        // Regarding you've enabled adjourney you also need to import and finish the facebook setup intergration.
+        // More information are available on our intergration guide at: https://docs.swrve.com/user-documentation/campaigns/linking-campaigns/facebook-ad-triggered-campaigns/
+        [FBSDKAppLinkUtility fetchDeferredAppLink:^(NSURL *url, NSError *error) {
+            if (error) {
+                NSLog(@"Received error while fetching deferred app link %@", error);
+            }
+            if (url) {
+                // AdJouney integration Option 2: Process other deeplinks in addition to Swrve
+                [SwrvePlugin installAction:url];
+                [[UIApplication sharedApplication] openURL:url];
+            }
+        }];
+    }
