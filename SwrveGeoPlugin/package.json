@@ -1,6 +1,6 @@
 {
 	"name": "cordova-plugin-swrvegeo",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"description": "Android and iOS Cordova plugin for Swrve Geo.",
 	"cordova": {
 		"id": "cordova-plugin-swrvegeo",

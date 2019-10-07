@@ -1,0 +1,18 @@
+# Script that loops through all the required Swrve frameworks 
+# embedded in the application and removes unused architectures.
+
+SWRVE_FRAMEWORKS_LIST="SwrveSDKCommon SwrveConversationSDK SwrveSDK"
+
+find "${TARGET_BUILD_DIR}/${WRAPPER_NAME}" -name '*.framework' -type d | while read -r FRAMEWORK; do
+    FRAMEWORK_EXECUTABLE_NAME=$(defaults read "$FRAMEWORK/Info.plist" CFBundleExecutable)
+    FRAMEWORK_EXECUTABLE_PATH="$FRAMEWORK/$FRAMEWORK_EXECUTABLE_NAME"
+
+    if [[ $SWRVE_FRAMEWORKS_LIST == *"$FRAMEWORK_EXECUTABLE_NAME"* ]]; then
+        echo "Swrve: trimming framework - $FRAMEWORK_EXECUTABLE_NAME"
+        for arch in $(lipo -archs $FRAMEWORK_EXECUTABLE_PATH); do
+            if ! printf '%s\n' ${ARCHS[@]} | egrep -q "^$arch$"; then
+                lipo -remove $arch "$FRAMEWORK_EXECUTABLE_PATH" -o "$FRAMEWORK_EXECUTABLE_PATH" 
+            fi
+        done
+    fi
+done

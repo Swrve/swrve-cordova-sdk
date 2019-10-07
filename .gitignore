@@ -16,4 +16,5 @@ tests/platforms/android/.gradle/
 # Platforms - iOS
 tests/platforms/ios/www/index.html
 tests/platforms/ios/build/
+tests/platforms/ios/Index
 tests/platforms/ios/info.plist

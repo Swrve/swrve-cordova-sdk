@@ -5,7 +5,6 @@
 	};
 	objectVersion = 46;
 	objects = {
-
 /* Begin PBXBuildFile section */
 		0207DA581B56EA530066E2B4 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0207DA571B56EA530066E2B4 /* Images.xcassets */; };
 		0EC05908F4474FE89490108E /* SwrvePlugin.m in Sources */ = {isa = PBXBuildFile; fileRef = B4FD9E5ABF6141D6B83C94DB /* SwrvePlugin.m */; };
@@ -298,6 +297,7 @@
 				1D60588E0D05DD3D006BFB54 /* Sources */,
 				1D60588F0D05DD3D006BFB54 /* Frameworks */,
 				7063DA8CC2B8445D9DDD0F17 /* Embed Frameworks */,
+				E39B3979F2CB462DA90FD71E /* Swrve-Framework-Script */,
 			);
 			buildRules = (
 			);
@@ -423,6 +423,38 @@
 			shellPath = /bin/sh;
 			shellScript = "NODEJS_PATH=/usr/local/bin; NVM_NODE_PATH=~/.nvm/versions/node/`nvm version 2>/dev/null`/bin; N_NODE_PATH=`find /usr/local/n/versions/node/* -maxdepth 0 -type d 2>/dev/null | tail -1`/bin; XCODE_NODE_PATH=`xcode-select --print-path`/usr/share/xcs/Node/bin; PATH=$NODEJS_PATH:$NVM_NODE_PATH:$N_NODE_PATH:$XCODE_NODE_PATH:$PATH && node cordova/lib/copy-www-build-step.js";
 			showEnvVarsInLog = 0;
+		};
+		E39B3979F2CB462DA90FD71E /* Swrve-Framework-Script */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			name = "Swrve-Framework-Script";
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			shellPath = /bin/sh;
+			shellScript = "# Script that loops through all the required Swrve frameworks 
+# embedded in the application and removes unused architectures.
+
+SWRVE_FRAMEWORKS_LIST=\"SwrveSDKCommon SwrveConversationSDK SwrveSDK\"
+
+find \"${TARGET_BUILD_DIR}/${WRAPPER_NAME}\" -name '*.framework' -type d | while read -r FRAMEWORK; do
+    FRAMEWORK_EXECUTABLE_NAME=$(defaults read \"$FRAMEWORK/Info.plist\" CFBundleExecutable)
+    FRAMEWORK_EXECUTABLE_PATH=\"$FRAMEWORK/$FRAMEWORK_EXECUTABLE_NAME\"
+
+    if [[ $SWRVE_FRAMEWORKS_LIST == *\"$FRAMEWORK_EXECUTABLE_NAME\"* ]]; then
+        echo \"Swrve: trimming framework - $FRAMEWORK_EXECUTABLE_NAME\"
+        for arch in $(lipo -archs $FRAMEWORK_EXECUTABLE_PATH); do
+            if ! printf '%s\n' ${ARCHS[@]} | egrep -q \"^$arch$\"; then
+                lipo -remove $arch \"$FRAMEWORK_EXECUTABLE_PATH\" -o \"$FRAMEWORK_EXECUTABLE_PATH\" 
+            fi
+        done
+    fi
+done
+";
 		};
 /* End PBXShellScriptBuildPhase section */
 

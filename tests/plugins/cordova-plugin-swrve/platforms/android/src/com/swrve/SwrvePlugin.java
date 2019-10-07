@@ -47,18 +47,18 @@ import java.util.TimeZone;
 
 public class SwrvePlugin extends CordovaPlugin {
 
-    public String VERSION = "2.0.0";
+    public String VERSION = "2.0.1";
     private boolean resourcesListenerReady;
     private boolean mustCallResourcesListener;
-    
+
     // Push notification SwrvePlugin variables
     private boolean pushNotificationListenerReady;
     private boolean silentPushNotificationListenerReady;
-    
+
     private static SwrvePlugin instance;
     private static List<String> pushNotificationsQueued = new ArrayList<>();
     private static List<String> silentPushNotificationsQueued = new ArrayList<>();
-    
+
     private static SwrveResourcesListener resourcesListener = new SwrveResourcesListener() {
         @Override
         public void onResourcesUpdated() {
@@ -136,7 +136,7 @@ public class SwrvePlugin extends CordovaPlugin {
     }
 
     public static synchronized void createInstance(Application application, int appId, String apiKey,
-                                                   SwrveConfig config) {
+            SwrveConfig config) {
         if (config == null) {
             config = new SwrveConfig();
         }
@@ -152,7 +152,8 @@ public class SwrvePlugin extends CordovaPlugin {
         SwrveSDK.handleDeeplink(bundle);
     }
 
-    // interface to handleDeferredDeeplink to allow SwrvePlugin to access it as well.
+    // interface to handleDeferredDeeplink to allow SwrvePlugin to access it as
+    // well.
     public static void handleDeferredDeeplink(Bundle bundle) {
         SwrveSDK.handleDeferredDeeplink(bundle);
     }
@@ -166,7 +167,7 @@ public class SwrvePlugin extends CordovaPlugin {
                     sdk.getUserResources(new SwrveUserResourcesListener() {
                         @Override
                         public void onUserResourcesSuccess(Map<String, Map<String, String>> resources,
-                                                           String resourcesAsString) {
+                                String resourcesAsString) {
                             final String base64Encoded = encodeJsonToBase64(new JSONObject(resources));
                             instance.runJS(
                                     "if (window.swrveProcessResourcesUpdated !== undefined) { window.swrveProcessResourcesUpdated('"
@@ -201,7 +202,7 @@ public class SwrvePlugin extends CordovaPlugin {
     private HashMap<String, String> getMapFromJSON(JSONObject json) throws JSONException {
         HashMap<String, String> map = new HashMap<>();
 
-        for (Iterator<String> iterator = json.keys(); iterator.hasNext(); ) {
+        for (Iterator<String> iterator = json.keys(); iterator.hasNext();) {
             String key = iterator.next();
             String value = json.getString(key);
             map.put(key, value);
@@ -473,30 +474,29 @@ public class SwrvePlugin extends CordovaPlugin {
             return true;
 
         } else if ("getUserResources".equals(action)) {
-            cordova.getThreadPool().execute(() ->
-                    SwrveSDK.getUserResources(new UIThreadSwrveUserResourcesListener(cordova.getActivity(),
-                            new UIThreadSwrveResourcesRunnable() {
-                                @Override
-                                public void onUserResourcesSuccess(Map<String, Map<String, String>> resources,
-                                                                   String resourcesAsJSON) {
-                                    callbackContext.success(new JSONObject(resources));
-                                }
+            cordova.getThreadPool().execute(() -> SwrveSDK.getUserResources(
+                    new UIThreadSwrveUserResourcesListener(cordova.getActivity(), new UIThreadSwrveResourcesRunnable() {
+                        @Override
+                        public void onUserResourcesSuccess(Map<String, Map<String, String>> resources,
+                                String resourcesAsJSON) {
+                            callbackContext.success(new JSONObject(resources));
+                        }
 
-                                @Override
-                                public void onUserResourcesError(Exception exception) {
-                                    exception.printStackTrace();
-                                    callbackContext.error(exception.getMessage());
-                                }
-                            })));
+                        @Override
+                        public void onUserResourcesError(Exception exception) {
+                            exception.printStackTrace();
+                            callbackContext.error(exception.getMessage());
+                        }
+                    })));
             return true;
 
         } else if ("getUserResourcesDiff".equals(action)) {
-            cordova.getThreadPool().execute(() ->
-                    SwrveSDK.getUserResourcesDiff(new UIThreadSwrveUserResourcesDiffListener(cordova.getActivity(),
-                            new UIThreadSwrveResourcesDiffRunnable() {
+            cordova.getThreadPool()
+                    .execute(() -> SwrveSDK.getUserResourcesDiff(new UIThreadSwrveUserResourcesDiffListener(
+                            cordova.getActivity(), new UIThreadSwrveResourcesDiffRunnable() {
                                 @Override
                                 public void onUserResourcesDiffSuccess(Map<String, Map<String, String>> oldResources,
-                                                                       Map<String, Map<String, String>> newResources, String resourcesAsJSON) {
+                                        Map<String, Map<String, String>> newResources, String resourcesAsJSON) {
                                     try {
                                         JSONObject result = new JSONObject();
                                         result.put("old", new JSONObject(oldResources));
