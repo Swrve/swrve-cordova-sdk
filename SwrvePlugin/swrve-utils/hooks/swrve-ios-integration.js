@@ -47,6 +47,33 @@ var self = (module.exports = {
 		swrveUtils.searchAndReplace(delegatePath, searchFor, replaceWith);
 	},
 
+	setInitPreferences: function(delegatePath, initMode, autoStart) {
+		let searchFor = [];
+		let replaceWith = [];
+
+		// Enable Managed Mode if not empty
+		if (!swrveUtils.isEmptyString(initMode) && initMode === 'MANAGED') {
+			searchFor.push('SwrveConfig *config = [[SwrveConfig alloc] init];');
+			replaceWith.push(
+				'SwrveConfig *config = [[SwrveConfig alloc] init]; \n config.initMode = SWRVE_INIT_MODE_MANAGED; \n'
+			);
+
+			if (!swrveUtils.isEmptyString(autoStart)) {
+				var isAddingManagedSetting = swrveUtils.convertToBoolean(autoStart);
+
+				// we only need to modify the appDelegate if it's false, so we check here.
+				if (!isAddingManagedSetting) {
+					searchFor.push('config.initMode = SWRVE_INIT_MODE_MANAGED;');
+					replaceWith.push(
+						'config.initMode = SWRVE_INIT_MODE_MANAGED; \n config.managedModeAutoStartLastUser = NO;'
+					);
+				}
+			}
+		}
+
+		swrveUtils.searchAndReplace(delegatePath, searchFor, replaceWith);
+	},
+
 	setPushCapabilities: function(delegatePath, appGroupIdentifier, clearPushBadgeOnStartup) {
 		let searchFor = [];
 		let replaceWith = [];

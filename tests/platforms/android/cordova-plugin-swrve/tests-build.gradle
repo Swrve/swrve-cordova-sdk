@@ -11,5 +11,5 @@ android {
 }
 
 dependencies {
-    implementation 'com.swrve.sdk.android:swrve-firebase:6.1.1'
+    implementation 'com.swrve.sdk.android:swrve-firebase:6.3.0'
 }

@@ -4,6 +4,7 @@ package <PACKAGE_NAME>
 import com.swrve.SwrvePlugin;
 import com.swrve.sdk.config.SwrveConfig;
 import com.swrve.sdk.config.SwrveStack;
+import com.swrve.sdk.SwrveInitMode;
 //<swrve_geo_imports>
 
 public class Application extends android.app.Application {

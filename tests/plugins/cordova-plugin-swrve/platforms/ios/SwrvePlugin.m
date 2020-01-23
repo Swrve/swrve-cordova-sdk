@@ -4,7 +4,7 @@
 #import <SwrveSDK/SwrveCampaign.h>
 #import <SwrveSDk/SwrveCampaignStatus.h>
 
-#define SWRVE_WRAPPER_VERSION "2.0.1"
+#define SWRVE_WRAPPER_VERSION "2.1.0"
 
 CDVViewController *globalViewController;
 
@@ -49,8 +49,7 @@ SwrvePluginPushHandler *swrvePushHandler;
     };
     [SwrveSDK sharedInstanceWithAppID:appId apiKey:apiKey config:config];
 
-    // Send the wrapper version at init
-    [SwrveSDK userUpdate:[[NSDictionary alloc] initWithObjectsAndKeys:@SWRVE_WRAPPER_VERSION, @"swrve.cordova_plugin_version", nil]];
+    [SwrvePlugin sendPluginVersion];
 }
 
 + (void)evaluateString:(NSString *)jsString onWebView:(UIView *)webView {
@@ -71,6 +70,12 @@ SwrvePluginPushHandler *swrvePushHandler;
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
     return [data base64Encoding];
 #pragma clang diagnostic pop
+}
+
++ (void)sendPluginVersion {
+    if([SwrveSDK started]){
+        [SwrveSDK userUpdate:[[NSDictionary alloc] initWithObjectsAndKeys:@SWRVE_WRAPPER_VERSION, @"swrve.cordova_plugin_version", nil]];
+    }
 }
 
 // Entry point from SwrvePluginPushHandler
@@ -564,6 +569,31 @@ SwrvePluginPushHandler *swrvePushHandler;
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Invalid Arguments"];
         [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     }
+}
+
+- (void)start:(CDVInvokedUrlCommand *)command {
+    CDVPluginResult *pluginResult = nil;
+    if ([command.arguments count] == 1) {
+        NSString *userId = [command.arguments objectAtIndex:0];
+        if (userId != nil && ![userId isEqualToString:@""])  {
+            [SwrveSDK startWithUserId:userId];
+            [SwrvePlugin sendPluginVersion];
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+        } else {
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Invalid Arguments"];
+        }
+    } else {
+        [SwrveSDK start];
+        [SwrvePlugin sendPluginVersion];
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+    }
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
+
+- (void)isStarted:(CDVInvokedUrlCommand *)command {
+    NSString *isStartedString = [SwrveSDK started] ? @"true" : @"false";
+    CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:isStartedString];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
 @end

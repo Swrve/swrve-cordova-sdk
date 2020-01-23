@@ -21,6 +21,8 @@ function iosSetupAppDelegate() {
 	// pull added preferences
 	const appId = appConfig.getPlatformPreference('swrve.appId', 'ios');
 	const apiKey = appConfig.getPlatformPreference('swrve.apiKey', 'ios');
+	const initMode = appConfig.getPlatformPreference('swrve.initMode', 'ios');
+	const managedAuto = appConfig.getPlatformPreference('swrve.managedModeAutoStartLastUser', 'ios');
 	const hasAdJourneyEnabled = appConfig.getPlatformPreference('swrve.adJourneyEnabled', 'ios');
 	const hasAdJourneyProcessOtherLinksEnabled = appConfig.getPlatformPreference(
 		'swrve.adJourneyProcessOtherLinksEnabled',
@@ -43,6 +45,9 @@ function iosSetupAppDelegate() {
 	if (needsModification) {
 		// set the correct native stack
 		swrveIntegration.setStackPreferences(appDelegatePath, swrveStack);
+
+		// set the init mode preferences
+		swrveIntegration.setInitPreferences(appDelegatePath, initMode, managedAuto);
 
 		// set appId and ApiKey
 		swrveUtils.setAppIdAndApiKey(appDelegatePath, appId, apiKey);

@@ -47,7 +47,7 @@ import java.util.TimeZone;
 
 public class SwrvePlugin extends CordovaPlugin {
 
-    public String VERSION = "2.0.1";
+    public static String VERSION = "2.1.0";
     private boolean resourcesListenerReady;
     private boolean mustCallResourcesListener;
 
@@ -190,13 +190,18 @@ public class SwrvePlugin extends CordovaPlugin {
         return Base64.encodeToString(jsonBytes, Base64.NO_WRAP);
     }
 
+    private static void sendPluginVersion() {
+        if (SwrveSDK.isStarted()) {
+            Map<String, String> userUpdateWrapperVersion = new HashMap<>();
+            userUpdateWrapperVersion.put("swrve.cordova_plugin_version", VERSION);
+            SwrveSDK.userUpdate(userUpdateWrapperVersion);
+        }
+    }
+
     @Override
     public void initialize(CordovaInterface cordova, CordovaWebView webView) {
         super.initialize(cordova, webView);
-        // Sent the wrapper
-        Map<String, String> userUpdateWrapperVersion = new HashMap<>();
-        userUpdateWrapperVersion.put("swrve.cordova_plugin_version", VERSION);
-        SwrveSDK.userUpdate(userUpdateWrapperVersion);
+        SwrvePlugin.sendPluginVersion();
     }
 
     private HashMap<String, String> getMapFromJSON(JSONObject json) throws JSONException {
@@ -270,6 +275,29 @@ public class SwrvePlugin extends CordovaPlugin {
             } else {
                 cordova.getThreadPool().execute(() -> {
                     SwrveSDK.event(name);
+                    callbackContext.success();
+                });
+            }
+        } catch (JSONException e) {
+            callbackContext.error("JSON_EXCEPTION");
+            e.printStackTrace();
+        }
+    }
+
+    private void start(JSONArray arguments, final CallbackContext callbackContext) {
+        try {
+            // userId is optional
+            if (arguments.length() == 1) {
+                String userId = arguments.getString(0);
+                cordova.getThreadPool().execute(() -> {
+                    SwrveSDK.start(cordova.getActivity(), userId);
+                    SwrvePlugin.sendPluginVersion();
+                    callbackContext.success();
+                });
+            } else {
+                cordova.getThreadPool().execute(() -> {
+                    SwrveSDK.start(cordova.getActivity());
+                    SwrvePlugin.sendPluginVersion();
                     callbackContext.success();
                 });
             }
@@ -418,7 +446,11 @@ public class SwrvePlugin extends CordovaPlugin {
 
     @Override
     public boolean execute(final String action, final JSONArray arguments, final CallbackContext callbackContext) {
-        if ("identify".equals(action)) {
+        if ("start".equals(action)) {
+            start(arguments, callbackContext);
+            return true;
+
+        } else if ("identify".equals(action)) {
             if (!isBadArgument(arguments, callbackContext, 1, "user id argument needs to be supplied")) {
                 identify(arguments, callbackContext);
             }
@@ -580,6 +612,9 @@ public class SwrvePlugin extends CordovaPlugin {
             return true;
         } else if ("getExternalUserId".equals(action)) {
             callbackContext.success(SwrveSDK.getExternalUserId());
+            return true;
+        } else if ("isStarted".equals(action)) {
+            callbackContext.success(String.valueOf(SwrveSDK.isStarted()));
             return true;
         }
 

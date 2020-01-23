@@ -54,6 +54,33 @@ var self = (module.exports = {
 		swrveUtils.searchAndReplace(applicationPath, searchFor, replaceWith);
 	},
 
+	setInitPreferences: function(applicationPath, initMode, autoStart) {
+		let searchFor = [];
+		let replaceWith = [];
+
+		// Enable Managed Mode if not empty and set to managed, otherwise it's default
+		if (!swrveUtils.isEmptyString(initMode) && initMode === 'MANAGED') {
+			searchFor.push('SwrveConfig config = new SwrveConfig();');
+			replaceWith.push(
+				'SwrveConfig config = new SwrveConfig(); \n    config.setInitMode(SwrveInitMode.MANAGED); \n'
+			);
+
+			if (!swrveUtils.isEmptyString(autoStart)) {
+				var isAddingManagedSetting = swrveUtils.convertToBoolean(autoStart);
+
+				// we only need to modify the application file if it's false, so we check here.
+				if (!isAddingManagedSetting) {
+					searchFor.push('config.setInitMode(SwrveInitMode.MANAGED);');
+					replaceWith.push(
+						'config.setInitMode(SwrveInitMode.MANAGED); \n   config.setManagedModeAutoStartLastUser(false); \n'
+					);
+				}
+			}
+		}
+
+		swrveUtils.searchAndReplace(applicationPath, searchFor, replaceWith);
+	},
+
 	produceTargetPathFromPackage: function(targetDirectory, packageName) {
 		var packagePath = packageName.replace(/\./g, '/');
 		return `${targetDirectory}java/${packagePath}/`;

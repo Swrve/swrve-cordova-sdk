@@ -33,6 +33,8 @@ async function androidSetupApplicationWithoutPush() {
 	const appName = appConfig.name();
 	const appId = appConfig.getPlatformPreference('swrve.appId', 'android');
 	const apiKey = appConfig.getPlatformPreference('swrve.apiKey', 'android');
+	const initMode = appConfig.getPlatformPreference('swrve.initMode', 'android');
+	const managedAuto = appConfig.getPlatformPreference('swrve.managedModeAutoStartLastUser', 'android');
 	const swrveStack = appConfig.getPlatformPreference('swrve.stack', 'android');
 	var targetApplicationDirectory = swrveIntegration.produceTargetPathFromPackage(targetDirectory, packageName);
 
@@ -50,6 +52,13 @@ async function androidSetupApplicationWithoutPush() {
 		// Enable EU Swrve stack (if needed)
 		swrveIntegration.setStackPreferences(`${targetApplicationDirectory}${applicationFileName}`, swrveStack);
 
+		// set the init mode preferences
+		swrveIntegration.setInitPreferences(
+			`${targetApplicationDirectory}${applicationFileName}`,
+			initMode,
+			managedAuto
+		);
+
 		// set AppIdandApiKey
 		swrveUtils.setAppIdAndApiKey(`${targetApplicationDirectory}${applicationFileName}`, appId, apiKey);
 
@@ -66,6 +75,8 @@ async function androidSetupApplicationFirebase() {
 	let appName = appConfig.name();
 	let appId = appConfig.getPlatformPreference('swrve.appId', 'android');
 	let apiKey = appConfig.getPlatformPreference('swrve.apiKey', 'android');
+	const initMode = appConfig.getPlatformPreference('swrve.initMode', 'android');
+	const managedAuto = appConfig.getPlatformPreference('swrve.managedModeAutoStartLastUser', 'android');
 	let swrveStack = appConfig.getPlatformPreference('swrve.stack', 'android');
 	let drawableDirectory = appConfig.getPlatformPreference('swrve.drawablePath', 'android');
 	let googleServicesPath = appConfig.getPlatformPreference('swrve.googleServicesPath', 'android');
@@ -84,6 +95,13 @@ async function androidSetupApplicationFirebase() {
 
 		// Enable EU Swrve stack (if needed)
 		swrveIntegration.setStackPreferences(`${targetApplicationDirectory}${applicationFileName}`, swrveStack);
+
+		// set the init mode preferences
+		swrveIntegration.setInitPreferences(
+			`${targetApplicationDirectory}${applicationFileName}`,
+			initMode,
+			managedAuto
+		);
 
 		// modify the changed Application.java
 		swrveUtils.setAppIdAndApiKey(`${targetApplicationDirectory}${applicationFileName}`, appId, apiKey);
@@ -121,7 +139,7 @@ async function androidSetupApplicationFirebase() {
 
 async function produceApplicationFile(path) {
 	if (!fs.existsSync(`${path}${applicationFileName}`)) {
-		swrveUtils.copyRecursiveSync(`${sourceDir}${applicationFileName}`, `${path}${applicationFileName}`);
+		fs.copyFileSync(`${sourceDir}${applicationFileName}`, `${path}${applicationFileName}`);
 		console.log(`Swrve: Added ${applicationFileName} to ${path} directory`);
 	} else {
 		console.log(`Swrve: ${applicationFileName} already exists at ${path}`);

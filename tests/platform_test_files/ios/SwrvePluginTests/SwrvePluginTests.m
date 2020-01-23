@@ -966,4 +966,57 @@
     }];
 }
 
+- (void)testStartWithValidUserId {
+    XCTestExpectation *apploaded = [self expectationWithDescription:@"completionHandler"];
+    OCMExpect([(Swrve*) swrveMock startWithUserId:@"userId"]).andDo(nil);
+
+    [self waitForApplicationToStart:^(NSString *callback) {
+        // Inject javascript listeners
+        [self runJS:@"window.plugins.swrve.start(\"userId\", function(forceCallback) { window.testStart = `success`}, undefined);"];
+
+        XCTestExpectation *responseReceived = [self expectationWithDescription:@"responseReceived"];
+        [self waitForActionReceivedForJavascript:@"window.testStart" withCallback:^(NSString *response) {
+            [responseReceived fulfill];
+            XCTAssertEqualObjects(response, @"success");
+            [self->swrveMock verify];
+        }];
+
+        [apploaded fulfill];
+    }];
+
+    // waiting for waitForApplicationToStart & waitForActionReceivedForJavascript
+    [self waitForExpectationsWithTimeout:waitLong handler:^(NSError *error) {
+        if (error) {
+            XCTFail(@"Ran out of time: testStart");
+        }
+    }];
+}
+
+- (void)testStartWithNoUserId {
+    XCTestExpectation *apploaded = [self expectationWithDescription:@"completionHandler"];
+    OCMExpect([(Swrve*) swrveMock start]).andDo(nil);
+
+    [self waitForApplicationToStart:^(NSString *callback) {
+        // Inject javascript listeners
+        [self runJS:@"window.plugins.swrve.start([ ], function(forceCallback) { window.testStartWithNoUserId = `success`}, undefined);"];
+
+        XCTestExpectation *responseReceived = [self expectationWithDescription:@"responseReceived"];
+        [self waitForActionReceivedForJavascript:@"window.testStartWithNoUserId" withCallback:^(NSString *response) {
+            [responseReceived fulfill];
+            XCTAssertEqualObjects(response, @"success");
+            [self->swrveMock verify];
+        }];
+
+        [apploaded fulfill];
+    }];
+
+    // waiting for waitForApplicationToStart & waitForActionReceivedForJavascript
+    [self waitForExpectationsWithTimeout:waitLong handler:^(NSError *error) {
+        if (error) {
+            XCTFail(@"Ran out of time: testStartWithNoUserId");
+        }
+    }];
+}
+
+
 @end

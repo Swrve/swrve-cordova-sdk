@@ -2,6 +2,7 @@ const fs = require('fs');
 
 const {
 	modifyAppDelegate,
+	setInitPreferences,
 	setStackPreferences,
 	setPushCapabilities,
 	setPushNotificationEvents,
@@ -88,6 +89,54 @@ describe('setStackPreferences', () => {
 
 		const filecontents = fs.readFileSync('stack.txt', 'utf-8');
 		expect(filecontents).toBe('// config.stack = SWRVE_STACK_EU;');
+	});
+});
+
+// ---------- setInitPreferences -------------
+describe('setInitPreferences', () => {
+	beforeEach(() => {
+		fs.appendFileSync('initPreferences_iOS.txt', 'SwrveConfig *config = [[SwrveConfig alloc] init];', 'utf-8');
+	});
+
+	afterEach(() => {
+		// clean up the file after
+		fs.unlinkSync('initPreferences_iOS.txt');
+	});
+
+	test('exists', () => {
+		expect(setInitPreferences).toBeDefined();
+	});
+
+	test('sets MANAGED if MANAGED is passed in', () => {
+		setInitPreferences('initPreferences_iOS.txt', 'MANAGED', '');
+
+		const filecontents = fs.readFileSync('initPreferences_iOS.txt', 'utf-8');
+		expect(filecontents).toContain('SwrveConfig *config = [[SwrveConfig alloc] init];');
+		expect(filecontents).toContain('config.initMode = SWRVE_INIT_MODE_MANAGED;');
+		expect(filecontents).not.toContain('config.managedModeAutoStartLastUser = NO;');
+	});
+
+	test('sets MANAGED if MANAGED is passed in and not add the extra line if autoStart is true', () => {
+		setInitPreferences('initPreferences_iOS.txt', 'MANAGED', 'true');
+
+		const filecontents = fs.readFileSync('initPreferences_iOS.txt', 'utf-8');
+		expect(filecontents).toContain('SwrveConfig *config = [[SwrveConfig alloc] init];');
+		expect(filecontents).toContain('config.initMode = SWRVE_INIT_MODE_MANAGED;');
+		expect(filecontents).not.toContain('config.managedModeAutoStartLastUser = NO;');
+	});
+
+	test('sets MANAGED and AutoStart', () => {
+		setInitPreferences('initPreferences_iOS.txt', 'MANAGED', 'false');
+		const filecontents = fs.readFileSync('initPreferences_iOS.txt', 'utf-8');
+		expect(filecontents).toContain('SwrveConfig *config = [[SwrveConfig alloc] init];');
+		expect(filecontents).toContain('config.initMode = SWRVE_INIT_MODE_MANAGED;');
+		expect(filecontents).toContain('config.managedModeAutoStartLastUser = NO;');
+	});
+
+	test('sets nothing else if MANAGED isnt present', () => {
+		setInitPreferences('initPreferences_iOS.txt', '', 'false');
+		const filecontents = fs.readFileSync('initPreferences_iOS.txt', 'utf-8');
+		expect(filecontents).toBe('SwrveConfig *config = [[SwrveConfig alloc] init];');
 	});
 });
 

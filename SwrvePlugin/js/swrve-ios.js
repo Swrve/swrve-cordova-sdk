@@ -171,6 +171,19 @@ SwrvePlugin.prototype.identify = function(userId, success, fail) {
 	return cordova.exec(success, fail, 'SwrvePlugin', 'identify', [ userId ]);
 };
 
+// userId is a string
+SwrvePlugin.prototype.start = function(userId, success, fail) {
+	if (!userId || userId.length < 1) {
+		return cordova.exec(success, fail, 'SwrvePlugin', 'start', []);
+	} else {
+		return cordova.exec(success, fail, 'SwrvePlugin', 'start', [ userId ]);
+	}
+};
+
+SwrvePlugin.prototype.isStarted = function(success, fail) {
+	return cordova.exec(success, fail, 'SwrvePlugin', 'isStarted', []);
+};
+
 SwrvePlugin.install = function() {
 	if (!window.plugins) {
 		window.plugins = {};

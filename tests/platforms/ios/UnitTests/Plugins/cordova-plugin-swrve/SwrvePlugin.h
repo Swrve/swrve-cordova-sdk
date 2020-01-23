@@ -31,5 +31,7 @@
 - (void)getApiKey:(CDVInvokedUrlCommand *)command;
 - (void)getExternalUserId:(CDVInvokedUrlCommand *)command;
 - (void)identify:(CDVInvokedUrlCommand *)command;
+- (void)start:(CDVInvokedUrlCommand *)command;
+- (void)isStarted:(CDVInvokedUrlCommand *)command;
 
 @end

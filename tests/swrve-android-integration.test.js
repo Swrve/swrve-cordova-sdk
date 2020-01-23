@@ -2,6 +2,7 @@ const fs = require('fs');
 const {
 	modifyApplicationFile,
 	setStackPreferences,
+	setInitPreferences,
 	produceTargetPathFromPackage,
 	modifyManifestXML,
 	modifyGradleFile,
@@ -112,6 +113,54 @@ describe('setStackPreferences', () => {
 
 		const filecontents = fs.readFileSync('setStackPreferences_android.txt', 'utf-8');
 		expect(filecontents).toBe('// config.setSelectedStack(SwrveStack.EU);');
+	});
+});
+
+// ---------- setInitPreferences -------------
+describe('setInitPreferences', () => {
+	beforeEach(() => {
+		fs.appendFileSync('initPreferences_Android.txt', 'SwrveConfig config = new SwrveConfig();', 'utf-8');
+	});
+
+	afterEach(() => {
+		// clean up the file after
+		fs.unlinkSync('initPreferences_Android.txt');
+	});
+
+	test('exists', () => {
+		expect(setInitPreferences).toBeDefined();
+	});
+
+	test('sets MANAGED if MANAGED is passed in', () => {
+		setInitPreferences('initPreferences_Android.txt', 'MANAGED', '');
+
+		const filecontents = fs.readFileSync('initPreferences_Android.txt', 'utf-8');
+		expect(filecontents).toContain('SwrveConfig config = new SwrveConfig();');
+		expect(filecontents).toContain('config.setInitMode(SwrveInitMode.MANAGED);');
+		expect(filecontents).not.toContain('config.setManagedModeAutoStartLastUser(false);');
+	});
+
+	test('sets MANAGED if MANAGED is passed in and not add the extra line if autoStart is true', () => {
+		setInitPreferences('initPreferences_Android.txt', 'MANAGED', 'true');
+
+		const filecontents = fs.readFileSync('initPreferences_Android.txt', 'utf-8');
+		expect(filecontents).toContain('SwrveConfig config = new SwrveConfig();');
+		expect(filecontents).toContain('config.setInitMode(SwrveInitMode.MANAGED);');
+		expect(filecontents).not.toContain('config.setManagedModeAutoStartLastUser(false);');
+	});
+
+	test('sets MANAGED and AutoStart to false', () => {
+		setInitPreferences('initPreferences_Android.txt', 'MANAGED', 'false');
+		const filecontents = fs.readFileSync('initPreferences_Android.txt', 'utf-8');
+		expect(filecontents).toContain('SwrveConfig config = new SwrveConfig();');
+		expect(filecontents).toContain('config.setInitMode(SwrveInitMode.MANAGED);');
+		expect(filecontents).toContain('config.setManagedModeAutoStartLastUser(false);');
+	});
+
+	test('sets nothing else if MANAGED isnt present', () => {
+		setInitPreferences('initPreferences_Android.txt', '', 'false');
+		const filecontents = fs.readFileSync('initPreferences_Android.txt', 'utf-8');
+		expect(filecontents).toBe('SwrveConfig config = new SwrveConfig();');
 	});
 });
 
