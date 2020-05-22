@@ -14,5 +14,27 @@ NSMutableArray *geoNotificationsQueued;
     [SwrveGeoSDK initWithApiKey:apiKey config:config];
 }
 
+- (void)start:(CDVInvokedUrlCommand *)command {
+    @try {
+        [SwrveGeoSDK start];
+        CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"OK"];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    }
+    @catch (NSException *e) {
+        [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR];
+    }
+}
+
+- (void)stop:(CDVInvokedUrlCommand *)command {
+    @try {
+        [SwrveGeoSDK stop];
+        CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"OK"];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    }
+    @catch (NSException *e) {
+        [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR];
+    }
+}
+
 @end
 

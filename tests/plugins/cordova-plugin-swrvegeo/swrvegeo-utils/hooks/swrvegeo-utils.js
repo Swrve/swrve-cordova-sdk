@@ -18,6 +18,25 @@ var self = (module.exports = {
 		return new cordovaCommon.ConfigParser('config.xml');
 	},
 
+	cordovaPackageNameForPlatform: function(appConfig, platform) {
+		// check for the existence of platform-specific id, if it's not there fallback to basic id
+		var packageName;
+
+		if (platform == 'ios') {
+			packageName = appConfig.ios_CFBundleIdentifier();
+		}
+
+		if (platform == 'android') {
+			packageName = appConfig.android_packageName();
+		}
+
+		if (self.isEmptyString(packageName)) {
+			packageName = appConfig.packageName();
+		}
+
+		return packageName;
+	},
+
 	convertToBoolean: function(str) {
 		if (str === undefined) {
 			return false;

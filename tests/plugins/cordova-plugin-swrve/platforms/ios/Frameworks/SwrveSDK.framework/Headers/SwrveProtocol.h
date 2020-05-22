@@ -21,7 +21,7 @@
 #endif
 
 /*! The release version of this SDK. */
-#define SWRVE_SDK_VERSION "6.3"
+#define SWRVE_SDK_VERSION "6.5.0"
 
 /*! Defines the block signature for receiving resources after calling
  * Swrve userResources.
@@ -42,6 +42,13 @@ NSString * resourcesAsJSON);
 typedef void (^SwrveUserResourcesDiffCallback) (NSDictionary * oldResourcesValues,
 NSDictionary * newResourcesValues,
 NSString * resourcesAsJSON);
+
+/*! Defines the block signature for receiving real time user properties after calling
+ *  Swrve realTimeUserProperties
+ *
+ * \param properties         A dictionary containing the properties.
+ */
+typedef void (^SwrveRealTimeUserPropertiesCallback) (NSDictionary* properties);
 
 /*! Defines the block signature for notifications when an event is raised.
  * Typically used internally.
@@ -248,6 +255,17 @@ NSString * eventsPayloadAsJSON);
  */
 -(void) userResourcesDiff:(SwrveUserResourcesDiffCallback)callbackBlock;
 
+/*! Gets a dictionary of real time user properties for a user
+ *
+ *
+ * The result of this call is cached in the realTimeUserPropertiesFile specified in
+ * SwrveConfig. This file is initially seeded with "[]", the empty JSON Dictionary.
+ *
+ * \param callbackBlock A callback block that will be called asynchronously when
+ *                      A/B test data is available.
+ */
+-(void) realTimeUserProperties:(SwrveRealTimeUserPropertiesCallback)callbackBlock;
+
 #pragma mark -
 #pragma mark Other
 
@@ -361,22 +379,22 @@ NSString * eventsPayloadAsJSON);
 - (void)installAction:(NSURL *)url;
 
 /*! The userID is used by Swrve to identify unique users. It must be unique for all users of your app. If not specified the SDK will assign a random UUID to this device.
- 
+
  @return  The userID for the current user
- 
+
  @remark To set a userID please refer to the identify api call
  */
 - (NSString *)userID;
 
 /*! Identify users such that they can be tracked and targeted safely across multiple devices, platforms and channels.
- 
+
  @param externalUserId An ID that uniquely identifies your user. Personal identifiable information should not be used. An error may be returned if such information is submitted as the externalUserId eg email, phone number etc.
  @param onSuccess block.
  @param onError block.
- 
+
  @code
  [SwrveSDK identify:@"12345" onSuccess:^(NSString *status, NSString *swrveUserId) {
- 
+
  } onError:^(NSInteger httpCode, NSString *errorMessage) {
      // please note in the event of an error the tracked userId will not reflect correctly on the backend until this
      // call completes successfully
@@ -387,11 +405,11 @@ NSString * eventsPayloadAsJSON);
                                               onError:(void (^)(NSInteger httpCode, NSString *errorMessage))onError;
 
 /*! An ID that uniquely identifies your user. Personal identifiable information should not be used. An error may be returned if such information is submitted as the externalUserId eg email, phone number etc.
- 
+
  @return  The externalUserId for the current user
- 
+
   @remark See the indentify API call
- 
+
  */
 - (NSString *)externalUserId;
 
@@ -399,7 +417,7 @@ NSString * eventsPayloadAsJSON);
  Selecting a star-rating,
  Selecting a choice on a text questionnaire
  Selecting play on a video
- 
+
  @param payload NSMutableDictionary with custom key pair values.
  @note  If key pair values added is greater than 5 or Keys added conflict with existing swrve internal keys then
         the custom payload will be rejected and not added for the event. A debug log error will be generated.
@@ -408,7 +426,7 @@ NSString * eventsPayloadAsJSON);
                                                                                 @"key1":@"value2",
                                                                                 @"key2": @"value2",
                                     }];
- 
+
  [SwrveSDK setCustomPayloadForConversationInput:myPayload];
  @endcode
  */

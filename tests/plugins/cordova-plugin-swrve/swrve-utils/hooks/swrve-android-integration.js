@@ -135,6 +135,17 @@ var self = (module.exports = {
 		}
 	},
 
+	modifyGradlePropertiesFile(gradlePropertiesFilePath, customSwrveRequiredProperties) {
+		var data = fs.readFileSync(gradlePropertiesFilePath, 'utf8');
+		for (let i = 0; i < customSwrveRequiredProperties.length; i++) {
+			let swrveProperty = customSwrveRequiredProperties[i];
+			if (!data.includes(swrveProperty)) {
+				fs.appendFileSync(gradlePropertiesFilePath, `\n${swrveProperty}`);
+			}
+			console.log(`Swrve: has checked if gradle.properties contain necessary values as required for compatibility with AndroidX`);
+		}
+	},
+
 	setAdJourney: function(mainActivityPath) {
 		let searchFor = [];
 		let replaceWith = [];

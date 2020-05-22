@@ -6,6 +6,7 @@ const {
 	produceTargetPathFromPackage,
 	modifyManifestXML,
 	modifyGradleFile,
+	modifyGradlePropertiesFile,
 	setAdJourney,
 	copyDrawableNotificationsImages
 } = require('./plugins/cordova-plugin-swrve/swrve-utils/hooks/swrve-android-integration');
@@ -382,5 +383,41 @@ describe('copyDrawableNotificationsImages', () => {
 
 		// Check if the files get copied
 		expect(filecontentsIconCopied).toBe(filecontentsIconOriginal);
+	});
+});
+
+// ---------- modifyGradleFile -------------
+describe('modifyGradleProperties', () => {
+	var gradlePath = "gradleTest.properties"
+
+	beforeEach(() => {
+		fs.appendFileSync(gradlePath, 'whatEveFlag=true', 'utf-8');
+	});
+
+	afterEach(() => {
+		// clean up the file after
+		fs.unlinkSync(gradlePath);
+	});
+
+	test('exists', () => {
+		expect(modifyGradleFile).toBeDefined();
+	});
+
+	test('Check if added respective keys into gradle.properties', () => {
+		modifyGradlePropertiesFile(gradlePath, ["android.enableJetifier=true", "android.useAndroidX=true"]);
+		const filecontents = fs.readFileSync('gradleTest.properties', 'utf-8');
+		expect(filecontents).toBe(`whatEveFlag=true\nandroid.enableJetifier=true\nandroid.useAndroidX=true`);
+	});
+
+	test('Check if a key already exist into file should not add again', () => {
+	fs.appendFileSync(
+			gradlePath,
+			'\nandroid.enableJetifier=true',
+			'utf-8'
+		);
+
+		modifyGradlePropertiesFile(gradlePath, ["android.enableJetifier=true", "android.useAndroidX=true"]);
+		const filecontents = fs.readFileSync('gradleTest.properties', 'utf-8');
+		expect(filecontents).toBe(`whatEveFlag=true\nandroid.enableJetifier=true\nandroid.useAndroidX=true`);
 	});
 });

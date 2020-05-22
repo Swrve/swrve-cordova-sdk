@@ -55,4 +55,19 @@
  */
 + (NSString *)getStringFromDic:(NSDictionary *)dic withKey:(NSString *)key;
 
+/**
+Get current time in epoch in milliseconds.
+
+@return UInt64 time in milliseconds.
+*/
++ (UInt64)getTimeEpoch;
+
+
+/**
+ Returns YES if running on platforms that support Conversations
+ 
+ @return BOOL
+ */
++ (BOOL) supportsConversations;
+
 @end

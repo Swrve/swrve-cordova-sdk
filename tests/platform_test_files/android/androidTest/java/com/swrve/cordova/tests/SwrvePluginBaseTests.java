@@ -2,7 +2,8 @@ package com.swrve.cordova.tests;
 
 import android.app.Application;
 import android.content.Context;
-import android.support.test.rule.ActivityTestRule;
+
+import androidx.test.rule.ActivityTestRule;
 
 import com.swrve.SwrvePlugin;
 import com.swrve.sdk.ISwrve;
@@ -17,7 +18,7 @@ import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.concurrent.Semaphore;
 
-import static android.support.test.InstrumentationRegistry.getInstrumentation;
+import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentation;
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertNotNull;
 

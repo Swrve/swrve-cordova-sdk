@@ -7,4 +7,7 @@
 
 + (void)initWithApiKey:(NSString *)apiKey config:(SwrveGeoConfig *)config;
 
+- (void)start:(CDVInvokedUrlCommand *)command;
+- (void)stop:(CDVInvokedUrlCommand *)command;
+
 @end

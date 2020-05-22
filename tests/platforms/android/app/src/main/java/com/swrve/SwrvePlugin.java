@@ -19,7 +19,9 @@ import com.swrve.sdk.SwrveUserResourcesListener;
 import com.swrve.sdk.UIThreadSwrveUserResourcesDiffListener;
 import com.swrve.sdk.UIThreadSwrveUserResourcesListener;
 import com.swrve.sdk.config.SwrveConfig;
+import com.swrve.sdk.config.SwrveInAppMessageConfig;
 import com.swrve.sdk.messaging.SwrveBaseCampaign;
+import com.swrve.sdk.messaging.SwrveClipboardButtonListener;
 import com.swrve.sdk.messaging.SwrveCustomButtonListener;
 import com.swrve.sdk.messaging.SwrveDismissButtonListener;
 import com.swrve.sdk.runnable.UIThreadSwrveResourcesDiffRunnable;
@@ -47,8 +49,11 @@ import java.util.TimeZone;
 
 public class SwrvePlugin extends CordovaPlugin {
 
-    public static String VERSION = "2.1.0";
+    public static String VERSION = "3.0.0";
     private boolean resourcesListenerReady;
+    private boolean customButtonListenerReady;
+    private boolean dismissButtonListenerReady;
+    private boolean clipboardButtonListenerReady;
     private boolean mustCallResourcesListener;
 
     // Push notification SwrvePlugin variables
@@ -70,15 +75,7 @@ public class SwrvePlugin extends CordovaPlugin {
             }
         }
     };
-    private static SwrveCustomButtonListener customButtonListener = new SwrveCustomButtonListener() {
-        @Override
-        public void onAction(final String action) {
-            instance.cordova.getActivity()
-                    .runOnUiThread(() -> instance.runJS(
-                            "if (window.swrveCustomButtonListener !== undefined) { window.swrveCustomButtonListener('"
-                                    + action + "'); }"));
-        }
-    };
+
     private static SwrveSilentPushListener silentPushNotificationListener = new SwrveSilentPushListener() {
         @Override
         public void onSilentPush(Context context, JSONObject json) {
@@ -101,26 +98,53 @@ public class SwrvePlugin extends CordovaPlugin {
             }
         }
     };
-    private static SwrveDismissButtonListener dismissButtonListener = new SwrveDismissButtonListener() {
 
+    // SwrveInAppMessageConfig listeners variables
+    private static SwrveCustomButtonListener swrveCustomButtonListener = new SwrveCustomButtonListener() {
+        @Override
+        public void onAction(String customAction) {
+            if (instance != null && instance.customButtonListenerReady) {
+                instance.cordova.getActivity()
+                        .runOnUiThread(() -> instance.runJS(
+                                "if (window.swrveCustomButtonListener !== undefined) { window.swrveCustomButtonListener('"
+                                        + customAction + "'); }"));
+            }
+        }
+    };
+
+    private static SwrveDismissButtonListener swrveDismissButtonListener = new SwrveDismissButtonListener() {
         @Override
         public void onAction(String campaignSubject, String buttonName) {
-            JSONObject callback = new JSONObject();
-            try {
-                // We do check if we have valid campaignSubject and buttonName to return to JS
-                if (campaignSubject != null && !campaignSubject.isEmpty()) {
-                    callback.put("campaignSubject", campaignSubject);
+            if (instance != null && instance.dismissButtonListenerReady) {
+                JSONObject callback = new JSONObject();
+                try {
+                    // We do check if we have valid campaignSubject and buttonName to return to JS
+                    if (campaignSubject != null && !campaignSubject.isEmpty()) {
+                        callback.put("campaignSubject", campaignSubject);
+                    }
+                    if (buttonName != null && !buttonName.isEmpty()) {
+                        callback.put("buttonName", buttonName);
+                    }
+                    if (!callback.isNull("buttonName") || !callback.isNull("campaignSubject")) {
+                        instance.cordova.getActivity().runOnUiThread(() -> instance.runJS(
+                                "if (window.swrveDismissButtonListener !== undefined) { window.swrveDismissButtonListener('"
+                                        + callback + "'); }"));
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
                 }
-                if (buttonName != null && !buttonName.isEmpty()) {
-                    callback.put("buttonName", buttonName);
-                }
-                if (!callback.isNull("buttonName") || !callback.isNull("campaignSubject")) {
-                    instance.cordova.getActivity().runOnUiThread(() -> instance.runJS(
-                            "if (window.swrveDismissButtonListener !== undefined) { window.swrveDismissButtonListener('"
-                                    + callback + "'); }"));
-                }
-            } catch (JSONException e) {
-                e.printStackTrace();
+            }
+        }
+    };
+
+    private static SwrveClipboardButtonListener swrveClipboardButtonListener = new SwrveClipboardButtonListener() {
+        @Override
+        public void onAction(String clipboardContents) {
+            if (instance != null && instance.clipboardButtonListenerReady) {
+                instance.cordova.getActivity()
+                        .runOnUiThread(() -> instance.runJS(
+                                "if (window.swrveClipboardButtonListener !== undefined) { window.swrveClipboardButtonListener('"
+                                        + clipboardContents + "'); }"));
             }
         }
     };
@@ -136,12 +160,20 @@ public class SwrvePlugin extends CordovaPlugin {
     }
 
     public static synchronized void createInstance(Application application, int appId, String apiKey,
-            SwrveConfig config) {
+                                                   SwrveConfig config) {
         if (config == null) {
             config = new SwrveConfig();
         }
         config.setNotificationListener(pushNotificationListener);
         config.setSilentPushListener(silentPushNotificationListener);
+
+        //Set in advance listeners from SwrveInAppMessageConfig.
+        SwrveInAppMessageConfig.Builder builder = new SwrveInAppMessageConfig.Builder()
+                .customButtonListener(swrveCustomButtonListener)
+                .dismissButtonListener(swrveDismissButtonListener)
+                .clipboardButtonListener(swrveClipboardButtonListener);
+
+        config.setInAppMessageConfig(builder.build());
 
         SwrveSDK.createInstance(application, appId, apiKey, config);
         SwrveSDK.setResourcesListener(resourcesListener);
@@ -167,7 +199,7 @@ public class SwrvePlugin extends CordovaPlugin {
                     sdk.getUserResources(new SwrveUserResourcesListener() {
                         @Override
                         public void onUserResourcesSuccess(Map<String, Map<String, String>> resources,
-                                String resourcesAsString) {
+                                                           String resourcesAsString) {
                             final String base64Encoded = encodeJsonToBase64(new JSONObject(resources));
                             instance.runJS(
                                     "if (window.swrveProcessResourcesUpdated !== undefined) { window.swrveProcessResourcesUpdated('"
@@ -510,7 +542,7 @@ public class SwrvePlugin extends CordovaPlugin {
                     new UIThreadSwrveUserResourcesListener(cordova.getActivity(), new UIThreadSwrveResourcesRunnable() {
                         @Override
                         public void onUserResourcesSuccess(Map<String, Map<String, String>> resources,
-                                String resourcesAsJSON) {
+                                                           String resourcesAsJSON) {
                             callbackContext.success(new JSONObject(resources));
                         }
 
@@ -526,25 +558,25 @@ public class SwrvePlugin extends CordovaPlugin {
             cordova.getThreadPool()
                     .execute(() -> SwrveSDK.getUserResourcesDiff(new UIThreadSwrveUserResourcesDiffListener(
                             cordova.getActivity(), new UIThreadSwrveResourcesDiffRunnable() {
-                                @Override
-                                public void onUserResourcesDiffSuccess(Map<String, Map<String, String>> oldResources,
-                                        Map<String, Map<String, String>> newResources, String resourcesAsJSON) {
-                                    try {
-                                        JSONObject result = new JSONObject();
-                                        result.put("old", new JSONObject(oldResources));
-                                        result.put("new", new JSONObject(newResources));
-                                        callbackContext.success(result);
-                                    } catch (JSONException e) {
-                                        e.printStackTrace();
-                                    }
-                                }
+                        @Override
+                        public void onUserResourcesDiffSuccess(Map<String, Map<String, String>> oldResources,
+                                                               Map<String, Map<String, String>> newResources, String resourcesAsJSON) {
+                            try {
+                                JSONObject result = new JSONObject();
+                                result.put("old", new JSONObject(oldResources));
+                                result.put("new", new JSONObject(newResources));
+                                callbackContext.success(result);
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        }
 
-                                @Override
-                                public void onUserResourcesDiffError(Exception exception) {
-                                    exception.printStackTrace();
-                                    callbackContext.error(exception.getMessage());
-                                }
-                            })));
+                        @Override
+                        public void onUserResourcesDiffError(Exception exception) {
+                            exception.printStackTrace();
+                            callbackContext.error(exception.getMessage());
+                        }
+                    })));
             return true;
         } else if ("getMessageCenterCampaigns".equals((action))) {
             cordova.getThreadPool().execute(() -> {
@@ -593,16 +625,19 @@ public class SwrvePlugin extends CordovaPlugin {
             setResourcesListenerReady();
             return true;
         } else if ("dismissButtonListenerReady".equals(action)) {
-            SwrveSDK.setCustomDismissButtonListener(dismissButtonListener);
+            dismissButtonListenerReady = true;
+            return true;
+        } else if ("customButtonListenerReady".equals(action)) {
+            customButtonListenerReady = true;
+            return true;
+        } else if ("clipboardButtonListenerReady".equals(action)) {
+            clipboardButtonListenerReady = true;
             return true;
         } else if ("pushNotificationListenerReady".equals(action)) {
             setPushNotificationListenerReady();
             return true;
         } else if ("silentPushNotificationListenerReady".equals(action)) {
             setSilentPushNotificationListenerReady();
-            return true;
-        } else if ("customButtonListenerReady".equals(action)) {
-            SwrveSDK.setCustomButtonListener(customButtonListener);
             return true;
         } else if ("getUserId".equals(action)) {
             callbackContext.success(SwrveSDK.getUserId());

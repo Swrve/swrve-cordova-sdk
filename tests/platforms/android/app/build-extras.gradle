@@ -29,6 +29,10 @@ dependencies {
         mavenCentral()
     }
 
+    androidTestImplementation 'androidx.test:runner:1.1.0'
+    androidTestImplementation 'androidx.test:rules:1.1.0'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.0'
+
     androidTestImplementation 'org.awaitility:awaitility:3.1.6'
     androidTestImplementation 'junit:junit:4.12'
     androidTestImplementation "org.mockito:mockito-android:2.15.0"

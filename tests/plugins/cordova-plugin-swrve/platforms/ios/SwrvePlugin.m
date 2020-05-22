@@ -4,7 +4,7 @@
 #import <SwrveSDK/SwrveCampaign.h>
 #import <SwrveSDk/SwrveCampaignStatus.h>
 
-#define SWRVE_WRAPPER_VERSION "2.1.0"
+#define SWRVE_WRAPPER_VERSION "3.0.0"
 
 CDVViewController *globalViewController;
 
@@ -75,6 +75,7 @@ SwrvePluginPushHandler *swrvePushHandler;
 + (void)sendPluginVersion {
     if([SwrveSDK started]){
         [SwrveSDK userUpdate:[[NSDictionary alloc] initWithObjectsAndKeys:@SWRVE_WRAPPER_VERSION, @"swrve.cordova_plugin_version", nil]];
+        [SwrveSDK sendQueuedEvents];
     }
 }
 
@@ -529,6 +530,16 @@ SwrvePluginPushHandler *swrvePushHandler;
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
+- (void)clipboardButtonListenerReady:(CDVInvokedUrlCommand *)command {
+    // Notify the Swrve JS plugin of the IAM custom button click
+    [SwrveSDK messaging].clipboardButtonCallback = ^(NSString *processedText) {
+        [SwrvePlugin evaluateString:[NSString stringWithFormat:@"if (window.swrveClipboardButtonListener !== undefined) { window.swrveClipboardButtonListener('%@'); }", processedText] onWebView:globalViewController.webView];
+    };
+
+    CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
+
 - (void)getUserId:(CDVInvokedUrlCommand *)command {
     CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:[SwrveSDK userID]];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
@@ -577,14 +588,20 @@ SwrvePluginPushHandler *swrvePushHandler;
         NSString *userId = [command.arguments objectAtIndex:0];
         if (userId != nil && ![userId isEqualToString:@""])  {
             [SwrveSDK startWithUserId:userId];
-            [SwrvePlugin sendPluginVersion];
+            // Need to use dispatch_after or SDK will not be ready to send.
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 3 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+                [SwrvePlugin sendPluginVersion];
+            });
             pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
         } else {
             pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Invalid Arguments"];
         }
     } else {
         [SwrveSDK start];
-        [SwrvePlugin sendPluginVersion];
+        // Need to use dispatch_after or SDK will not be ready to send.
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 3 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+            [SwrvePlugin sendPluginVersion];
+        });
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
     }
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];

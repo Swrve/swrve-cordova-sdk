@@ -7,7 +7,7 @@ var self = (module.exports = {
 		var appDelegateData = fs.readFileSync(applicationPath, 'utf8');
 		// exit out if we already find SwrveGeoPlugin
 		if (appDelegateData.includes('import com.swrve.SwrveGeoPlugin;')) {
-			return false;
+			return;
 		}
 
 		// manage imports.

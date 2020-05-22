@@ -119,11 +119,29 @@ SwrvePlugin.prototype.setCustomPayloadForConversationInput = function(customPayl
 	return cordova.exec(success, fail, 'SwrvePlugin', 'setCustomPayloadForConversationInput', [ customPayload ]);
 };
 
+// SwrveInAppMessageConfig Listeners Begin
+
+// CustomButtonListener
 SwrvePlugin.prototype.setCustomButtonListener = function(listener) {
 	window.swrveCustomButtonListener = listener;
 	window.plugins.swrve.customButtonListenerReady();
 };
 
+SwrvePlugin.prototype.customButtonListenerReady = function() {
+	return cordova.exec(undefined, undefined, 'SwrvePlugin', 'customButtonListenerReady', []);
+};
+
+// ClipboardButtonListener
+SwrvePlugin.prototype.setClipboardButtonListener = function(listener) {
+	window.swrveClipboardButtonListener = listener;
+	window.plugins.swrve.clipboardButtonListenerReady();
+};
+
+SwrvePlugin.prototype.clipboardButtonListenerReady = function() {
+	return cordova.exec(undefined, undefined, 'SwrvePlugin', 'clipboardButtonListenerReady', []);
+};
+
+// DismissButtonListener
 SwrvePlugin.prototype.setDismissButtonListener = function(listener) {
 	window.swrveDismissButtonListener = listener;
 	window.plugins.swrve.dismissButtonListenerReady();
@@ -132,10 +150,7 @@ SwrvePlugin.prototype.setDismissButtonListener = function(listener) {
 SwrvePlugin.prototype.dismissButtonListenerReady = function() {
 	return cordova.exec(undefined, undefined, 'SwrvePlugin', 'dismissButtonListenerReady', []);
 };
-
-SwrvePlugin.prototype.customButtonListenerReady = function() {
-	return cordova.exec(undefined, undefined, 'SwrvePlugin', 'customButtonListenerReady', []);
-};
+// SwrveInAppMessageConfig Listeners End
 
 SwrvePlugin.prototype.pushNotificationListenerReady = function() {
 	return cordova.exec(undefined, undefined, 'SwrvePlugin', 'pushNotificationListenerReady', []);
@@ -200,6 +215,9 @@ SwrvePlugin.install = function() {
 	// Empty callback, override this to listen to custom dismiss action
 	window.swrveDismissButtonListener = function(action) {};
 
+	// Empty callback, override this to listen to custom clipboardButtonListener action
+	window.swrveClipboardButtonListener = function(action) {};
+	
 	// Empty callback, override this to listen to silent push notifications
 	window.swrveSilentPushNotificationListener = function(payload) {};
 

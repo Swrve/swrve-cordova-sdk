@@ -26,6 +26,9 @@ module.exports = function(context) {
 
 	// check and apply changes if need into MainActivity file
 	androidSetupMainActivity();
+
+	// Add custom properties into gradle.properties file
+	androidSetupGradleProperties();
 };
 
 async function androidSetupApplicationWithoutPush() {
@@ -158,4 +161,14 @@ function androidSetupMainActivity() {
 		const mainActivityPath = targetApplicationDirectory + '/MainActivity.java';
 		swrveIntegration.setAdJourney(mainActivityPath);
 	}
+}
+
+function androidSetupGradleProperties() {
+	// Modifies the app gradle.properties file to include properties bellow
+	// enableJetifier and useAndroidX are both properties necessary for Swrve Compatibility because our current Swrve native SDK use AndroidX.
+	// more info at https://developer.android.com/jetpack/androidx
+
+	let customSwrveRequiredProperties = ["android.enableJetifier=true", "android.useAndroidX=true"];
+	let gradlePropertiesFilePath = path.join('platforms', 'android', 'gradle.properties');
+	swrveIntegration.modifyGradlePropertiesFile(gradlePropertiesFilePath, customSwrveRequiredProperties);
 }

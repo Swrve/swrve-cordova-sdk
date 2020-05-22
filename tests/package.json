@@ -16,14 +16,14 @@
     "cordova-android": "^8.0.0",
     "cordova-ios": "^5.0.1",
     "cordova-plugin-swrve": "file:../SwrvePlugin",
-    "shelljs": "^0.8.3"
+    "shelljs": "^0.8.4"
   },
   "scripts": {
     "test": "jest"
   },
   "devDependencies": {
-    "jest": "^24.9.0",
-    "cordova-plugin-swrvegeo": "../SwrveGeoPlugin"
+    "jest": "^25.5.2",
+    "cordova-plugin-swrvegeo": "file:../SwrveGeoPlugin"
   },
   "jest": {
     "testURL": "http://localhost/"

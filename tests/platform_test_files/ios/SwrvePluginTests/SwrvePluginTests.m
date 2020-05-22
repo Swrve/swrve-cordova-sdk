@@ -430,48 +430,52 @@
     }];
 }
 
-
 - (void)testUserResourcesListener {
-    
+
     id swrveResourcesMock = OCMClassMock([SwrveResourceManager class]);
-    NSDictionary *mockedUserResources = @{@"house": @{@"uid": @"house", @"name": @"house", @"cost": @"888"}};
+    NSDictionary *mockedUserResources = @{@"mockedResources":
+                                              @{@"uid": @"AnUUID",
+                                                @"name": @"Whatever",
+                                                @"cost": @888}
+                                        };
+
     OCMStub([swrveResourcesMock resources]).andReturn(mockedUserResources);
-    
     OCMStub([swrveMock resourceManager]).andReturn(swrveResourcesMock);
-    
+
     XCTestExpectation *apploaded = [self expectationWithDescription:@"completionHandler"];
     [self waitForApplicationToStart:^(NSString  *callback) {
         // Call resources methods
-        
+
         [self runJS:
          @"window.plugins.swrve.setResourcesListener(function(resources) {"
          @"window.testResourcesListener = resources;"
          @"});"];
-        
+
         // Give 15 seconds for the response to be received by the Javascript callbacks
         NSString *userResourcesListenerObtainedJSON = nil;
-        
         BOOL resourcesReceived = NO;
         for(int i = 0; i < waitShort && !resourcesReceived; i++) {
             userResourcesListenerObtainedJSON = [self runJS:@"JSON.stringify(window.testResourcesListener)"];
-            resourcesReceived = (userResourcesListenerObtainedJSON != nil && ![userResourcesListenerObtainedJSON isEqualToString:@""]);
-            if (!resourcesReceived) {
+            if(userResourcesListenerObtainedJSON != nil && ![userResourcesListenerObtainedJSON isEqualToString:@""]) {
+                resourcesReceived = YES;
+            } else{
                 [self waitForSeconds:1];
             }
         }
         XCTAssertTrue(resourcesReceived);
-        
+
         // Check user resources obtained through the listener
-        NSDictionary *userResourcesListenerObtained = [NSJSONSerialization JSONObjectWithData:[userResourcesListenerObtainedJSON dataUsingEncoding:NSUTF8StringEncoding] options:kNilOptions error:nil];
-        XCTAssertEqual([[[userResourcesListenerObtained objectForKey:@"house"] objectForKey:@"cost"] integerValue], 888);
-        
+        XCTAssertNotNil(userResourcesListenerObtainedJSON);
+        NSLog(@"userResourcesListenerObtainedJSON %@",userResourcesListenerObtainedJSON);
+        XCTAssertEqualObjects(userResourcesListenerObtainedJSON, @"{\"mockedResources\":{\"uid\":\"AnUUID\",\"name\":\"Whatever\",\"cost\":888}}");
+
         [apploaded fulfill];
     }];
-    
+
     /// waiting for waitForApplicationToStart
     [self waitForExpectationsWithTimeout:waitLong handler:^(NSError *error) {
         if (error) {
-            XCTFail(@"Ran out of time: testEvents");
+            XCTFail(@"Ran out of time: testUserResourcesListener");
         }
     }];
 }
@@ -506,6 +510,38 @@
     [self waitForExpectationsWithTimeout:waitLong handler:^(NSError *error) {
         if (error) {
             XCTFail(@"Ran out of time: testCustomButtonListener");
+        }
+    }];
+}
+
+- (void)testClipboardButtonListener {
+    NSString *expectedClipboard = @"custom_clipboard";
+
+    XCTestExpectation *apploaded = [self expectationWithDescription:@"completionHandler"];
+    [self waitForApplicationToStart:^(NSString  *callback) {
+
+        [self runJS:@"window.plugins.swrve.setClipboardButtonListener(function(clipboard) { window.testCustomClipboard = clipboard; });"];
+        [self waitForSeconds:2];
+
+        XCTAssertNotNil([self->swrveMock messaging].clipboardButtonCallback, @"clipboardButtonCallback should NOT be null");
+
+        void (^clipboardButtonCallback)(NSString *clipboard) = [self->swrveMock messaging].clipboardButtonCallback;
+
+        clipboardButtonCallback(expectedClipboard);
+
+        XCTestExpectation *responseReceived = [self expectationWithDescription:@"responseReceived"];
+        [self waitForActionReceivedForJavascript:@"window.testCustomClipboard" withCallback:^(NSString  *response) {
+            BOOL customActionReceived = [response isEqualToString:expectedClipboard];
+            XCTAssert(customActionReceived);
+            [responseReceived fulfill];
+        }];
+        [apploaded fulfill];
+    }];
+
+    /// waiting for waitForApplicationToStart & waitForActionReceivedForJavascript
+    [self waitForExpectationsWithTimeout:waitLong handler:^(NSError *error) {
+        if (error) {
+            XCTFail(@"Ran out of time: testClipboardButtonListener");
         }
     }];
 }

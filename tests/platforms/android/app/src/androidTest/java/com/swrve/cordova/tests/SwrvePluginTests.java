@@ -13,8 +13,6 @@ import com.swrve.sdk.SwrveUserResourcesDiffListener;
 import com.swrve.sdk.SwrveUserResourcesListener;
 import com.swrve.sdk.messaging.SwrveBaseCampaign;
 import com.swrve.sdk.messaging.SwrveCampaignState;
-import com.swrve.sdk.messaging.SwrveCustomButtonListener;
-import com.swrve.sdk.messaging.SwrveDismissButtonListener;
 import com.swrve.sdk.messaging.ui.SwrveInAppMessageActivity;
 
 import org.json.JSONArray;
@@ -34,7 +32,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static android.support.test.InstrumentationRegistry.getInstrumentation;
+import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentation;
 import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -68,15 +66,15 @@ public class SwrvePluginTests extends SwrvePluginBaseTests {
         Date expectedDate = format.parse(dtStart);
 
         // Verify if each call rly get called.
-        Mockito.verify(swrveMock, Mockito.timeout(SwrveTestHelper.WAITING_SHORT_MILLISEC).atLeastOnce())
+        Mockito.verify(swrveMock, Mockito.timeout(SwrveTestHelper.WAITING_LONG_MILLISEC).atLeastOnce())
                 .event("levelup");
-        Mockito.verify(swrveMock, Mockito.timeout(SwrveTestHelper.WAITING_SHORT_MILLISEC).atLeastOnce())
+        Mockito.verify(swrveMock, Mockito.timeout(SwrveTestHelper.WAITING_LONG_MILLISEC).atLeastOnce())
                 .event("leveldown", expectedMapLevelEvent);
-        Mockito.verify(swrveMock, Mockito.timeout(SwrveTestHelper.WAITING_SHORT_MILLISEC).atLeastOnce())
+        Mockito.verify(swrveMock, Mockito.timeout(SwrveTestHelper.WAITING_LONG_MILLISEC).atLeastOnce())
                 .currencyGiven("Gold", 20);
-        Mockito.verify(swrveMock, Mockito.timeout(SwrveTestHelper.WAITING_SHORT_MILLISEC).atLeastOnce())
+        Mockito.verify(swrveMock, Mockito.timeout(SwrveTestHelper.WAITING_LONG_MILLISEC).atLeastOnce())
                 .userUpdate(expectedMapUpdate1);
-        Mockito.verify(swrveMock, Mockito.timeout(SwrveTestHelper.WAITING_SHORT_MILLISEC).atLeastOnce())
+        Mockito.verify(swrveMock, Mockito.timeout(SwrveTestHelper.WAITING_LONG_MILLISEC).atLeastOnce())
                 .userUpdate("last_subscribed", expectedDate);
 
         // Check the JS Callback
@@ -290,24 +288,54 @@ public class SwrvePluginTests extends SwrvePluginBaseTests {
     }
 
     @Test
-    public void testCustomButtonListener() {
-
-        final String expectedAction = "custom_action_from_server";
+    public void testCustomButtonListener() throws InterruptedException {
+        final String expectedAction = "WHATEVER_ACTION";
         runJS("window.plugins.swrve.setCustomButtonListener(function(action) { alert('swrve:13:' + action); });");
-
-        ArgumentCaptor<SwrveCustomButtonListener> customButtonListenerCaptor = ArgumentCaptor
-                .forClass(SwrveCustomButtonListener.class);
-        Mockito.verify(swrveMock, Mockito.timeout(SwrveTestHelper.WAITING_SHORT_MILLISEC).atLeastOnce())
-                .setCustomButtonListener(customButtonListenerCaptor.capture());
-        customButtonListenerCaptor.getValue().onAction(expectedAction);
-
+        Thread.sleep(SwrveTestHelper.WAITING_SHORT_MILLISEC);
+        configMock.getInAppMessageConfig().getCustomButtonListener().onAction(expectedAction);
         final AtomicBoolean receivedActionFromButton = new AtomicBoolean(false);
-
         mActivity.getJSReturnValueAsync(13, value -> {
             assertEquals(expectedAction, value);
             receivedActionFromButton.set(true);
         });
+        await().atMost(SwrveTestHelper.WAITING_SHORT, TimeUnit.SECONDS).untilTrue(receivedActionFromButton);
+    }
 
+    @Test
+    public void testDismissButtonListener() throws Exception {
+        final String campaignSubject = "some_expected_campaignSubject";
+        final String buttonName = "some_button_name";
+        runJS("window.plugins.swrve.setDismissButtonListener(function(action) { alert('swrve:131:' + JSON.stringify(action)); });");
+        Thread.sleep(SwrveTestHelper.WAITING_SHORT_MILLISEC);
+
+        configMock.getInAppMessageConfig().getDismissButtonListener().onAction(campaignSubject, buttonName);
+        final AtomicBoolean receivedActionFromDismiss = new AtomicBoolean(false);
+
+        mActivity.getJSReturnValueAsync(131, value -> {
+            try {
+                JSONObject callback = new JSONObject(value);
+                Assert.assertEquals(campaignSubject, callback.getString("campaignSubject"));
+                Assert.assertEquals(buttonName, callback.getString("buttonName"));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            receivedActionFromDismiss.set(true);
+        });
+        await().atMost(SwrveTestHelper.WAITING_SHORT, TimeUnit.SECONDS).untilTrue(receivedActionFromDismiss);
+    }
+
+    @Test
+    public void testClipboardButtonListener() throws InterruptedException {
+        final String expectedAction = "CLIPBOARD_ACTION";
+        runJS("window.plugins.swrve.setClipboardButtonListener(function(action) { alert('swrve:132:' + action); });");
+        Thread.sleep(SwrveTestHelper.WAITING_SHORT_MILLISEC);
+
+        configMock.getInAppMessageConfig().getClipboardButtonListener().onAction(expectedAction);
+        final AtomicBoolean receivedActionFromButton = new AtomicBoolean(false);
+        mActivity.getJSReturnValueAsync(132, value -> {
+            assertEquals(expectedAction, value);
+            receivedActionFromButton.set(true);
+        });
         await().atMost(SwrveTestHelper.WAITING_SHORT, TimeUnit.SECONDS).untilTrue(receivedActionFromButton);
     }
 
@@ -487,11 +515,11 @@ public class SwrvePluginTests extends SwrvePluginBaseTests {
 
         final String expectedArmor = "disabled";
         runJS("window.plugins.swrve.setPushNotificationListener(function(payload) { alert('swrve:19:' + JSON.stringify(payload)); });");
-        Thread.sleep(1000);
+        Thread.sleep(SwrveTestHelper.WAITING_SHORT_MILLISEC);
 
         ArgumentCaptor<SwrvePushNotificationListener> customPushNotificationListenerCaptor = ArgumentCaptor
                 .forClass(SwrvePushNotificationListener.class);
-        Mockito.verify(configMock, Mockito.timeout(SwrveTestHelper.WAITING_SHORT_MILLISEC).atLeastOnce())
+        Mockito.verify(configMock, Mockito.timeout(SwrveTestHelper.WAITING_LONG_MILLISEC).atLeastOnce())
                 .setNotificationListener(customPushNotificationListenerCaptor.capture());
         customPushNotificationListenerCaptor.getValue()
                 .onPushNotification(new JSONObject("{\"armor\":" + expectedArmor + "}"));
@@ -515,11 +543,11 @@ public class SwrvePluginTests extends SwrvePluginBaseTests {
 
         final String expectedArmor = "disabled";
         runJS("window.plugins.swrve.setSilentPushNotificationListener(function(payload) { alert('swrve:20:' + JSON.stringify(payload)); });");
-        Thread.sleep(1000);
+        Thread.sleep(SwrveTestHelper.WAITING_SHORT_MILLISEC);
 
         ArgumentCaptor<SwrveSilentPushListener> customSilentPushNotificationListenerCaptor = ArgumentCaptor
                 .forClass(SwrveSilentPushListener.class);
-        Mockito.verify(configMock, Mockito.timeout(SwrveTestHelper.WAITING_SHORT_MILLISEC).atLeastOnce())
+        Mockito.verify(configMock, Mockito.timeout(SwrveTestHelper.WAITING_LONG_MILLISEC).atLeastOnce())
                 .setSilentPushListener(customSilentPushNotificationListenerCaptor.capture());
         customSilentPushNotificationListenerCaptor.getValue().onSilentPush(null,
                 new JSONObject("{\"armor\":" + expectedArmor + "}"));
@@ -606,35 +634,6 @@ public class SwrvePluginTests extends SwrvePluginBaseTests {
     }
 
     @Test
-    public void testDismissButtonListener() throws Exception {
-
-        final String campaignSubject = "some_expected_campaignSubject";
-        final String buttonName = "some_button_name";
-        runJS("window.plugins.swrve.setDismissButtonListener(function(action) { alert('swrve:23:' + JSON.stringify(action)); });");
-
-        ArgumentCaptor<SwrveDismissButtonListener> customDismissListenerCaptor = ArgumentCaptor
-                .forClass(SwrveDismissButtonListener.class);
-        Mockito.verify(swrveMock, Mockito.timeout(SwrveTestHelper.WAITING_SHORT_MILLISEC).atLeastOnce())
-                .setDismissButtonListener(customDismissListenerCaptor.capture());
-        customDismissListenerCaptor.getValue().onAction(campaignSubject, buttonName);
-
-        final AtomicBoolean receivedActionFromDismiss = new AtomicBoolean(false);
-
-        mActivity.getJSReturnValueAsync(23, value -> {
-            try {
-                JSONObject callback = new JSONObject(value);
-                Assert.assertEquals(campaignSubject, callback.getString("campaignSubject"));
-                Assert.assertEquals(buttonName, callback.getString("buttonName"));
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            receivedActionFromDismiss.set(true);
-        });
-
-        await().atMost(SwrveTestHelper.WAITING_SHORT, TimeUnit.SECONDS).untilTrue(receivedActionFromDismiss);
-    }
-
-    @Test
     public void testCustomPayloadConversation() {
 
         // Mock and expectations for the test
@@ -656,12 +655,12 @@ public class SwrvePluginTests extends SwrvePluginBaseTests {
     @Test
     public void testHandleDeeplinkLinkToNativeSDK() {
         SwrvePlugin.handleDeeplink(Mockito.any());
-        Mockito.verify(swrveMock, Mockito.timeout(SwrveTestHelper.WAITING_SHORT_MILLISEC)).handleDeeplink(Mockito.any());
+        Mockito.verify(swrveMock, Mockito.timeout(SwrveTestHelper.WAITING_LONG_MILLISEC)).handleDeeplink(Mockito.any());
     }
 
     @Test
     public void testHandleDefferedDeepLinkToNativeSDK() {
         SwrvePlugin.handleDeferredDeeplink(Mockito.any());
-        Mockito.verify(swrveMock, Mockito.timeout(SwrveTestHelper.WAITING_SHORT_MILLISEC)).handleDeferredDeeplink(Mockito.any());
+        Mockito.verify(swrveMock, Mockito.timeout(SwrveTestHelper.WAITING_LONG_MILLISEC)).handleDeferredDeeplink(Mockito.any());
     }
 }
