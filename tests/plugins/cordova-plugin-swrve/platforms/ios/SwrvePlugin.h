@@ -26,6 +26,7 @@
 - (void)getMessageCenterCampaigns:(CDVInvokedUrlCommand *)command;
 - (void)showMessageCenterCampaign:(CDVInvokedUrlCommand *)command;
 - (void)removeMessageCenterCampaign:(CDVInvokedUrlCommand *)command;
+- (void)markMessageCenterCampaignAsSeen:(CDVInvokedUrlCommand *)command;
 
 - (void)getUserId:(CDVInvokedUrlCommand *)command;
 - (void)getApiKey:(CDVInvokedUrlCommand *)command;

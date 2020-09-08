@@ -1,23 +1,23 @@
 {
-	"name": "cordova-plugin-swrve",
-	"version": "3.0.0",
-	"description": "Android and iOS Cordova plugin for Swrve.",
-	"cordova": {
-		"id": "cordova-plugin-swrve",
-		"platforms": [ "android", "ios" ]
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/Swrve/swrve-cordova-sdk.git"
-	},
-	"keywords": [ "swrve", "analytics", "messaging", "ecosystem:cordova", "cordova-android", "cordova-ios" ],
-	"author": "Swrve",
-	"license": "Apache 2.0",
-	"dependencies": {
-		"xcode": "2.0.0"
-	},
-	"bugs": {
-		"url": "https://github.com/Swrve/swrve-cordova-sdk/issues"
-	},
-	"homepage": "https://github.com/Swrve/swrve-cordova-sdk#readme"
+    "name": "cordova-plugin-swrve",
+    "version": "3.1.0",
+    "description": "Android and iOS Cordova plugin for Swrve.",
+    "cordova": {
+        "id": "cordova-plugin-swrve",
+        "platforms": [ "android", "ios" ]
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/Swrve/swrve-cordova-sdk.git"
+    },
+    "keywords": [ "swrve", "analytics", "messaging", "ecosystem:cordova", "cordova-android", "cordova-ios" ],
+    "author": "Swrve",
+    "license": "Apache 2.0",
+    "dependencies": {
+        "xcode": "2.0.0"
+    },
+    "bugs": {
+        "url": "https://github.com/Swrve/swrve-cordova-sdk/issues"
+    },
+    "homepage": "https://github.com/Swrve/swrve-cordova-sdk#readme"
 }
