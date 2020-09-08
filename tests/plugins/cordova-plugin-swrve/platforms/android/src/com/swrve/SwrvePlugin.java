@@ -49,7 +49,7 @@ import java.util.TimeZone;
 
 public class SwrvePlugin extends CordovaPlugin {
 
-    public static String VERSION = "3.0.0";
+    public static String VERSION = "3.1.0";
     private boolean resourcesListenerReady;
     private boolean customButtonListenerReady;
     private boolean dismissButtonListenerReady;
@@ -612,6 +612,11 @@ public class SwrvePlugin extends CordovaPlugin {
                 removeMessageCenterCampaign(arguments, callbackContext);
             }
             return true;
+        } else if ("markMessageCenterCampaignAsSeen".equals(action)) {
+            if (!isBadArgument(arguments, callbackContext, 1, "Invalid Arguments")) {
+                markMessageCenterCampaignAsSeen(arguments, callbackContext);
+            }
+            return true;
         } else if ("refreshCampaignsAndResources".equals(action)) {
             SwrveSDK.refreshCampaignsAndResources();
             return true;
@@ -678,10 +683,10 @@ public class SwrvePlugin extends CordovaPlugin {
 
             cordova.getThreadPool().execute(() -> {
 
-                SwrveBaseCampaign canditateCampaign = findMessageCenterCampaignbyID(identifier);
+                SwrveBaseCampaign candidateCampaign = findMessageCenterCampaignbyID(identifier);
 
-                if (canditateCampaign != null) {
-                    SwrveSDK.showMessageCenterCampaign(canditateCampaign);
+                if (candidateCampaign != null) {
+                    SwrveSDK.showMessageCenterCampaign(candidateCampaign);
                     callbackContext.success();
                 } else {
                     callbackContext.error("No campaign with ID: " + identifier + " found.");
@@ -698,10 +703,30 @@ public class SwrvePlugin extends CordovaPlugin {
             final int identifier = arguments.getInt(0);
 
             cordova.getThreadPool().execute(() -> {
-                SwrveBaseCampaign canditateCampaign = findMessageCenterCampaignbyID(identifier);
+                SwrveBaseCampaign candidateCampaign = findMessageCenterCampaignbyID(identifier);
 
-                if (canditateCampaign != null) {
-                    SwrveSDK.removeMessageCenterCampaign(canditateCampaign);
+                if (candidateCampaign != null) {
+                    SwrveSDK.removeMessageCenterCampaign(candidateCampaign);
+                    callbackContext.success();
+                } else {
+                    callbackContext.error("No campaign with ID: " + identifier + " found.");
+                }
+            });
+        } catch (JSONException e) {
+            callbackContext.error("JSON_EXCEPTION");
+            e.printStackTrace();
+        }
+    }
+
+    private void markMessageCenterCampaignAsSeen(JSONArray arguments, final CallbackContext callbackContext) {
+        try {
+            final int identifier = arguments.getInt(0);
+
+            cordova.getThreadPool().execute(() -> {
+                SwrveBaseCampaign candidateCampaign = findMessageCenterCampaignbyID(identifier);
+
+                if (candidateCampaign != null) {
+                    SwrveSDK.markMessageCenterCampaignAsSeen(candidateCampaign);
                     callbackContext.success();
                 } else {
                     callbackContext.error("No campaign with ID: " + identifier + " found.");
@@ -716,15 +741,15 @@ public class SwrvePlugin extends CordovaPlugin {
     private SwrveBaseCampaign findMessageCenterCampaignbyID(int identifier) {
 
         List<SwrveBaseCampaign> campaigns = SwrveSDK.getMessageCenterCampaigns();
-        SwrveBaseCampaign canditateCampaign = null;
+        SwrveBaseCampaign candidateCampaign = null;
 
         for (SwrveBaseCampaign campaign : campaigns) {
             if (campaign.getId() == identifier) {
-                canditateCampaign = campaign;
+                candidateCampaign = campaign;
             }
         }
 
-        return canditateCampaign;
+        return candidateCampaign;
     }
 
     private void setResourcesListenerReady() {

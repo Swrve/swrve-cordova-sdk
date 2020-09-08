@@ -104,6 +104,11 @@ SwrvePlugin.prototype.removeMessageCenterCampaign = function(identifier, success
 	return cordova.exec(success, fail, 'SwrvePlugin', 'removeMessageCenterCampaign', [ identifier ]);
 };
 
+// identifier is an int
+SwrvePlugin.prototype.markMessageCenterCampaignAsSeen = function(identifier, success, fail) {
+	return cordova.exec(success, fail, 'SwrvePlugin', 'markMessageCenterCampaignAsSeen', [ identifier ]);
+};
+
 SwrvePlugin.prototype.resourcesListenerReady = function() {
 	return cordova.exec(undefined, undefined, 'SwrvePlugin', 'resourcesListenerReady', []);
 };
