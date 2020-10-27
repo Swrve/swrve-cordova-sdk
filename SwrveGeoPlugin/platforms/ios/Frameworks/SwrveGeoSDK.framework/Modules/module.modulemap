@@ -1,6 +1,0 @@
-framework module SwrveGeoSDK {
-  umbrella header "SwrveGeoSDK.h"
-
-  export *
-  module * { export * }
-}

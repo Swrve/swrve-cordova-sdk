@@ -5,7 +5,6 @@ import com.swrve.SwrvePlugin;
 import com.swrve.sdk.config.SwrveConfig;
 import com.swrve.sdk.config.SwrveStack;
 import com.swrve.sdk.SwrveInitMode;
-//<swrve_geo_imports>
 
 public class Application extends android.app.Application {
 
@@ -14,7 +13,5 @@ public class Application extends android.app.Application {
         super.onCreate();
 
         //<swrve_application_content>
-
-        //<swrve_geo_placeholder>
     }
 }

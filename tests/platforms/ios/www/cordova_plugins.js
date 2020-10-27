@@ -7,18 +7,9 @@ cordova.define('cordova/plugin_list', function(require, exports, module) {
       "clobbers": [
         "SwrvePlugin"
       ]
-    },
-    {
-      "id": "cordova-plugin-swrvegeo.SwrveGeoPlugin",
-      "file": "plugins/cordova-plugin-swrvegeo/js/swrvegeo-ios.js",
-      "pluginId": "cordova-plugin-swrvegeo",
-      "clobbers": [
-        "SwrveGeoPlugin"
-      ]
     }
   ];
   module.exports.metadata = {
-    "cordova-plugin-swrve": "1.0",
-    "cordova-plugin-swrvegeo": "1.0"
+    "cordova-plugin-swrve": "1.0"
   };
 });

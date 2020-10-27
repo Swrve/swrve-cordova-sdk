@@ -5,6 +5,5 @@
     // Set your app id and api key here
     [SwrvePlugin initWithAppID: <SwrveAppId> apiKey:@"<SwrveKey>" config:config viewController:self.viewController];
     // <Swrve_adJourney>
-    // <Swrve_geo_placeholder>
     // END OF CHANGES
     

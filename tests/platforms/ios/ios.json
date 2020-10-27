@@ -11,10 +11,6 @@
             {
               "xml": "<feature name=\"SwrvePlugin\"><param name=\"ios-package\" value=\"SwrvePlugin\" /><param name=\"onload\" value=\"true\" /></feature>",
               "count": 1
-            },
-            {
-              "xml": "<feature name=\"SwrveGeoPlugin\"><param name=\"ios-package\" value=\"SwrveGeoPlugin\" /><param name=\"onload\" value=\"true\" /></feature>",
-              "count": 1
             }
           ]
         }
@@ -23,9 +19,6 @@
   },
   "installed_plugins": {
     "cordova-plugin-swrve": {
-      "PACKAGE_NAME": "$(PRODUCT_BUNDLE_IDENTIFIER)"
-    },
-    "cordova-plugin-swrvegeo": {
       "PACKAGE_NAME": "$(PRODUCT_BUNDLE_IDENTIFIER)"
     }
   },
@@ -38,18 +31,9 @@
       "clobbers": [
         "SwrvePlugin"
       ]
-    },
-    {
-      "id": "cordova-plugin-swrvegeo.SwrveGeoPlugin",
-      "file": "plugins/cordova-plugin-swrvegeo/js/swrvegeo-ios.js",
-      "pluginId": "cordova-plugin-swrvegeo",
-      "clobbers": [
-        "SwrveGeoPlugin"
-      ]
     }
   ],
   "plugin_metadata": {
-    "cordova-plugin-swrve": "1.0",
-    "cordova-plugin-swrvegeo": "1.0"
+    "cordova-plugin-swrve": "1.0"
   }
 }

@@ -22,5 +22,4 @@
         <preference name="BackupWebStorage" value="local" />
     </platform>
     <plugin name="cordova-plugin-swrve" spec="../SwrvePlugin" />
-    <plugin name="cordova-plugin-swrvegeo" spec="../SwrveGeoPlugin" />
 </widget>

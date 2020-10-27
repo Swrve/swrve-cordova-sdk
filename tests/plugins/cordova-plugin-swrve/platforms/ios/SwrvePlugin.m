@@ -4,7 +4,7 @@
 #import <SwrveSDK/SwrveCampaign.h>
 #import <SwrveSDk/SwrveCampaignStatus.h>
 
-#define SWRVE_WRAPPER_VERSION "3.1.0"
+#define SWRVE_WRAPPER_VERSION "3.2.0"
 
 CDVViewController *globalViewController;
 
@@ -257,28 +257,28 @@ SwrvePluginPushHandler *swrvePushHandler;
 -(void)unvalidatedIap:(CDVInvokedUrlCommand *)command {
     CDVPluginResult *pluginResult = nil;
     if (([command.arguments count] == 4) || ([command.arguments count] == 5)) {
-        
+
         SwrveIAPRewards *reward = nil;
         NSNumber *localCost = [command.arguments objectAtIndex:0];
         NSString *localCurrency = [command.arguments objectAtIndex:1];
         NSString *productId = [command.arguments objectAtIndex:2];
         NSNumber *quantity = [command.arguments objectAtIndex:3];
-        
+
         if([command.arguments count] == 5) {
             // since we could potentially have a reward, convert it for sending up
             NSDictionary *rewardsDict = [command.arguments objectAtIndex:4];
             reward = [[SwrveIAPRewards alloc] init];
-            
+
             NSArray *items = [rewardsDict objectForKey:@"items"];
-            
+
             if(items != nil && [items count] != 0) {
                 for (NSDictionary *item in items) {
                     [reward addItem:[item objectForKey:@"name"] withQuantity:[[item objectForKey:@"amount"] longValue]];
                 }
             }
-            
+
             NSArray *currencies = [rewardsDict objectForKey:@"currencies"];
-            
+
             if(currencies != nil && [currencies count] != 0) {
                 for (NSDictionary *currency in currencies) {
                     [reward addCurrency:[currency objectForKey:@"name"] withAmount:[[currency objectForKey:@"amount"] longValue]];
@@ -330,7 +330,7 @@ SwrvePluginPushHandler *swrvePushHandler;
 - (void)getMessageCenterCampaigns:(CDVInvokedUrlCommand *)command {
     NSArray<SwrveCampaign *> *campaigns = [[SwrveSDK messaging] messageCenterCampaigns];
     NSMutableArray *messageAsArray = [[NSMutableArray alloc] init];
-    
+
     for (SwrveCampaign *campaign in campaigns) {
         NSMutableDictionary *campaignDictionary = [[NSMutableDictionary alloc] init];
         [campaignDictionary setValue:[NSNumber numberWithUnsignedInteger:[campaign ID]] forKey:@"ID"];
@@ -338,19 +338,19 @@ SwrvePluginPushHandler *swrvePushHandler;
         [campaignDictionary setValue:[campaign subject] forKey:@"subject"];
         [campaignDictionary setValue:[NSNumber numberWithUnsignedInteger:[[campaign dateStart] timeIntervalSince1970]] forKey:@"dateStart"];
         [campaignDictionary setValue:@([campaign messageCenter]) forKey:@"messageCenter"];
-        
+
         NSMutableDictionary *stateDictionary = [NSMutableDictionary dictionaryWithDictionary:[[campaign state] asDictionary]];
-        
+
         // Remove unused ID
         [stateDictionary removeObjectForKey:@"ID"];
-        
+
         // convert the status to a readable format so its consistent across both platforms
         NSUInteger statusNumber = [[stateDictionary objectForKey:@"status"] integerValue];
         [stateDictionary setObject:[self translateCampaignStatus:statusNumber] forKey:@"status"];
         [campaignDictionary setObject:stateDictionary forKey:@"state"];
         [messageAsArray addObject:campaignDictionary];
     }
-    
+
     CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:messageAsArray];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
@@ -377,20 +377,20 @@ SwrvePluginPushHandler *swrvePushHandler;
         NSNumber *identifier = [command.arguments objectAtIndex:0];
         NSArray<SwrveCampaign *> *campaigns = [[SwrveSDK messaging] messageCenterCampaigns];
         SwrveCampaign *candidate;
-        
+
         for (SwrveCampaign *campaign in campaigns) {
             if ([campaign ID] == [identifier unsignedIntegerValue]) {
                 candidate = campaign;
             }
         }
-        
+
         if (candidate) {
             [[SwrveSDK messaging] showMessageCenterCampaign:candidate];
             pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
         } else {
             pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:[NSString stringWithFormat:@"No campaign with ID: %@ found.", identifier]];
         }
-        
+
     } else {
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Invalid Arguments"];
     }
@@ -403,20 +403,20 @@ SwrvePluginPushHandler *swrvePushHandler;
         NSNumber *identifier = [command.arguments objectAtIndex:0];
         NSArray<SwrveCampaign *> *campaigns = [[SwrveSDK messaging] messageCenterCampaigns];
         SwrveCampaign *candidate;
-        
+
         for (SwrveCampaign *campaign in campaigns) {
             if ([campaign ID] == [identifier unsignedIntegerValue]) {
                 candidate = campaign;
             }
         }
-        
+
         if (candidate){
             [[SwrveSDK messaging] removeMessageCenterCampaign:candidate];
             pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
         } else{
             pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:[NSString stringWithFormat:@"No campaign with ID: %@ found.", identifier]];
         }
-        
+
     } else {
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Invalid Arguments"];
     }
@@ -429,20 +429,20 @@ SwrvePluginPushHandler *swrvePushHandler;
         NSNumber *identifier = [command.arguments objectAtIndex:0];
         NSArray<SwrveCampaign *> *campaigns = [[SwrveSDK messaging] messageCenterCampaigns];
         SwrveCampaign *candidate;
-        
+
         for (SwrveCampaign *campaign in campaigns) {
             if ([campaign ID] == [identifier unsignedIntegerValue]) {
                 candidate = campaign;
             }
         }
-        
+
         if (candidate){
             [[SwrveSDK messaging] markMessageCenterCampaignAsSeen:candidate];
             pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
         } else{
             pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:[NSString stringWithFormat:@"No campaign with ID: %@ found.", identifier]];
         }
-        
+
     } else {
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Invalid Arguments"];
     }

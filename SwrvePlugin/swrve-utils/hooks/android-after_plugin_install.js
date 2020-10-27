@@ -82,6 +82,7 @@ async function androidSetupApplicationFirebase() {
 	const managedAuto = appConfig.getPlatformPreference('swrve.managedModeAutoStartLastUser', 'android');
 	let swrveStack = appConfig.getPlatformPreference('swrve.stack', 'android');
 	let drawableDirectory = appConfig.getPlatformPreference('swrve.drawablePath', 'android');
+	let handlingGoogleServices = appConfig.getPlatformPreference('swrve.handlingGoogleServices', 'android');
 	let googleServicesPath = appConfig.getPlatformPreference('swrve.googleServicesPath', 'android');
 	let googleServicesVersion = appConfig.getPlatformPreference('swrve.googleServicesVersion', 'android');
 	var targetApplicationDirectory = swrveIntegration.produceTargetPathFromPackage(targetDirectory, packageName);
@@ -117,23 +118,26 @@ async function androidSetupApplicationFirebase() {
 		var drawableFiles = [ 'icon.png', 'material_icon.png' ];
 		// Copy Drawable images for the Notifications
 		swrveIntegration.copyDrawableNotificationsImages(drawableDirectory, targetDirectory, drawableFiles);
+		
+		// if handlingGoogleServices isn't present or it's set to false. proceed
+		if(swrveUtils.isEmptyString(handlingGoogleServices) || swrveIntegration.convertToBoolean(handlingGoogleServices) == false) {
+			if (!swrveUtils.isEmptyString(googleServicesPath)) {
+				// copy their google-services.json file to the app root directory
+				swrveUtils.copyRecursiveSync(googleServicesPath, `${appDirectory}/google-services.json`);
+			} else {
+				console.warn(
+					'Swrve: for android push you must include path to google-services.json in config.xml under "swrve.googleServicesPath"'
+				);
+			}
 
-		if (!swrveUtils.isEmptyString(googleServicesPath)) {
-			// copy their google-services.json file to the app root directory
-			swrveUtils.copyRecursiveSync(googleServicesPath, `${appDirectory}/google-services.json`);
-		} else {
-			console.warn(
-				'Swrve: for android push you must include path to google-services.json in config.xml under "swrve.googleServicesPath"'
-			);
-		}
+			// Modifies the app/build.gradle file to include google-services (as required by firebase)
+			const gradleRootFilePath = path.join('platforms', 'android', 'app', 'build.gradle');
 
-		// Modifies the app/build.gradle file to include google-services (as required by firebase)
-		const gradleRootFilePath = path.join('platforms', 'android', 'app', 'build.gradle');
-
-		if (!swrveUtils.isEmptyString(googleServicesVersion)) {
-			swrveIntegration.modifyGradleFile(gradleRootFilePath, googleServicesVersion);
-		} else {
-			swrveIntegration.modifyGradleFile(gradleRootFilePath, '4.2.0');
+			if (!swrveUtils.isEmptyString(googleServicesVersion)) {
+				swrveIntegration.modifyGradleFile(gradleRootFilePath, googleServicesVersion);
+			} else {
+				swrveIntegration.modifyGradleFile(gradleRootFilePath, '4.2.0');
+			}
 		}
 	} catch (err) {
 		console.error(`Swrve: Something went wrong during Android Setup Application ${err}`);

@@ -22,13 +22,5 @@
     },
     "is_top_level": true,
     "variables": {}
-  },
-  "cordova-plugin-swrvegeo": {
-    "source": {
-      "type": "local",
-      "path": "../node_modules/cordova-plugin-swrvegeo"
-    },
-    "is_top_level": true,
-    "variables": {}
   }
 }

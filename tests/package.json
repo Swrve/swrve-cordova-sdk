@@ -8,8 +8,7 @@
       "ios"
     ],
     "plugins": {
-      "cordova-plugin-swrve": {},
-      "cordova-plugin-swrvegeo": {}
+      "cordova-plugin-swrve": {}
     }
   },
   "dependencies": {
@@ -22,8 +21,7 @@
     "test": "jest"
   },
   "devDependencies": {
-    "jest": "^25.5.2",
-    "cordova-plugin-swrvegeo": "file:../SwrveGeoPlugin"
+    "jest": "^25.5.2"
   },
   "jest": {
     "testURL": "http://localhost/"

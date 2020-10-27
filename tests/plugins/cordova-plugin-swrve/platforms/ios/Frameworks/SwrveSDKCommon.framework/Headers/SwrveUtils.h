@@ -42,7 +42,7 @@
 /**
  Parse a string into paramaters
  
- @return NSDictionary of paramters
+ @return NSDictionary of parameters
  */
 + (NSDictionary *)parseURLQueryParams:(NSString *) queryString;
 
@@ -51,15 +51,15 @@
 
  @param dic Dictionary that contain a NSNumber or a NSString value on it.
  @param key The key that is going to be used to get NSString value from dic.
- @return NSString of paramters
+ @return NSString of parameters
  */
 + (NSString *)getStringFromDic:(NSDictionary *)dic withKey:(NSString *)key;
 
 /**
-Get current time in epoch in milliseconds.
-
-@return UInt64 time in milliseconds.
-*/
+    Return current time since the epoch in milliseconds
+    @return UInt64 of current time
+ */
+//TODO: review and update the Swrve.m to use this method instead of "[self getTime]". (need update few test mock to support this change as well)
 + (UInt64)getTimeEpoch;
 
 
@@ -69,5 +69,20 @@ Get current time in epoch in milliseconds.
  @return BOOL
  */
 + (BOOL) supportsConversations;
+
+
+/**
+ Returns one of three options "mobile" , "tv" or "desktop" based on the platform running it.
+ 
+ @return NSString representing the device type
+ */
++ (NSString *) platformDeviceType;
+
+/**
+ Check if IDFA doesn't contain all zeros and dashes
+ 
+ @return Bool
+ */
++ (BOOL)isValidIDFA:(NSString *)idfa;
 
 @end

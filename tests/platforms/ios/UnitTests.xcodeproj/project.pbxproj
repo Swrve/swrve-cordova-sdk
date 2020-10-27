@@ -5,6 +5,7 @@
 	};
 	objectVersion = 46;
 	objects = {
+
 /* Begin PBXBuildFile section */
 		0207DA581B56EA530066E2B4 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0207DA571B56EA530066E2B4 /* Images.xcassets */; };
 		0EC05908F4474FE89490108E /* SwrvePlugin.m in Sources */ = {isa = PBXBuildFile; fileRef = B4FD9E5ABF6141D6B83C94DB /* SwrvePlugin.m */; };
@@ -19,16 +20,11 @@
 		525791272322AF1000CF7200 /* OCMock.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 525791232322AF1000CF7200 /* OCMock.framework */; };
 		525791282322AF1000CF7200 /* SwrveTestHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 525791252322AF1000CF7200 /* SwrveTestHelper.m */; };
 		525791292322AF7400CF7200 /* SwrveSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A2A7202A18D54F85B50E9FDF /* SwrveSDK.framework */; };
-		5257912A2322AF7700CF7200 /* SwrveGeoSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2F78DDB4241A407BB364963E /* SwrveGeoSDK.framework */; };
-		5257912B2322AF7800CF7200 /* BDPointSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7B74C5552E544B4E85D0D46D /* BDPointSDK.framework */; };
 		5257912C2322AF7A00CF7200 /* SwrveConversationSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 60B12CCBC12C4D17999E041A /* SwrveConversationSDK.framework */; };
 		5257912D2322AF7C00CF7200 /* SwrveSDKCommon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF415DBB22094B6BA02F3B85 /* SwrveSDKCommon.framework */; };
 		5257912F2322AFDD00CF7200 /* OCMock.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 525791232322AF1000CF7200 /* OCMock.framework */; };
 		556F7B35502A4D5D93FB8096 /* SwrveSDKCommon.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = EF415DBB22094B6BA02F3B85 /* SwrveSDKCommon.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		6AFF5BF91D6E424B00AB3073 /* CDVLaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6AFF5BF81D6E424B00AB3073 /* CDVLaunchScreen.storyboard */; };
-		BC08C17018D3439A9FB9C12E /* SwrveGeoSDK.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 2F78DDB4241A407BB364963E /* SwrveGeoSDK.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		CD287103946447CBA88A0DCF /* SwrveGeoPlugin.m in Sources */ = {isa = PBXBuildFile; fileRef = 583E87D95D3649B7937800EB /* SwrveGeoPlugin.m */; };
-		DE2276BF0BF040229AAD3ADA /* BDPointSDK.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 7B74C5552E544B4E85D0D46D /* BDPointSDK.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		FDAACCB70CBD4AC681AC860A /* SwrveConversationSDK.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 60B12CCBC12C4D17999E041A /* SwrveConversationSDK.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 /* End PBXBuildFile section */
 
@@ -83,8 +79,6 @@
 				556F7B35502A4D5D93FB8096 /* SwrveSDKCommon.framework in Embed Frameworks */,
 				FDAACCB70CBD4AC681AC860A /* SwrveConversationSDK.framework in Embed Frameworks */,
 				2DCF4D2A5951469CA5B21652 /* SwrveSDK.framework in Embed Frameworks */,
-				BC08C17018D3439A9FB9C12E /* SwrveGeoSDK.framework in Embed Frameworks */,
-				DE2276BF0BF040229AAD3ADA /* BDPointSDK.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -97,8 +91,6 @@
 		1D3623250D0F684500981E51 /* AppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
 		1D6058910D05DD3D006BFB54 /* UnitTests.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = UnitTests.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		29B97316FDCFA39411CA2CEA /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
-		2F78DDB4241A407BB364963E /* SwrveGeoSDK.framework */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = wrapper.framework; name = SwrveGeoSDK.framework; path = "UnitTests/Plugins/cordova-plugin-swrvegeo/SwrveGeoSDK.framework"; sourceTree = "<group>"; };
-		2FDC2211D17D4447804B87F1 /* SwrveGeoPlugin.h */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.c.h; name = SwrveGeoPlugin.h; path = "cordova-plugin-swrvegeo/SwrveGeoPlugin.h"; sourceTree = "<group>"; };
 		301BF52D109A57CC0062928A /* CordovaLib/CordovaLib.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = CordovaLib/CordovaLib.xcodeproj; sourceTree = "<group>"; };
 		301BF56E109A69640062928A /* www */ = {isa = PBXFileReference; lastKnownFileType = folder; path = www; sourceTree = SOURCE_ROOT; };
 		302D95EE14D2391D003F00A1 /* MainViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MainViewController.h; sourceTree = "<group>"; };
@@ -114,10 +106,8 @@
 		525791232322AF1000CF7200 /* OCMock.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OCMock.framework; path = ../../../platform_test_files/ios/SwrvePluginTests/OCMock.framework; sourceTree = "<group>"; };
 		525791242322AF1000CF7200 /* SwrveTestHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SwrveTestHelper.h; path = ../../../platform_test_files/ios/SwrvePluginTests/SwrveTestHelper.h; sourceTree = "<group>"; };
 		525791252322AF1000CF7200 /* SwrveTestHelper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SwrveTestHelper.m; path = ../../../platform_test_files/ios/SwrvePluginTests/SwrveTestHelper.m; sourceTree = "<group>"; };
-		583E87D95D3649B7937800EB /* SwrveGeoPlugin.m */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.c.objc; name = SwrveGeoPlugin.m; path = "cordova-plugin-swrvegeo/SwrveGeoPlugin.m"; sourceTree = "<group>"; };
 		60B12CCBC12C4D17999E041A /* SwrveConversationSDK.framework */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = wrapper.framework; name = SwrveConversationSDK.framework; path = "UnitTests/Plugins/cordova-plugin-swrve/SwrveConversationSDK.framework"; sourceTree = "<group>"; };
 		6AFF5BF81D6E424B00AB3073 /* CDVLaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = CDVLaunchScreen.storyboard; path = UnitTests/CDVLaunchScreen.storyboard; sourceTree = SOURCE_ROOT; };
-		7B74C5552E544B4E85D0D46D /* BDPointSDK.framework */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = wrapper.framework; name = BDPointSDK.framework; path = "UnitTests/Plugins/cordova-plugin-swrvegeo/BDPointSDK.framework"; sourceTree = "<group>"; };
 		801D54E42EF649229EB9CE9A /* SwrvePlugin.h */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.c.h; name = SwrvePlugin.h; path = "cordova-plugin-swrve/SwrvePlugin.h"; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* UnitTests-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "UnitTests-Info.plist"; path = "UnitTests/UnitTests-Info.plist"; plistStructureDefinitionIdentifier = "com.apple.xcode.plist.structure-definition.iphone.info-plist"; sourceTree = SOURCE_ROOT; };
 		A2A7202A18D54F85B50E9FDF /* SwrveSDK.framework */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = wrapper.framework; name = SwrveSDK.framework; path = "UnitTests/Plugins/cordova-plugin-swrve/SwrveSDK.framework"; sourceTree = "<group>"; };
@@ -146,10 +136,8 @@
 			files = (
 				525791272322AF1000CF7200 /* OCMock.framework in Frameworks */,
 				525791292322AF7400CF7200 /* SwrveSDK.framework in Frameworks */,
-				5257912B2322AF7800CF7200 /* BDPointSDK.framework in Frameworks */,
 				5257912C2322AF7A00CF7200 /* SwrveConversationSDK.framework in Frameworks */,
 				5257912D2322AF7C00CF7200 /* SwrveSDKCommon.framework in Frameworks */,
-				5257912A2322AF7700CF7200 /* SwrveGeoSDK.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -225,8 +213,6 @@
 				EF415DBB22094B6BA02F3B85 /* SwrveSDKCommon.framework */,
 				60B12CCBC12C4D17999E041A /* SwrveConversationSDK.framework */,
 				A2A7202A18D54F85B50E9FDF /* SwrveSDK.framework */,
-				2F78DDB4241A407BB364963E /* SwrveGeoSDK.framework */,
-				7B74C5552E544B4E85D0D46D /* BDPointSDK.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -257,8 +243,6 @@
 				F0E7CAD906FC4185BEEC98F2 /* SwrvePluginPushHandler.m */,
 				801D54E42EF649229EB9CE9A /* SwrvePlugin.h */,
 				B8D573DB16334D9B9D56A86C /* SwrvePluginPushHandler.h */,
-				583E87D95D3649B7937800EB /* SwrveGeoPlugin.m */,
-				2FDC2211D17D4447804B87F1 /* SwrveGeoPlugin.h */,
 			);
 			name = Plugins;
 			path = UnitTests/Plugins;
@@ -421,7 +405,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "NODEJS_PATH=/usr/local/bin; NVM_NODE_PATH=~/.nvm/versions/node/`nvm version 2>/dev/null`/bin; N_NODE_PATH=`find /usr/local/n/versions/node/* -maxdepth 0 -type d 2>/dev/null | tail -1`/bin; XCODE_NODE_PATH=`xcode-select --print-path`/usr/share/xcs/Node/bin; PATH=$NODEJS_PATH:$NVM_NODE_PATH:$N_NODE_PATH:$XCODE_NODE_PATH:$PATH && node cordova/lib/copy-www-build-step.js";
+			shellScript = "NODEJS_PATH=/usr/local/bin; NVM_NODE_PATH=~/.nvm/versions/node/`nvm version 2>/dev/null`/bin; N_NODE_PATH=`find /usr/local/n/versions/node/* -maxdepth 0 -type d 2>/dev/null | tail -1`/bin; XCODE_NODE_PATH=`xcode-select --print-path`/usr/share/xcs/Node/bin; PATH=$NODEJS_PATH:$NVM_NODE_PATH:$N_NODE_PATH:$XCODE_NODE_PATH:$PATH && node cordova/lib/copy-www-build-step.js\n";
 			showEnvVarsInLog = 0;
 		};
 		E39B3979F2CB462DA90FD71E /* Swrve-Framework-Script */ = {
@@ -429,32 +413,14 @@
 			buildActionMask = 2147483647;
 			files = (
 			);
-			runOnlyForDeploymentPostprocessing = 0;
-			name = "Swrve-Framework-Script";
 			inputPaths = (
 			);
+			name = "Swrve-Framework-Script";
 			outputPaths = (
 			);
+			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Script that loops through all the required Swrve frameworks 
-# embedded in the application and removes unused architectures.
-
-SWRVE_FRAMEWORKS_LIST=\"SwrveSDKCommon SwrveConversationSDK SwrveSDK\"
-
-find \"${TARGET_BUILD_DIR}/${WRAPPER_NAME}\" -name '*.framework' -type d | while read -r FRAMEWORK; do
-    FRAMEWORK_EXECUTABLE_NAME=$(defaults read \"$FRAMEWORK/Info.plist\" CFBundleExecutable)
-    FRAMEWORK_EXECUTABLE_PATH=\"$FRAMEWORK/$FRAMEWORK_EXECUTABLE_NAME\"
-
-    if [[ $SWRVE_FRAMEWORKS_LIST == *\"$FRAMEWORK_EXECUTABLE_NAME\"* ]]; then
-        echo \"Swrve: trimming framework - $FRAMEWORK_EXECUTABLE_NAME\"
-        for arch in $(lipo -archs $FRAMEWORK_EXECUTABLE_PATH); do
-            if ! printf '%s\n' ${ARCHS[@]} | egrep -q \"^$arch$\"; then
-                lipo -remove $arch \"$FRAMEWORK_EXECUTABLE_PATH\" -o \"$FRAMEWORK_EXECUTABLE_PATH\" 
-            fi
-        done
-    fi
-done
-";
+			shellScript = "# Script that loops through all the required Swrve frameworks \n# embedded in the application and removes unused architectures.\n\nSWRVE_FRAMEWORKS_LIST=\"SwrveSDKCommon SwrveConversationSDK SwrveSDK\"\n\nfind \"${TARGET_BUILD_DIR}/${WRAPPER_NAME}\" -name '*.framework' -type d | while read -r FRAMEWORK; do\n    FRAMEWORK_EXECUTABLE_NAME=$(defaults read \"$FRAMEWORK/Info.plist\" CFBundleExecutable)\n    FRAMEWORK_EXECUTABLE_PATH=\"$FRAMEWORK/$FRAMEWORK_EXECUTABLE_NAME\"\n\n    if [[ $SWRVE_FRAMEWORKS_LIST == *\"$FRAMEWORK_EXECUTABLE_NAME\"* ]]; then\n        echo \"Swrve: trimming framework - $FRAMEWORK_EXECUTABLE_NAME\"\n        for arch in $(lipo -archs $FRAMEWORK_EXECUTABLE_PATH); do\n            if ! printf '%s\n' ${ARCHS[@]} | egrep -q \"^$arch$\"; then\n                lipo -remove $arch \"$FRAMEWORK_EXECUTABLE_PATH\" -o \"$FRAMEWORK_EXECUTABLE_PATH\" \n            fi\n        done\n    fi\ndone\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -468,7 +434,6 @@ done
 				302D95F114D2391D003F00A1 /* MainViewController.m in Sources */,
 				0EC05908F4474FE89490108E /* SwrvePlugin.m in Sources */,
 				4FB0B4F066EF4A6EA89F5359 /* SwrvePluginPushHandler.m in Sources */,
-				CD287103946447CBA88A0DCF /* SwrveGeoPlugin.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -513,8 +478,6 @@ done
 					"\"UnitTests/Plugins/cordova-plugin-swrve\"",
 					"\"UnitTests/Plugins/cordova-plugin-swrve\"",
 					"\"UnitTests/Plugins/cordova-plugin-swrve\"",
-					"\"UnitTests/Plugins/cordova-plugin-swrvegeo\"",
-					"\"UnitTests/Plugins/cordova-plugin-swrvegeo\"",
 				);
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -547,8 +510,6 @@ done
 					"\"UnitTests/Plugins/cordova-plugin-swrve\"",
 					"\"UnitTests/Plugins/cordova-plugin-swrve\"",
 					"\"UnitTests/Plugins/cordova-plugin-swrve\"",
-					"\"UnitTests/Plugins/cordova-plugin-swrvegeo\"",
-					"\"UnitTests/Plugins/cordova-plugin-swrvegeo\"",
 				);
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "UnitTests/UnitTests-Prefix.pch";
@@ -586,7 +547,6 @@ done
 				FRAMEWORK_SEARCH_PATHS = (
 					../../platform_test_files/ios/SwrvePluginTests,
 					"$(PROJECT_DIR)/UnitTests/Plugins/cordova-plugin-swrve",
-					"$(PROJECT_DIR)/UnitTests/Plugins/cordova-plugin-swrvegeo",
 				);
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_DYNAMIC_NO_PIC = NO;
@@ -633,7 +593,6 @@ done
 				FRAMEWORK_SEARCH_PATHS = (
 					../../platform_test_files/ios/SwrvePluginTests,
 					"$(PROJECT_DIR)/UnitTests/Plugins/cordova-plugin-swrve",
-					"$(PROJECT_DIR)/UnitTests/Plugins/cordova-plugin-swrvegeo",
 				);
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
