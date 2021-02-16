@@ -37,7 +37,7 @@ Our SDK uses a series of hooks to inject code to the final iOS/Android project. 
 
  Preference | Description | type |
 | --- | --- | --- |
-| `swrve.handlingGoogleServices` | Set true if you are handling your own Google Services setup and don't want Swrve to alter anything associated with it. | boolean |
+| `swrve.handlingGoogleServices` | Set true if you are handling your own Google Services setup and don't want Swrve to alter anything associated with it. This will also make sure that the SwrveFirebaseMessagingService is not added. | boolean |
 | `swrve.drawablePath` | Local path that points to your icon files that are used for Android push notifications. | string |
 | `swrve.googleServicesPath` | Path for your local google-services.json file that is **required** to use Android push notifications.  | string |
 

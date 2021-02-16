@@ -112,7 +112,11 @@ async function androidSetupApplicationFirebase() {
 
 		// Manifest.xml
 		const manifestFilePath = path.join('platforms', 'android', 'app', 'src', 'main', 'AndroidManifest.xml');
-		swrveIntegration.modifyManifestXML(manifestFilePath, true);
+		if(swrveUtils.isEmptyString(handlingGoogleServices) || swrveIntegration.convertToBoolean(handlingGoogleServices) == false) {
+			swrveIntegration.modifyManifestXML(manifestFilePath, false);
+		} else {
+			swrveIntegration.modifyManifestXML(manifestFilePath, true);
+		}
 
 		// these are required image assets for notifications
 		var drawableFiles = [ 'icon.png', 'material_icon.png' ];

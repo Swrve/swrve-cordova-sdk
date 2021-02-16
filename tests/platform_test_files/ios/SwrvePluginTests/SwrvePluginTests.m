@@ -460,6 +460,7 @@
                 resourcesReceived = YES;
             } else{
                 [self waitForSeconds:1];
+                [SwrveSDK refreshCampaignsAndResources];
             }
         }
         XCTAssertTrue(resourcesReceived);
