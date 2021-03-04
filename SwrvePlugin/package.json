@@ -1,6 +1,6 @@
 {
     "name": "cordova-plugin-swrve",
-    "version": "3.2.2",
+    "version": "3.3.0",
     "description": "Android and iOS Cordova plugin for Swrve.",
     "cordova": {
         "id": "cordova-plugin-swrve",

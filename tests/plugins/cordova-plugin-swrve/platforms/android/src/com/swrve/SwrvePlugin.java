@@ -49,7 +49,7 @@ import java.util.TimeZone;
 
 public class SwrvePlugin extends CordovaPlugin {
 
-    public static String VERSION = "3.2.2";
+    public static String VERSION = "3.3.0";
     private boolean resourcesListenerReady;
     private boolean customButtonListenerReady;
     private boolean dismissButtonListenerReady;

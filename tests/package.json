@@ -21,7 +21,7 @@
     "test": "jest"
   },
   "devDependencies": {
-    "jest": "^25.5.2"
+    "jest": "^25.5.4"
   },
   "jest": {
     "testURL": "http://localhost/"

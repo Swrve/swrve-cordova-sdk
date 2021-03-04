@@ -1,7 +1,5 @@
 repositories {
-    jcenter{
-        url = 'http://dl.bintray.com/swrve-inc/android'
-    }
+    mavenCentral()
 }
 
 android {

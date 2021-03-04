@@ -321,6 +321,7 @@
 				LastUpgradeCheck = 510;
 				TargetAttributes = {
 					1D6058900D05DD3D006BFB54 = {
+						DevelopmentTeam = 38YP67HQGE;
 						ProvisioningStyle = Automatic;
 					};
 					525791162322AE9D00CF7200 = {
@@ -473,6 +474,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				COPY_PHASE_STRIP = NO;
+				DEVELOPMENT_TEAM = 38YP67HQGE;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"UnitTests/Plugins/cordova-plugin-swrve\"",
@@ -491,6 +493,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.swrve.cordova.tests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_WORKSPACE = YES;
 			};
 			name = Debug;
 		};
@@ -521,6 +524,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.swrve.cordova.tests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_WORKSPACE = YES;
 			};
 			name = Release;
 		};
@@ -566,6 +570,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/UnitTests.app/UnitTests";
+				VALIDATE_WORKSPACE = YES;
 			};
 			name = Debug;
 		};
@@ -607,6 +612,7 @@
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/UnitTests.app/UnitTests";
 				VALIDATE_PRODUCT = YES;
+				VALIDATE_WORKSPACE = YES;
 			};
 			name = Release;
 		};
