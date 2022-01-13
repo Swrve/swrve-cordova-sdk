@@ -39,6 +39,7 @@ function iosSetupAppDelegate() {
 	const swrveStack = appConfig.getPlatformPreference('swrve.stack', 'ios');
 	const clearPushBadgeOnStartup = appConfig.getPlatformPreference('swrve.clearPushBadgeOnStartup', 'ios');
 
+	const autoCollectDeviceToken = appConfig.getPlatformPreference('swrve.autoCollectDeviceToken', 'ios');
 	// returns 'true' if the appDelegate had to be modified
 	var needsModification = swrveIntegration.modifyAppDelegate(appDelegatePath);
 
@@ -57,6 +58,7 @@ function iosSetupAppDelegate() {
 			swrveIntegration.setPushCapabilities(
 				appDelegatePath,
 				appGroupIdentifier,
+				swrveUtils.convertToBoolean(autoCollectDeviceToken),
 				swrveUtils.convertToBoolean(clearPushBadgeOnStartup)
 			);
 
