@@ -74,7 +74,7 @@ var self = (module.exports = {
 		swrveUtils.searchAndReplace(delegatePath, searchFor, replaceWith);
 	},
 
-	setPushCapabilities: function(delegatePath, appGroupIdentifier, clearPushBadgeOnStartup) {
+	setPushCapabilities: function(delegatePath, appGroupIdentifier,autoCollectDeviceToken, clearPushBadgeOnStartup ) {
 		let searchFor = [];
 		let replaceWith = [];
 		// Read in the required data for edits
@@ -109,6 +109,13 @@ var self = (module.exports = {
 			searchFor.push('config.pushEnabled = true;');
 			replaceWith.push(
 				`config.pushEnabled = true; \n    [UIApplication sharedApplication].applicationIconBadgeNumber = 0;`
+			);
+		}
+
+		if (!autoCollectDeviceToken) {
+			searchFor.push('config.pushEnabled = true;');
+			replaceWith.push(
+				`config.pushEnabled = true; \n    config.autoCollectDeviceToken = false;`
 			);
 		}
 
