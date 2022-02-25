@@ -102,7 +102,7 @@ function iosSetupServiceExtension() {
 
 				// Fix issues with the framework search paths, deployment target and bundle id
 				proj.hash.project.objects['XCBuildConfiguration'][ref].buildSettings['FRAMEWORK_SEARCH_PATHS'].push(
-					`"${swrveSDKCommonDirectory}"`
+					`"'${swrveSDKCommonDirectory}'"`
 				);
 				proj.hash.project.objects['XCBuildConfiguration'][ref].buildSettings['IPHONEOS_DEPLOYMENT_TARGET'] =
 					'10.0';
