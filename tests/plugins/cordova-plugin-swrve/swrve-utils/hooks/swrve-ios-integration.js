@@ -65,7 +65,7 @@ var self = (module.exports = {
 				if (!isAddingManagedSetting) {
 					searchFor.push('config.initMode = SWRVE_INIT_MODE_MANAGED;');
 					replaceWith.push(
-						'config.initMode = SWRVE_INIT_MODE_MANAGED; \n config.managedModeAutoStartLastUser = NO;'
+						'config.initMode = SWRVE_INIT_MODE_MANAGED; \n config.autoStartLastUser = NO;'
 					);
 				}
 			}
@@ -149,14 +149,14 @@ var self = (module.exports = {
 			console.log('Swrve: Integrated ad journey with option 1: Process Swrve deeplinks only');
 		}
 
-		// insert ajJourney custom code method SwrveSDK init code.
+		// insert adJourney custom code method SwrveSDK init code.
 		const adJourneyFileData = fs.readFileSync(
 			path.join('plugins', 'cordova-plugin-swrve', 'swrve-utils', 'ios', adJourneyFileName)
 		);
 		searchFor.push('// <Swrve_adJourney>');
 		replaceWith.push(adJourneyFileData);
 
-		// insert ajJourney to deeplink handler to handle when a customer has already installed the app
+		// insert adJourney to deeplink handler to handle when a customer has already installed the app
 		const adJourneyInstalledFileData = fs.readFileSync(
 			path.join('plugins', 'cordova-plugin-swrve', 'swrve-utils', 'ios', `adJourneyDeeplinkHandler.txt`)
 		);

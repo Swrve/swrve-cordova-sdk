@@ -1,0 +1,9 @@
+end
+
+# SWRVE CHANGES - beginning
+
+target 'SwrvePushExtension' do 
+	pod 'SwrveSDKCommon', '7.2.1'
+end
+
+# SWRVE CHANGES - end

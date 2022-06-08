@@ -17,8 +17,8 @@
   },
   "cordova-plugin-swrve": {
     "source": {
-      "type": "local",
-      "path": "../node_modules/cordova-plugin-swrve"
+      "type": "registry",
+      "id": "file:../SwrvePlugin"
     },
     "is_top_level": true,
     "variables": {}

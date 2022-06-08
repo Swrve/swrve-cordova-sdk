@@ -30,6 +30,7 @@
 
 	<platform name="ios">
     <hook type="after_plugin_install" src="swrve-utils/hooks/ios-after_plugin_install.js"/>
+    <hook type="before_compile" src="swrve-utils/hooks/ios-before-compile.js"/>
     <hook type="after_prepare" src="swrve-utils/hooks/ios-after-prepare.js"/>
     <js-module src="js/swrve-ios.js" name="SwrvePlugin">
       <clobbers target="SwrvePlugin"/>
@@ -44,8 +45,12 @@
     <source-file src="platforms/ios/SwrvePlugin.m" />
     <header-file src="platforms/ios/SwrvePluginPushHandler.h" />
     <source-file src="platforms/ios/SwrvePluginPushHandler.m" />
-    <framework src="platforms/ios/Frameworks/SwrveSDKCommon.framework" custom="true" embed="true"/>
-    <framework src="platforms/ios/Frameworks/SwrveConversationSDK.framework" custom="true" embed="true"/>
-    <framework src="platforms/ios/Frameworks/SwrveSDK.framework" custom="true" embed="true"/>
+    <podspec>
+      <config>
+      </config>
+      <pods use-frameworks="true">
+        <pod name="SwrveSDK" spec="7.2.1" />
+      </pods>
+    </podspec>
   </platform>
 </plugin>

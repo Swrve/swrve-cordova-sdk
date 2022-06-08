@@ -9,6 +9,9 @@ import android.util.Base64;
 import android.webkit.ValueCallback;
 
 import com.swrve.sdk.ISwrveBase;
+import com.swrve.sdk.ISwrveCampaignManager;
+import com.swrve.sdk.Swrve;
+import com.swrve.sdk.SwrveCampaignDisplayer;
 import com.swrve.sdk.SwrveIAPRewards;
 import com.swrve.sdk.SwrveIdentityResponse;
 import com.swrve.sdk.SwrvePushNotificationListener;
@@ -19,11 +22,15 @@ import com.swrve.sdk.SwrveUserResourcesListener;
 import com.swrve.sdk.UIThreadSwrveUserResourcesDiffListener;
 import com.swrve.sdk.UIThreadSwrveUserResourcesListener;
 import com.swrve.sdk.config.SwrveConfig;
+import com.swrve.sdk.config.SwrveEmbeddedMessageConfig;
 import com.swrve.sdk.config.SwrveInAppMessageConfig;
 import com.swrve.sdk.messaging.SwrveBaseCampaign;
 import com.swrve.sdk.messaging.SwrveClipboardButtonListener;
 import com.swrve.sdk.messaging.SwrveCustomButtonListener;
 import com.swrve.sdk.messaging.SwrveDismissButtonListener;
+import com.swrve.sdk.messaging.SwrveEmbeddedCampaign;
+import com.swrve.sdk.messaging.SwrveEmbeddedMessage;
+import com.swrve.sdk.messaging.SwrveEmbeddedMessageListener;
 import com.swrve.sdk.runnable.UIThreadSwrveResourcesDiffRunnable;
 import com.swrve.sdk.runnable.UIThreadSwrveResourcesRunnable;
 
@@ -49,11 +56,12 @@ import java.util.TimeZone;
 
 public class SwrvePlugin extends CordovaPlugin {
 
-    public static String VERSION = "3.3.0";
+    public static String VERSION = "4.0.0";
     private boolean resourcesListenerReady;
     private boolean customButtonListenerReady;
     private boolean dismissButtonListenerReady;
     private boolean clipboardButtonListenerReady;
+    private boolean embeddedMessageListenerReady;
     private boolean mustCallResourcesListener;
 
     // Push notification SwrvePlugin variables
@@ -147,6 +155,37 @@ public class SwrvePlugin extends CordovaPlugin {
         }
     };
 
+
+    // SwrveEmbeddedMessageConfig listener variables
+    private static SwrveEmbeddedMessageListener swrveEmbeddedMessageListener = new SwrveEmbeddedMessageListener() {
+        @Override
+        public void onMessage(Context context, SwrveEmbeddedMessage message, Map<String, String> personalizationProperties) {
+            if (instance != null && instance.embeddedMessageListenerReady) {
+                JSONObject callback = new JSONObject();
+                try {
+                    JSONObject messageJSONObject = new JSONObject();
+                    String dataString = message.getData().replace("\"", "\\\"");
+                    messageJSONObject.put("data", dataString);
+                    messageJSONObject.put("buttons", message.getButtons());
+                    messageJSONObject.put("type", message.getType().toString());
+                    messageJSONObject.put("campaignID", message.getCampaign().getId());
+                    messageJSONObject.put("messageID", message.getId());
+                    callback.put("message", messageJSONObject);
+
+                    if (personalizationProperties != null){
+                        callback.put("personalizationProperties", personalizationProperties);
+                    }
+
+                    instance.cordova.getActivity().runOnUiThread(() -> instance.runJS(
+                            "if (window.swrveEmbeddedMessageCallback !== undefined) { window.swrveEmbeddedMessageCallback('"
+                                    + callback + "'); }"));
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    };
+
     // Used when instantiated via reflection by PluginManager
     public SwrvePlugin() {
         super();
@@ -171,6 +210,9 @@ public class SwrvePlugin extends CordovaPlugin {
                 .clipboardButtonListener(swrveClipboardButtonListener);
 
         config.setInAppMessageConfig(builder.build());
+
+        SwrveEmbeddedMessageConfig.Builder embeddedBuilder = new SwrveEmbeddedMessageConfig.Builder().embeddedMessageListener(swrveEmbeddedMessageListener);
+        config.setEmbeddedMessageConfig(embeddedBuilder.build());
 
         SwrveSDK.createInstance(application, appId, apiKey, config);
         SwrveSDK.setResourcesListener(resourcesListener);
@@ -614,7 +656,27 @@ public class SwrvePlugin extends CordovaPlugin {
                 markMessageCenterCampaignAsSeen(arguments, callbackContext);
             }
             return true;
-        } else if ("refreshCampaignsAndResources".equals(action)) {
+        } else if ("embeddedMessageWasShownToUser".equals(action)) {
+            if (!isBadArgument(arguments, callbackContext, 1, "Invalid Arguments")) {
+                embeddedMessageWasShownToUser(arguments, callbackContext);
+            }
+            return true;
+        } else if ("embeddedMessageButtonWasPressed".equals(action)) {
+            if (!isBadArgument(arguments, callbackContext, 2, "Invalid Arguments")) {
+                embeddedMessageButtonWasPressed(arguments, callbackContext);
+            }
+            return true;
+        } else if ("getPersonalizedEmbeddedMessageData".equals((action))) {
+            if (!isBadArgument(arguments, callbackContext, 2, "Invalid Arguments")) {
+                getPersonalizedEmbeddedMessageData(arguments, callbackContext);
+            }
+            return true;
+        } else if ("getPersonalizedText".equals((action))) {
+            if (!isBadArgument(arguments, callbackContext, 2, "Invalid Arguments")) {
+                getPersonalizedText(arguments, callbackContext);
+            }
+            return true;
+        }  else if ("refreshCampaignsAndResources".equals(action)) {
             SwrveSDK.refreshCampaignsAndResources();
             return true;
         } else if ("setCustomPayloadForConversationInput".equals(action)) {
@@ -634,6 +696,9 @@ public class SwrvePlugin extends CordovaPlugin {
             return true;
         } else if ("clipboardButtonListenerReady".equals(action)) {
             clipboardButtonListenerReady = true;
+            return true;
+        } else if ("embeddedMessageListenerReady".equals(action)) {
+            embeddedMessageListenerReady = true;
             return true;
         } else if ("pushNotificationListenerReady".equals(action)) {
             setPushNotificationListenerReady();
@@ -747,6 +812,116 @@ public class SwrvePlugin extends CordovaPlugin {
         }
 
         return candidateCampaign;
+    }
+
+
+    private void embeddedMessageWasShownToUser(JSONArray arguments, final CallbackContext callbackContext) {
+        try {
+            final int identifier = arguments.getInt(0);
+
+            cordova.getThreadPool().execute(() -> {
+                SwrveEmbeddedCampaign candidateCampaign = findEmbeddedCampaignByID(identifier);
+
+                if (candidateCampaign != null) {
+                    SwrveSDK.embeddedMessageWasShownToUser(candidateCampaign.getMessage());
+                    callbackContext.success();
+                } else {
+                    callbackContext.error("No campaign with ID: " + identifier + " found.");
+                }
+            });
+        } catch (JSONException e) {
+            callbackContext.error("JSON_EXCEPTION");
+            e.printStackTrace();
+        }
+    }
+
+    private void embeddedMessageButtonWasPressed(JSONArray arguments, final CallbackContext callbackContext) {
+        try {
+            final int identifier = arguments.getInt(0);
+            final String buttonId = arguments.getString(1);
+
+            cordova.getThreadPool().execute(() -> {
+                SwrveEmbeddedCampaign candidateCampaign = findEmbeddedCampaignByID(identifier);
+
+                if (candidateCampaign != null && buttonId != null) {
+                    SwrveSDK.embeddedMessageButtonWasPressed(candidateCampaign.getMessage(), buttonId);
+                    callbackContext.success();
+                } else {
+                    callbackContext.error("No campaign with ID: " + identifier + " found.");
+                }
+            });
+        } catch (JSONException e) {
+            callbackContext.error("JSON_EXCEPTION");
+            e.printStackTrace();
+        }
+    }
+
+    private void getPersonalizedEmbeddedMessageData(JSONArray arguments, final CallbackContext callbackContext) {
+        try {
+            final int identifier = arguments.getInt(0);
+            final JSONObject personalization = arguments.getJSONObject(1);
+            final HashMap<String, String> personalizationProperties = getMapFromJSON(personalization);
+
+            cordova.getThreadPool().execute(() -> {
+                SwrveEmbeddedCampaign candidateCampaign = findEmbeddedCampaignByID(identifier);
+
+                if (candidateCampaign != null) {
+                    String result = SwrveSDK.getPersonalizedEmbeddedMessageData(candidateCampaign.getMessage(), personalizationProperties);
+                    callbackContext.success(result);
+                } else {
+                    callbackContext.error("No campaign with ID: " + identifier + " found.");
+                }
+            });
+        } catch (JSONException e) {
+            callbackContext.error("JSON_EXCEPTION");
+            e.printStackTrace();
+        }
+    }
+
+    private void getPersonalizedText(JSONArray arguments, final CallbackContext callbackContext) {
+        try {
+            final String text = arguments.getString(0);
+            final JSONObject personalization = arguments.getJSONObject(1);
+            final HashMap<String, String> personalizationProperties = getMapFromJSON(personalization);
+
+            cordova.getThreadPool().execute(() -> {
+                if (text != null && text.length() > 0) {
+                    String result = SwrveSDK.getPersonalizedText(text, personalizationProperties);
+                    callbackContext.success(result);
+                } else {
+                    callbackContext.error("No Text found.");
+                }
+            });
+        } catch (JSONException e) {
+            callbackContext.error("JSON_EXCEPTION");
+            e.printStackTrace();
+        }
+    }
+
+    private String getCache() {
+        Swrve swrve = (Swrve) SwrveSDK.getInstance();
+        String cache = swrve.getCachedData(swrve.getUserId(), swrve.CACHE_CAMPAIGNS);
+        return cache;
+    }
+
+    private SwrveEmbeddedCampaign findEmbeddedCampaignByID(int identifier) {
+        String cacheStr = getCache();
+        SwrveEmbeddedCampaign canditateCampaign = null;
+
+        try {
+            JSONObject cache = new JSONObject(cacheStr);
+            JSONArray campaigns = cache.getJSONArray("campaigns");
+
+            for (int i = 0; i < campaigns.length(); i++) {
+                JSONObject campaignData = campaigns.getJSONObject(i);
+                if (campaignData.getInt("id") == identifier) {
+                    canditateCampaign = new SwrveEmbeddedCampaign((ISwrveCampaignManager) SwrveSDK.getInstance(), new SwrveCampaignDisplayer(), campaignData);
+                }
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return canditateCampaign;
     }
 
     private void setResourcesListenerReady() {

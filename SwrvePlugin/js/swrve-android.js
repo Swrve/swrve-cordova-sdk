@@ -109,6 +109,26 @@ SwrvePlugin.prototype.markMessageCenterCampaignAsSeen = function(identifier, suc
 	return cordova.exec(success, fail, 'SwrvePlugin', 'markMessageCenterCampaignAsSeen', [ identifier ]);
 };
 
+// campaignId is an int
+SwrvePlugin.prototype.embeddedMessageWasShownToUser = function(campaignId, success, fail) {
+	return cordova.exec(success, fail, 'SwrvePlugin', 'embeddedMessageWasShownToUser', [ campaignId ]);
+};
+
+// campaignId is an int, button is a string
+SwrvePlugin.prototype.embeddedMessageButtonWasPressed = function(campaignId, buttonId, success, fail) {
+	return cordova.exec(success, fail, 'SwrvePlugin', 'embeddedMessageButtonWasPressed', [ campaignId, buttonId]);
+};
+
+// campaignId is an int, personalizationProperties is a dictionary
+SwrvePlugin.prototype.getPersonalizedEmbeddedMessageData = function(campaignId, personalizationProperties, success, fail) {
+	return cordova.exec(success, fail, 'SwrvePlugin', 'getPersonalizedEmbeddedMessageData', [ campaignId, personalizationProperties]);
+};
+
+// campaignId is an string, personalizationProperties is a dictionary
+SwrvePlugin.prototype.getPersonalizedText = function(text, personalizationProperties, success, fail) {
+	return cordova.exec(success, fail, 'SwrvePlugin', 'getPersonalizedText', [ text, personalizationProperties]);
+};
+
 SwrvePlugin.prototype.resourcesListenerReady = function() {
 	return cordova.exec(undefined, undefined, 'SwrvePlugin', 'resourcesListenerReady', []);
 };
@@ -155,6 +175,17 @@ SwrvePlugin.prototype.dismissButtonListenerReady = function() {
 	return cordova.exec(undefined, undefined, 'SwrvePlugin', 'dismissButtonListenerReady', []);
 };
 // SwrveInAppMessageConfig Listeners End
+
+// SwrveEmbeddedMessageConfig Listeners 
+SwrvePlugin.prototype.setEmbeddedMessageCallback = function(callback) {
+	window.swrveEmbeddedMessageCallback = callback;
+	window.plugins.swrve.embeddedMessageListenerReady();
+};
+
+SwrvePlugin.prototype.embeddedMessageListenerReady = function() {
+	return cordova.exec(undefined, undefined, 'SwrvePlugin', 'embeddedMessageListenerReady', []);
+};
+// SwrveEmbeddedMessageConfig Listeners End
 
 SwrvePlugin.prototype.pushNotificationListenerReady = function() {
 	return cordova.exec(undefined, undefined, 'SwrvePlugin', 'pushNotificationListenerReady', []);
@@ -225,6 +256,9 @@ SwrvePlugin.install = function() {
 
     // Empty callback, override this to listen to custom clipboardButtonListener action
     window.swrveClipboardButtonListener = function(action) {};
+
+	// Empty callback, override this to listen to embedded campaigns
+	window.swrveEmbeddedMessageCallback = function(payload) {};
 
 	// Empty callback, override this to listen to silent push notifications
 	window.swrveSilentPushNotificationListener = function(payload) {};

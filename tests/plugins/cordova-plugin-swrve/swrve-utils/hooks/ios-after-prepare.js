@@ -17,8 +17,6 @@ module.exports = function(context) {
 	if (!swrveUtils.isEmptyString(hasPushEnabled) && swrveUtils.convertToBoolean(hasPushEnabled)) {
 		iosSetupServiceExtension();
 	}
-
-	iosSwrveFrameworkEdit();
 };
 
 function iosSetupServiceExtension() {
@@ -105,7 +103,7 @@ function iosSetupServiceExtension() {
 					`"${swrveSDKCommonDirectory}"`
 				);
 				proj.hash.project.objects['XCBuildConfiguration'][ref].buildSettings['IPHONEOS_DEPLOYMENT_TARGET'] =
-					'10.0';
+					'11.0';
 
 				var currentBundleID =
 					proj.hash.project.objects['XCBuildConfiguration'][ref].buildSettings['PRODUCT_BUNDLE_IDENTIFIER'];
@@ -133,6 +131,10 @@ function iosSetupServiceExtension() {
 
 		// now that everything is setup, modify included files to config.json
 		iosSetupServiceExtensionAppGroup();
+
+		// include 
+		iosSwrvePodfileEdit();
+		
 	} catch (err) {
 		console.error(`There was an issue creating the Swrve Service Extension: ${err}`);
 	}
@@ -179,6 +181,7 @@ function iosSetupServiceExtensionAppGroup() {
 }
 
 // Add Build Phase to pull in framework thinning script
+// TODO: potentially remove now that we're using podspec
 function iosSwrveFrameworkEdit() {
 	const appName = appConfig.name();
 	const iosPath = path.join('platforms', 'ios');

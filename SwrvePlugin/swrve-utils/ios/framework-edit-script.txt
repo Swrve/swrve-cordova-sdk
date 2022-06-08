@@ -1,7 +1,7 @@
 # Script that loops through all the required Swrve frameworks 
 # embedded in the application and removes unused architectures.
 
-SWRVE_FRAMEWORKS_LIST="SwrveSDKCommon SwrveConversationSDK SwrveSDK"
+SWRVE_FRAMEWORKS_LIST="SwrveSDKCommon SwrveSDK"
 
 find "${TARGET_BUILD_DIR}/${WRAPPER_NAME}" -name '*.framework' -type d | while read -r FRAMEWORK; do
     FRAMEWORK_EXECUTABLE_NAME=$(defaults read "$FRAMEWORK/Info.plist" CFBundleExecutable)

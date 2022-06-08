@@ -1,6 +1,0 @@
-framework module SwrveConversationSDK {
-  umbrella header "SwrveConversationSDK.h"
-
-  export *
-  module * { export * }
-}

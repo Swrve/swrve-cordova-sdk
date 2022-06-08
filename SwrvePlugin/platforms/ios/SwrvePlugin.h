@@ -34,5 +34,9 @@
 - (void)identify:(CDVInvokedUrlCommand *)command;
 - (void)start:(CDVInvokedUrlCommand *)command;
 - (void)isStarted:(CDVInvokedUrlCommand *)command;
+- (void)embeddedMessageWasShownToUser:(CDVInvokedUrlCommand *) command;
+- (void)embeddedMessageButtonWasPressed:(CDVInvokedUrlCommand *) command;
+- (void)getPersonalizedEmbeddedMessageData:(CDVInvokedUrlCommand *) command;
+- (void)getPersonalizedText:(CDVInvokedUrlCommand *) command;
 
 @end

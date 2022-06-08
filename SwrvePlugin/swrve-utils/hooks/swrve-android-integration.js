@@ -72,7 +72,7 @@ var self = (module.exports = {
 				if (!isAddingManagedSetting) {
 					searchFor.push('config.setInitMode(SwrveInitMode.MANAGED);');
 					replaceWith.push(
-						'config.setInitMode(SwrveInitMode.MANAGED); \n   config.setManagedModeAutoStartLastUser(false); \n'
+						'config.setInitMode(SwrveInitMode.MANAGED); \n   config.setAutoStartLastUser(false); \n'
 					);
 				}
 			}

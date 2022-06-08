@@ -109,6 +109,26 @@ SwrvePlugin.prototype.markMessageCenterCampaignAsSeen = function(identifier, suc
 	return cordova.exec(success, fail, 'SwrvePlugin', 'markMessageCenterCampaignAsSeen', [ identifier ]);
 };
 
+// campaignId is an int
+SwrvePlugin.prototype.embeddedMessageWasShownToUser = function(campaignId, success, fail) {
+	return cordova.exec(success, fail, 'SwrvePlugin', 'embeddedMessageWasShownToUser', [ campaignId ]);
+};
+
+// campaignId is an int, button is a string
+SwrvePlugin.prototype.embeddedMessageButtonWasPressed = function(campaignId, buttonId, success, fail) {
+	return cordova.exec(success, fail, 'SwrvePlugin', 'embeddedMessageButtonWasPressed', [ campaignId, buttonId]);
+};
+
+// campaignId is an int, personalizationProperties is a dictionary
+SwrvePlugin.prototype.getPersonalizedEmbeddedMessageData = function(campaignId, personalizationProperties, success, fail) {
+	return cordova.exec(success, fail, 'SwrvePlugin', 'getPersonalizedEmbeddedMessageData', [ campaignId, personalizationProperties]);
+};
+
+// campaignId is an string, personalizationProperties is a dictionary
+SwrvePlugin.prototype.getPersonalizedText = function(text, personalizationProperties, success, fail) {
+	return cordova.exec(success, fail, 'SwrvePlugin', 'getPersonalizedText', [ text, personalizationProperties]);
+};
+
 SwrvePlugin.prototype.resourcesListenerReady = function() {
 	return cordova.exec(undefined, undefined, 'SwrvePlugin', 'resourcesListenerReady', []);
 };
@@ -122,6 +142,12 @@ SwrvePlugin.prototype.setResourcesListener = function(listener) {
 SwrvePlugin.prototype.setCustomPayloadForConversationInput = function(customPayload, success, fail) {
 	return cordova.exec(success, fail, 'SwrvePlugin', 'setCustomPayloadForConversationInput', [ customPayload ]);
 };
+
+// EmbeddedMessageConfig Listeners Begin
+
+SwrvePlugin.prototype.setEmbeddedMessageCallback = function(callback) {
+	window.swrveEmbeddedMessageCallback = callback;
+}
 
 // SwrveInAppMessageConfig Listeners Begin
 
@@ -228,6 +254,9 @@ SwrvePlugin.install = function() {
 
 	// Empty callback, override this to listen to custom clipboardButtonListener action
     window.swrveClipboardButtonListener = function(action) {};
+
+	// Empty callback, override this to listen to embedded campaigns
+	window.swrveEmbeddedMessageCallback = function(payload) {};
 
 	// Empty callback, override this to listen to push notifications
 	window.swrvePushNotificationListener = function(payload) {};

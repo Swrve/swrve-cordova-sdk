@@ -13,6 +13,12 @@ module.exports = function(context) {
 	}
 
 	iosSetupAppDelegate();
+
+	// if push is enabled add pod target for service extension
+	let hasPushEnabled = appConfig.getPlatformPreference('swrve.pushEnabled', 'ios');
+	if (!swrveUtils.isEmptyString(hasPushEnabled) && swrveUtils.convertToBoolean(hasPushEnabled)) {
+		iosSwrvePodfileEdit();
+	}
 };
 
 function iosSetupAppDelegate() {
@@ -77,4 +83,19 @@ function iosSetupAppDelegate() {
 	} else {
 		console.log('Swrve: iOS appDelegate already has Swrve Features.');
 	}
+}
+
+function iosSwrvePodfileEdit() {
+	const iosPath = path.join('platforms', 'ios');
+	const podfilePath = path.join(iosPath, 'PodFile');
+	const podfileData = fs.readFileSync(podfilePath);
+
+	// insert serviceExtension target to Cordova podfile
+	const serviceExtensionData = fs.readFileSync(
+		path.join('plugins', 'cordova-plugin-swrve', 'swrve-utils', 'ios', 'serviceExtension-podspec.txt')
+	);
+
+	if(!podfileData.includes('SwrvePushExtension'))
+		swrveUtils.searchAndReplace(podfilePath, ['end'], [serviceExtensionData]);
+
 }
