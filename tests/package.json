@@ -21,7 +21,7 @@
     "cordova-android": "^11.0.0",
     "cordova-ios": "^6.2.0",
     "cordova-plugin-swrve": "file:../SwrvePlugin",
-    "jest": "^25.5.4"
+    "jest": "^29.4.3"
   },
   "jest": {
     "testURL": "http://localhost/"
