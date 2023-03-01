@@ -1,0 +1,24 @@
+PODS:
+  - OCMock (3.9.1)
+  - SwrveSDK (7.5.2):
+    - SwrveSDKCommon (= 7.5.2)
+  - SwrveSDKCommon (7.5.2)
+
+DEPENDENCIES:
+  - OCMock (~> 3.9.1)
+  - SwrveSDK (= 7.5.2)
+
+SPEC REPOS:
+  trunk:
+    - OCMock
+    - SwrveSDK
+    - SwrveSDKCommon
+
+SPEC CHECKSUMS:
+  OCMock: 9491e4bec59e0b267d52a9184ff5605995e74be8
+  SwrveSDK: 0028612245a88a36bec963c7ca9fcac3232f13d9
+  SwrveSDKCommon: 00870d868e95610a2d74002da8383f42399be531
+
+PODFILE CHECKSUM: 4cdc394674eb30d750ffe52de48e83b7bc18d653
+
+COCOAPODS: 1.11.3

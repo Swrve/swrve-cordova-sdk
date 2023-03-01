@@ -7,7 +7,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.3.2'
+        classpath 'com.android.tools.build:gradle:7.3.0'
     }
 }
 
@@ -22,6 +22,9 @@ android {
     lintOptions {
         abortOnError false
     }
+    defaultConfig {
+        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+    }
 }
 
 dependencies {
@@ -33,7 +36,9 @@ dependencies {
     androidTestImplementation 'junit:junit:4.12'
     androidTestImplementation "org.mockito:mockito-android:2.15.0"
     androidTestImplementation 'org.nanohttpd:nanohttpd:2.3.1'
+    androidTestImplementation 'androidx.test:core:1.4.0'
+    androidTestImplementation 'androidx.test:rules:1.4.0'
 }
 
-ext.cdvBuildToolsVersion = '28.0.3'
-ext.cdvCompileSdkVersion = 28
+ext.cdvBuildToolsVersion = '33.0.0'
+ext.cdvCompileSdkVersion = 31

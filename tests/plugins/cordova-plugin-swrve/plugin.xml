@@ -30,6 +30,7 @@
 
 	<platform name="ios">
     <hook type="after_plugin_install" src="swrve-utils/hooks/ios-after_plugin_install.js"/>
+    <hook type="before_compile" src="swrve-utils/hooks/ios-before-compile.js"/>
     <hook type="after_prepare" src="swrve-utils/hooks/ios-after-prepare.js"/>
     <js-module src="js/swrve-ios.js" name="SwrvePlugin">
       <clobbers target="SwrvePlugin"/>
@@ -48,7 +49,7 @@
       <config>
       </config>
       <pods use-frameworks="true">
-        <pod name="SwrveSDK" spec="7.2.1" />
+        <pod name="SwrveSDK" spec="7.5.2" />
       </pods>
     </podspec>
   </platform>

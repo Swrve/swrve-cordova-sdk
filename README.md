@@ -37,9 +37,10 @@ Our SDK uses a series of hooks to inject code to the final iOS/Android project. 
 
  Preference | Description | type |
 | --- | --- | --- |
-| `swrve.handlingGoogleServices` | Set true if you are handling your own Google Services setup and don't want Swrve to alter anything associated with it. This will also make sure that the SwrveFirebaseMessagingService is not added. | boolean |
+| `swrve.handlingGoogleServices` | Set true if you are handling your own Google Services setup and don't want Swrve to alter anything associated with it. This will also make sure that the SwrveFirebaseMessagingService is not added and will require you to forward the Firebase message to Swrve. Contact a CSM for more details. | boolean |
 | `swrve.drawablePath` | Local path that points to your icon files that are used for Android push notifications. | string |
 | `swrve.googleServicesPath` | Path for your local google-services.json file that is **required** to use Android push notifications.  | string |
+| `GradlePluginGoogleServicesEnabled` | This is a cordova preference added in [cordova-android-9.0.0](https://cordova.apache.org/announcements/2020/06/29/cordova-android-9.0.0.html) that is **required** to be true for Android push notifications.  | boolean |
 
 ### Preferences only available on iOS
 

@@ -1,0 +1,16 @@
+{
+    "declarations": {
+        "use_frameworks!": {
+            "declaration": "use_frameworks!",
+            "count": 1
+        }
+    },
+    "sources": {},
+    "libraries": {
+        "SwrveSDK": {
+            "name": "SwrveSDK",
+            "spec": "7.5.2",
+            "count": 1
+        }
+    }
+}

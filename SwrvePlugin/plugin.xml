@@ -49,7 +49,7 @@
       <config>
       </config>
       <pods use-frameworks="true">
-        <pod name="SwrveSDK" spec="7.2.1" />
+        <pod name="SwrveSDK" spec="7.5.2" />
       </pods>
     </podspec>
   </platform>

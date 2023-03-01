@@ -1,0 +1,3 @@
+${PODS_ROOT}/Target Support Files/Pods-UnitTests/Pods-UnitTests-frameworks.sh
+${BUILT_PRODUCTS_DIR}/SwrveSDK/SwrveSDK.framework
+${BUILT_PRODUCTS_DIR}/SwrveSDKCommon/SwrveSDKCommon.framework

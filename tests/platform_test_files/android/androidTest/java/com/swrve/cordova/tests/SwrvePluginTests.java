@@ -13,7 +13,7 @@ import com.swrve.sdk.SwrveUserResourcesDiffListener;
 import com.swrve.sdk.SwrveUserResourcesListener;
 import com.swrve.sdk.messaging.SwrveBaseCampaign;
 import com.swrve.sdk.messaging.SwrveCampaignState;
-import com.swrve.sdk.messaging.ui.SwrveInAppMessageActivity;
+import com.swrve.sdk.SwrveInAppMessageActivity;
 
 import org.json.JSONArray;
 import org.json.JSONException;

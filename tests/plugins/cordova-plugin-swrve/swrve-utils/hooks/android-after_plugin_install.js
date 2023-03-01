@@ -84,7 +84,6 @@ async function androidSetupApplicationFirebase() {
 	let drawableDirectory = appConfig.getPlatformPreference('swrve.drawablePath', 'android');
 	let handlingGoogleServices = appConfig.getPlatformPreference('swrve.handlingGoogleServices', 'android');
 	let googleServicesPath = appConfig.getPlatformPreference('swrve.googleServicesPath', 'android');
-	let googleServicesVersion = appConfig.getPlatformPreference('swrve.googleServicesVersion', 'android');
 	var targetApplicationDirectory = swrveIntegration.produceTargetPathFromPackage(targetDirectory, packageName);
 
 	try {
@@ -112,10 +111,12 @@ async function androidSetupApplicationFirebase() {
 
 		// Manifest.xml
 		const manifestFilePath = path.join('platforms', 'android', 'app', 'src', 'main', 'AndroidManifest.xml');
-		if(swrveUtils.isEmptyString(handlingGoogleServices) || swrveIntegration.convertToBoolean(handlingGoogleServices) == false) {
-			swrveIntegration.modifyManifestXML(manifestFilePath, false);
-		} else {
+		if(swrveUtils.isEmptyString(handlingGoogleServices) || swrveUtils.convertToBoolean(handlingGoogleServices) == false) {
+			console.log(`Swrve: swrve.handlingGoogleServices is blank/false so adding SwrveFirebaseMessagingService.`);
 			swrveIntegration.modifyManifestXML(manifestFilePath, true);
+		} else {
+			console.log(`Swrve: swrve.handlingGoogleServices is true so Firebase Messages must be forwarded in code to Swrve.`);
+			swrveIntegration.modifyManifestXML(manifestFilePath, false);
 		}
 
 		// these are required image assets for notifications
@@ -124,7 +125,7 @@ async function androidSetupApplicationFirebase() {
 		swrveIntegration.copyDrawableNotificationsImages(drawableDirectory, targetDirectory, drawableFiles);
 		
 		// if handlingGoogleServices isn't present or it's set to false. proceed
-		if(swrveUtils.isEmptyString(handlingGoogleServices) || swrveIntegration.convertToBoolean(handlingGoogleServices) == false) {
+		if(swrveUtils.isEmptyString(handlingGoogleServices) || swrveUtils.convertToBoolean(handlingGoogleServices) == false) {
 			if (!swrveUtils.isEmptyString(googleServicesPath)) {
 				// copy their google-services.json file to the app root directory
 				swrveUtils.copyRecursiveSync(googleServicesPath, `${appDirectory}/google-services.json`);
@@ -133,15 +134,8 @@ async function androidSetupApplicationFirebase() {
 					'Swrve: for android push you must include path to google-services.json in config.xml under "swrve.googleServicesPath"'
 				);
 			}
-
-			// Modifies the app/build.gradle file to include google-services (as required by firebase)
-			const gradleRootFilePath = path.join('platforms', 'android', 'app', 'build.gradle');
-
-			if (!swrveUtils.isEmptyString(googleServicesVersion)) {
-				swrveIntegration.modifyGradleFile(gradleRootFilePath, googleServicesVersion);
-			} else {
-				swrveIntegration.modifyGradleFile(gradleRootFilePath, '4.2.0');
-			}
+		} else {
+			console.log(`Swrve: swrve.handlingGoogleServices is true so google-services needs to be added.`);
 		}
 	} catch (err) {
 		console.error(`Swrve: Something went wrong during Android Setup Application ${err}`);

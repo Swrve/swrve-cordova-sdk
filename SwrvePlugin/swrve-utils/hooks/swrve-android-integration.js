@@ -116,7 +116,7 @@ var self = (module.exports = {
 					[ 'android:name=".Application" android:supportsRtl="true"' ]
 				);
 			} else {
-				console.log('Swrve: Manifest.xml already has .Application added to it');
+				console.log('Swrve: Manifest.xml already has Application class added to it');
 			}
 		}
 	},

@@ -4,7 +4,7 @@
 #import <SwrveSDK/SwrveCampaign.h>
 #import <SwrveSDk/SwrveCampaignStatus.h>
 
-#define SWRVE_WRAPPER_VERSION "3.3.0"
+#define SWRVE_WRAPPER_VERSION "5.0.0"
 
 CDVViewController *globalViewController;
 
