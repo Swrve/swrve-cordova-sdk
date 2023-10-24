@@ -42,7 +42,7 @@ SwrvePluginPushHandler *swrvePushHandler;
     SwrveInAppMessageConfig *inAppConfig = config.inAppMessageConfig;
     SwrveEmbeddedMessageConfig *embeddedConfig = config.embeddedMessageConfig;
     
-    inAppConfig.dismissButtonCallback = ^(NSString *campaignSubject, NSString *buttonName){
+    inAppConfig.dismissButtonCallback = ^(NSString *campaignSubject, NSString *buttonName, NSString *campaignName){
         [SwrvePlugin dismissButtonPressed:campaignSubject withButtonName:buttonName];
     };
     
@@ -50,7 +50,7 @@ SwrvePluginPushHandler *swrvePushHandler;
         [SwrvePlugin clipboardButtonPressed:processedText];
     };
     
-    inAppConfig.customButtonCallback = ^(NSString *action) {
+    inAppConfig.customButtonCallback = ^(NSString *action, NSString *campaignName) {
         [SwrvePlugin customButtonPressed:action];
     };
         
@@ -336,7 +336,7 @@ SwrvePluginPushHandler *swrvePushHandler;
 }
 
 - (void)getUserResourcesDiff:(CDVInvokedUrlCommand *)command {
-    [SwrveSDK userResourcesDiff:^(NSDictionary *oldResourcesValues, NSDictionary *newResourcesValues, NSString *resourcesAsJSON) {
+    [SwrveSDK userResourcesDiffWithListener:^(NSDictionary *oldResourcesValues, NSDictionary *newResourcesValues, NSString *resourcesAsJSON, BOOL fromServer, NSError *error) {
         NSMutableDictionary *resourcesDictionary = [[NSMutableDictionary alloc] initWithObjectsAndKeys:newResourcesValues, @"new", oldResourcesValues, @"old", nil];
         CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:resourcesDictionary];
         [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
@@ -359,6 +359,7 @@ SwrvePluginPushHandler *swrvePushHandler;
         [campaignDictionary setValue:[NSNumber numberWithUnsignedInteger:[campaign maxImpressions]] forKey:@"maxImpressions"];
         [campaignDictionary setValue:[campaign subject] forKey:@"subject"];
         [campaignDictionary setValue:[NSNumber numberWithUnsignedInteger:[[campaign dateStart] timeIntervalSince1970]] forKey:@"dateStart"];
+        [campaignDictionary setValue:[NSNumber numberWithUnsignedInteger:[[campaign dateEnd] timeIntervalSince1970]] forKey:@"dateEnd"];
         [campaignDictionary setValue:@([campaign messageCenter]) forKey:@"messageCenter"];
 
         NSMutableDictionary *stateDictionary = [NSMutableDictionary dictionaryWithDictionary:[[campaign state] asDictionary]];
@@ -369,6 +370,8 @@ SwrvePluginPushHandler *swrvePushHandler;
         // convert the status to a readable format so its consistent across both platforms
         NSUInteger statusNumber = [[stateDictionary objectForKey:@"status"] integerValue];
         [stateDictionary setObject:[self translateCampaignStatus:statusNumber] forKey:@"status"];
+        NSDate *downloadDate = [stateDictionary objectForKey:@"downloadDate"];
+        [stateDictionary setValue:[NSNumber numberWithUnsignedInteger:[downloadDate timeIntervalSince1970]] forKey:@"downloadDate"];
         [campaignDictionary setObject:stateDictionary forKey:@"state"];
         [messageAsArray addObject:campaignDictionary];
     }

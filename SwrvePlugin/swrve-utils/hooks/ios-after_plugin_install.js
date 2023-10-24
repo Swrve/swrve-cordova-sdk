@@ -23,7 +23,20 @@ module.exports = function(context) {
 
 function iosSetupAppDelegate() {
 	const appName = appConfig.name();
-	const appDelegatePath = path.join('platforms', 'ios', appName, 'Classes', 'AppDelegate.m');
+	let appDelegatePath = path.join('platforms', 'ios', appName, 'AppDelegate.m');
+	if (fs.existsSync(appDelegatePath)) {
+		console.log(`Found '${appDelegatePath}'.`);
+	} else {
+		console.error(`File '${appDelegatePath}' does not exist. Trying again.`);
+		appDelegatePath = path.join('platforms', 'ios', appName, 'Classes', 'AppDelegate.m'); // Location of AppDelegate in CLI tools v11 was in Classes dir
+		if (fs.existsSync(appDelegatePath)) {
+			console.log(`Found '${appDelegatePath}'.`);
+		} else {
+			console.error(`File '${appDelegatePath}' does not exist. Exit.`);
+			process.exit(1);
+		}
+	}
+
 	// pull added preferences
 	const appId = appConfig.getPlatformPreference('swrve.appId', 'ios');
 	const apiKey = appConfig.getPlatformPreference('swrve.apiKey', 'ios');
@@ -87,7 +100,7 @@ function iosSetupAppDelegate() {
 
 function iosSwrvePodfileEdit() {
 	const iosPath = path.join('platforms', 'ios');
-	const podfilePath = path.join(iosPath, 'PodFile');
+	const podfilePath = path.join(iosPath, 'Podfile');
 	const podfileData = fs.readFileSync(podfilePath);
 
 	// insert serviceExtension target to Cordova podfile

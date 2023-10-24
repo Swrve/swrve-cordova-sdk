@@ -9,5 +9,6 @@ android {
 }
 
 dependencies {
-    implementation 'com.swrve.sdk.android:swrve-firebase:9.4.0'
+    // Use all minor versions up to (but excluding) the next major version. 
+    api 'com.swrve.sdk.android:swrve-firebase:10.+'
 }

@@ -85,6 +85,7 @@ async function androidSetupApplicationFirebase() {
 	let handlingGoogleServices = appConfig.getPlatformPreference('swrve.handlingGoogleServices', 'android');
 	let googleServicesPath = appConfig.getPlatformPreference('swrve.googleServicesPath', 'android');
 	var targetApplicationDirectory = swrveIntegration.produceTargetPathFromPackage(targetDirectory, packageName);
+	const pushNotificationPermissionEvent = appConfig.getPlatformPreference('swrve.pushNotificationPermissionEvent', 'android');
 
 	try {
 		await produceApplicationFile(targetApplicationDirectory);
@@ -137,6 +138,8 @@ async function androidSetupApplicationFirebase() {
 		} else {
 			console.log(`Swrve: swrve.handlingGoogleServices is true so google-services needs to be added.`);
 		}
+
+		swrveIntegration.pushNotificationPermissionEvent(`${targetApplicationDirectory}${applicationFileName}`, pushNotificationPermissionEvent);
 	} catch (err) {
 		console.error(`Swrve: Something went wrong during Android Setup Application ${err}`);
 	}

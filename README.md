@@ -41,6 +41,7 @@ Our SDK uses a series of hooks to inject code to the final iOS/Android project. 
 | `swrve.drawablePath` | Local path that points to your icon files that are used for Android push notifications. | string |
 | `swrve.googleServicesPath` | Path for your local google-services.json file that is **required** to use Android push notifications.  | string |
 | `GradlePluginGoogleServicesEnabled` | This is a cordova preference added in [cordova-android-9.0.0](https://cordova.apache.org/announcements/2020/06/29/cordova-android-9.0.0.html) that is **required** to be true for Android push notifications.  | boolean |
+| `swrve.pushNotificationPermissionEvent` | Event that triggers the push notification permission request. It will not trigger at startup automatically. | string |
 
 ### Preferences only available on iOS
 

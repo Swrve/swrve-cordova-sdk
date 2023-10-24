@@ -5,6 +5,7 @@ import android.app.Instrumentation;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.swrve.SwrvePlugin;
+import com.swrve.sdk.SwrveBase;
 import com.swrve.sdk.SwrveIAPRewards;
 import com.swrve.sdk.SwrveIdentityResponse;
 import com.swrve.sdk.SwrvePushNotificationListener;
@@ -292,7 +293,7 @@ public class SwrvePluginTests extends SwrvePluginBaseTests {
         final String expectedAction = "WHATEVER_ACTION";
         runJS("window.plugins.swrve.setCustomButtonListener(function(action) { alert('swrve:13:' + action); });");
         Thread.sleep(SwrveTestHelper.WAITING_SHORT_MILLISEC);
-        configMock.getInAppMessageConfig().getCustomButtonListener().onAction(expectedAction);
+        configMock.getInAppMessageConfig().getCustomButtonListener().onAction(expectedAction, "campaignName");
         final AtomicBoolean receivedActionFromButton = new AtomicBoolean(false);
         mActivity.getJSReturnValueAsync(13, value -> {
             assertEquals(expectedAction, value);
@@ -308,7 +309,7 @@ public class SwrvePluginTests extends SwrvePluginBaseTests {
         runJS("window.plugins.swrve.setDismissButtonListener(function(action) { alert('swrve:131:' + JSON.stringify(action)); });");
         Thread.sleep(SwrveTestHelper.WAITING_SHORT_MILLISEC);
 
-        configMock.getInAppMessageConfig().getDismissButtonListener().onAction(campaignSubject, buttonName);
+        configMock.getInAppMessageConfig().getDismissButtonListener().onAction(campaignSubject, buttonName, "campaignName");
         final AtomicBoolean receivedActionFromDismiss = new AtomicBoolean(false);
 
         mActivity.getJSReturnValueAsync(131, value -> {
@@ -412,7 +413,7 @@ public class SwrvePluginTests extends SwrvePluginBaseTests {
         Mockito.doReturn(expectedSubject).when(mockCampaign).getSubject();
         Mockito.doReturn(expectedMessageCenter).when(mockCampaign).isMessageCenter();
         Mockito.doReturn(expectedImpressions).when(mockCampaign).getImpressions();
-        Mockito.doReturn(new SwrveCampaignState()).when(mockCampaign).getSaveableState();
+        Mockito.doReturn(new SwrveCampaignState(null, new Date())).when(mockCampaign).getSaveableState();
 
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
         String dtStart = "2019-01-02T10:00";
@@ -662,5 +663,10 @@ public class SwrvePluginTests extends SwrvePluginBaseTests {
     public void testHandleDefferedDeepLinkToNativeSDK() {
         SwrvePlugin.handleDeferredDeeplink(Mockito.any());
         Mockito.verify(swrveMock, Mockito.timeout(SwrveTestHelper.WAITING_LONG_MILLISEC)).handleDeferredDeeplink(Mockito.any());
+    }
+
+    @Test
+    public void testNativeSDKVersion() {
+        assertEquals("Unexpected native version being used.", "10.11.2", SwrveBase.getVersion());
     }
 }

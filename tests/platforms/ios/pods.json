@@ -9,7 +9,7 @@
     "libraries": {
         "SwrveSDK": {
             "name": "SwrveSDK",
-            "spec": "7.5.2",
+            "spec": "~> 8.0",
             "count": 1
         }
     }

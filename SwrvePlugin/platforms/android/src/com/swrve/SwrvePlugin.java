@@ -56,7 +56,7 @@ import java.util.TimeZone;
 
 public class SwrvePlugin extends CordovaPlugin {
 
-    public static String VERSION = "5.0.0";
+    public static String VERSION = "6.0.0";
     private boolean resourcesListenerReady;
     private boolean customButtonListenerReady;
     private boolean dismissButtonListenerReady;
@@ -110,7 +110,8 @@ public class SwrvePlugin extends CordovaPlugin {
     // SwrveInAppMessageConfig listeners variables
     private static SwrveCustomButtonListener swrveCustomButtonListener = new SwrveCustomButtonListener() {
         @Override
-        public void onAction(String customAction) {
+        public void onAction(String customAction, String campaignName) {
+            // TODO thread back campaignName
             if (instance != null && instance.customButtonListenerReady) {
                 instance.cordova.getActivity().runOnUiThread(() -> instance.runJS(
                         "if (window.swrveCustomButtonListener !== undefined) { window.swrveCustomButtonListener('"
@@ -121,7 +122,8 @@ public class SwrvePlugin extends CordovaPlugin {
 
     private static SwrveDismissButtonListener swrveDismissButtonListener = new SwrveDismissButtonListener() {
         @Override
-        public void onAction(String campaignSubject, String buttonName) {
+        public void onAction(String campaignSubject, String buttonName, String campaignName) {
+            // TODO thread back campaignName
             if (instance != null && instance.dismissButtonListenerReady) {
                 JSONObject callback = new JSONObject();
                 try {

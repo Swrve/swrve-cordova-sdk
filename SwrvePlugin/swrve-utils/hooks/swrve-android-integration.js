@@ -202,5 +202,21 @@ var self = (module.exports = {
 				'Swrve: for android push you must include a drawable path in config.xml under "swrve.drawablePath"'
 			);
 		}
+	},
+
+	pushNotificationPermissionEvent: function(applicationPath, event) {
+		let searchFor = [];
+		let replaceWith = [];
+
+		searchFor.push('// <Swrve_pushNotificationPermissionEvents>');
+		if (swrveUtils.isEmptyString(event)) {
+			replaceWith.push('');
+		} else {
+			replaceWith.push('java.util.List<String> notificationEvents = new java.util.ArrayList<>();\n' + 
+				'notificationEvents.add(\"' + event + '\");\n' + 
+				'notificationConfig.pushNotificationPermissionEvents(notificationEvents);');
+		}
+
+		swrveUtils.searchAndReplace(applicationPath, searchFor, replaceWith);
 	}
 });

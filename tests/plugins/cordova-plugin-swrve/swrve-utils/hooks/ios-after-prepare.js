@@ -179,3 +179,18 @@ function iosSetupServiceExtensionAppGroup() {
 		console.warn('There was no appGroupIdentifier found in config.xml');
 	}
 }
+
+function iosSwrvePodfileEdit() {
+	const iosPath = path.join('platforms', 'ios');
+	const podfilePath = path.join(iosPath, 'Podfile');
+	const podfileData = fs.readFileSync(podfilePath);
+
+	// insert serviceExtension target to Cordova podfile
+	const serviceExtensionData = fs.readFileSync(
+		path.join('plugins', 'cordova-plugin-swrve', 'swrve-utils', 'ios', 'serviceExtension-podspec.txt')
+	);
+
+	if(!podfileData.includes('SwrvePushExtension'))
+		swrveUtils.searchAndReplace(podfilePath, ['end'], [serviceExtensionData]);
+
+}

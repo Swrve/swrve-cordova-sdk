@@ -42,7 +42,7 @@
             parallelizable = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "F654694929ACC4A800E1516B"
+               BlueprintIdentifier = "3A4EB0242ACD64840005A69C"
                BuildableName = "SwrvePluginTests.xctest"
                BlueprintName = "SwrvePluginTests"
                ReferencedContainer = "container:UnitTests.xcodeproj">

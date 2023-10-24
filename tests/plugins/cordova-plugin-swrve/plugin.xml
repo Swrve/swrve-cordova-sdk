@@ -49,7 +49,8 @@
       <config>
       </config>
       <pods use-frameworks="true">
-        <pod name="SwrveSDK" spec="7.5.2" />
+        <!-- Use optimistic operator ~> to get all minor versions up to (but excluding) the next major version.  -->
+        <pod name="SwrveSDK" spec="~> 8.0" />
       </pods>
     </podspec>
   </platform>

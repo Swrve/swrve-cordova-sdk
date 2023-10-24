@@ -39,6 +39,3 @@ dependencies {
     androidTestImplementation 'androidx.test:core:1.4.0'
     androidTestImplementation 'androidx.test:rules:1.4.0'
 }
-
-ext.cdvBuildToolsVersion = '33.0.0'
-ext.cdvCompileSdkVersion = 31

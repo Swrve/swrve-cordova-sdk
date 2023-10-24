@@ -334,7 +334,7 @@
         //populate the mocked callback with content
         SwrveUserResourcesDiffCallback(@{@"house":@{@"cost": @"550"}}, @{@"house":@{@"cost": @"666"}}, @"test string");
 
-    }] userResourcesDiff:OCMOCK_ANY];
+    }] userResourcesDiffWithListener:OCMOCK_ANY];
     
     [self waitForAplicationStart];
     [self evaluateJS:@"window.plugins.swrve.getUserResourcesDiff(function(resourcesDiff) {"
@@ -414,9 +414,9 @@
     
     XCTAssertNotNil([self->swrveMock messaging].customButtonCallback, @"customButtonCallback should NOT be null");
 
-    void (^testCallback)(NSString *action) = [self->swrveMock messaging].customButtonCallback;
+    void (^testCallback)(NSString *action, NSString *campaignName) = [self->swrveMock messaging].customButtonCallback;
 
-    testCallback(expectedAction);
+    testCallback(expectedAction, @"");
 
     __block bool complete = false;
     __block NSString *action = nil;
@@ -477,8 +477,8 @@
     withCompletionHandler:nil];
     
     XCTAssertNotNil([self->swrveMock messaging].dismissButtonCallback, @"customButtonCallback should NOT be null");
-    void (^testCallback)(NSString *campaignSubject, NSString *buttonName) = [self->swrveMock messaging].dismissButtonCallback;
-    testCallback(campaignSubjectMocked, buttonNameMocked);
+    void (^testCallback)(NSString *campaignSubject, NSString *buttonName, NSString *campaignName) = [self->swrveMock messaging].dismissButtonCallback;
+    testCallback(campaignSubjectMocked, buttonNameMocked, @"");
 
     __block bool complete = false;
     __block NSString *json = nil;
@@ -852,5 +852,8 @@
     [swrveMock verify];
 }
 
+- (void)testNativeSDKVersion {
+    XCTAssertEqualObjects(@SWRVE_SDK_VERSION, @"8.8.1");
+}
 
 @end

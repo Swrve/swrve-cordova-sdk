@@ -18,3 +18,5 @@ tests/platforms/ios/www/index.html
 tests/platforms/ios/build/
 tests/platforms/ios/Index
 tests/platforms/ios/info.plist
+tests/platforms/ios/Pods
+tests/platforms/ios/Podfile.lock
