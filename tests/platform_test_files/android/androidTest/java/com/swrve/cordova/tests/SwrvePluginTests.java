@@ -667,6 +667,6 @@ public class SwrvePluginTests extends SwrvePluginBaseTests {
 
     @Test
     public void testNativeSDKVersion() {
-        assertEquals("Unexpected native version being used.", "10.11.2", SwrveBase.getVersion());
+        assertEquals("Unexpected native version being used.", "10.13.0", SwrveBase.getVersion());
     }
 }

@@ -4,10 +4,10 @@ platform :ios, '11.0'
 use_frameworks!
 target 'UnitTests' do
 	project 'UnitTests.xcodeproj'
-	pod 'SwrveSDK', '8.8.1'
+	pod 'SwrveSDK', '~> 8.0'
 	#SWRVE CHANGES - start
 	target 'SwrvePluginTests' do
-		pod 'SwrveSDK', '8.8.1'
+		pod 'SwrveSDK', '~> 8.0'
 		pod 'OCMock', '~> 3.9.1'
 		inherit! :search_paths
 	end

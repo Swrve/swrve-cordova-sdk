@@ -33,9 +33,10 @@ describe('modifyAppDelegate', () => {
 		const filecontents = fs.readFileSync('delegate.txt', 'utf-8');
 
 		// check if the right init code was added
-		const expectedLaunchOptions = fs.readFileSync(
+		const expectedLaunchOptionsBuffer = fs.readFileSync(
 			'./plugins/cordova-plugin-swrve/swrve-utils/ios/didFinishLaunchingWithOptions.txt'
 		);
+		const expectedLaunchOptions = expectedLaunchOptionsBuffer.toString(); // Convert Buffer to string
 
 		expect(hasModifed).toBe(true);
 		expect(filecontents).toContain('#import "AppDelegate.h"\n#import "SwrvePlugin.h"');
@@ -165,9 +166,10 @@ describe('setPushCapabilities', () => {
 		expect(filecontents).toContain('config.appGroupIdentifier = @"appGroupId";');
 
 		// check if the remote function is added as well
-		var expectedReceiveCode = fs.readFileSync(
+		var expectedReceiveCodeBuffer = fs.readFileSync(
 			'./plugins/cordova-plugin-swrve/swrve-utils/ios/didReceiveRemoteNotification.txt'
 		);
+		const expectedReceiveCode = expectedReceiveCodeBuffer.toString(); // Convert Buffer to string
 
 		expect(filecontents).toContain(expectedReceiveCode);
 	});
@@ -182,9 +184,10 @@ describe('setPushCapabilities', () => {
 		expect(filecontents).toContain('config.appGroupIdentifier = @"appGroupId";');
 
 		// check if the remote function is added as well
-		var expectedReceiveCode = fs.readFileSync(
+		var expectedReceiveCodeBuffer = fs.readFileSync(
 			'./plugins/cordova-plugin-swrve/swrve-utils/ios/didReceiveRemoteNotification.txt'
 		);
+		const expectedReceiveCode = expectedReceiveCodeBuffer.toString(); // Convert Buffer to string
 
 		expect(filecontents).toContain(expectedReceiveCode);
 	});
@@ -215,9 +218,10 @@ describe('setPushCapabilities', () => {
 		expect(filecontents).toContain('config.appGroupIdentifier = @"appGroupId";');
 
 		// check if the remote function will always be injected
-		var expectedReceiveCode = fs.readFileSync(
+		var expectedReceiveCodeBuffer = fs.readFileSync(
 			'./plugins/cordova-plugin-swrve/swrve-utils/ios/didReceiveRemoteNotification.txt'
 		);
+		const expectedReceiveCode = expectedReceiveCodeBuffer.toString(); // Convert Buffer to string
 
 		expect(filecontents).toContain(expectedReceiveCode);
 	});
@@ -285,9 +289,10 @@ describe('setAdJourney', () => {
 		const filecontents = fs.readFileSync('setAdJourney_test.txt', 'utf-8');
 
 		// check if the adJourneyHandlerSwrveDeeplinks was injected.
-		const expectedAdJourneyCode = fs.readFileSync(
+		const expectedAdJourneyCodeBuffer = fs.readFileSync(
 			'./plugins/cordova-plugin-swrve/swrve-utils/ios/adJourneyHandlerSwrveDeeplinks.txt'
 		);
+		const expectedAdJourneyCode = expectedAdJourneyCodeBuffer.toString(); // Convert Buffer to string
 
 		expect(filecontents).toContain('Option 1: Process Swrve deeplinks only');
 		expect(filecontents).toContain(expectedAdJourneyCode);
@@ -299,9 +304,10 @@ describe('setAdJourney', () => {
 		const filecontents = fs.readFileSync('setAdJourney_test.txt', 'utf-8');
 
 		// check if the adJourneyHandlerSwrveAndOthersDeeplinks was injected.
-		const expectedAdJourneyCode = fs.readFileSync(
+		const expectedAdJourneyCodeBuffer = fs.readFileSync(
 			'./plugins/cordova-plugin-swrve/swrve-utils/ios/adJourneyHandlerSwrveAndOthersDeeplinks.txt'
 		);
+		const expectedAdJourneyCode = expectedAdJourneyCodeBuffer.toString(); // Convert Buffer to string
 
 		expect(filecontents).toContain('Option 2: Process other deeplinks in addition to Swrve');
 		expect(filecontents).toContain(expectedAdJourneyCode);
@@ -310,12 +316,14 @@ describe('setAdJourney', () => {
 	test('Check ad journey deeplink handler injection', () => {
 		setAdJourney('setAdJourney_test.txt', false);
 
-		const filecontents = fs.readFileSync('setAdJourney_test.txt', 'utf-8');
+		const filecontentsBuffer = fs.readFileSync('setAdJourney_test.txt', 'utf-8');
+		const filecontents = filecontentsBuffer.toString(); // Convert Buffer to string
 
 		// check if the adJourneyDeeplinkHandler was injected.
-		const expectedAdJourneyCode = fs.readFileSync(
+		const expectedAdJourneyCodeBuffer = fs.readFileSync(
 			'./plugins/cordova-plugin-swrve/swrve-utils/ios/adJourneyDeeplinkHandler.txt'
 		);
+		const expectedAdJourneyCode = expectedAdJourneyCodeBuffer.toString(); // Convert Buffer to string
 
 		expect(filecontents).toContain(
 			'- (BOOL)application:(UIApplication *)app openURL:(NSURL *)url options:(NSDictionary<UIApplicationOpenURLOptionsKey, id> *)options'

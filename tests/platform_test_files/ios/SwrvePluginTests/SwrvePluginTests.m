@@ -853,7 +853,7 @@
 }
 
 - (void)testNativeSDKVersion {
-    XCTAssertEqualObjects(@SWRVE_SDK_VERSION, @"8.8.1");
+    XCTAssertEqualObjects(@SWRVE_SDK_VERSION, @"8.11.0");
 }
 
 @end

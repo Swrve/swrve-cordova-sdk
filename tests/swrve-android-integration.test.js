@@ -31,9 +31,10 @@ describe('modifyApplicationFile', () => {
 	});
 
 	test('completely modifies Application with push disabled', () => {
-		const expectedModifications = fs.readFileSync(
+		const expectedModificationsBuffer = fs.readFileSync(
 			'./plugins/cordova-plugin-swrve/swrve-utils/android/ApplicationWithoutPush.txt'
 		);
+		const expectedModifications = expectedModificationsBuffer.toString(); // Convert Buffer to string
 
 		//targetApplicationPath, packageName, appName, pushEnabled
 		modifyApplicationFile('modifyApplicationFile.txt', 'com.swrve.test.modapp', undefined, false);
@@ -45,9 +46,10 @@ describe('modifyApplicationFile', () => {
 
 	test('completely modifies Application With push enabled and app name', () => {
 		// check if the right init code was added
-		const expectedImports = fs.readFileSync(
+		const expectedImportsBuffer = fs.readFileSync(
 			'./plugins/cordova-plugin-swrve/swrve-utils/android/ApplicationPushImports.txt'
 		);
+		const expectedImports = expectedImportsBuffer.toString(); // Convert Buffer to string
 
 		//targetApplicationPath, packageName, appName, pushEnabled
 		modifyApplicationFile('modifyApplicationFile.txt', 'com.swrve.test.modapp', 'testName', true);
@@ -62,13 +64,15 @@ describe('modifyApplicationFile', () => {
 
 	test('completely modifies Application with push enabled and no app name', () => {
 		// check if the right init code was added
-		const expectedImports = fs.readFileSync(
+		const expectedImportsBuffer = fs.readFileSync(
 			'./plugins/cordova-plugin-swrve/swrve-utils/android/ApplicationPushImports.txt'
 		);
+		const expectedImports = expectedImportsBuffer.toString(); // Convert Buffer to string
 
-		const expectedModifications = fs.readFileSync(
+		const expectedModificationsBuffer = fs.readFileSync(
 			'./plugins/cordova-plugin-swrve/swrve-utils/android/ApplicationWithPush.txt'
 		);
+		const expectedModifications = expectedModificationsBuffer.toString(); // Convert Buffer to string
 
 		//targetApplicationPath, packageName, appName, pushEnabled
 		modifyApplicationFile('modifyApplicationFile.txt', 'com.swrve.test.modapp', undefined, true);
@@ -198,9 +202,10 @@ describe('modifyManifestXML', () => {
 	});
 
 	test('completely modifies Manifest.xml with push enabled', () => {
-		const expectedModifications = fs.readFileSync(
+		const expectedModificationsBuffer = fs.readFileSync(
 			'./plugins/cordova-plugin-swrve/swrve-utils/android/FirebasePushManifest.txt'
 		);
+		const expectedModifications = expectedModificationsBuffer.toString(); // Convert Buffer to string
 
 		modifyManifestXML('modifyManifestXML.txt', true);
 		const filecontents = fs.readFileSync('modifyManifestXML.txt', 'utf-8');
@@ -209,9 +214,10 @@ describe('modifyManifestXML', () => {
 	});
 
 	test('completely modifies Manifest.xml with push disabled', () => {
-		const expectedModifications = fs.readFileSync(
+		const expectedModificationsBuffer = fs.readFileSync(
 			'./plugins/cordova-plugin-swrve/swrve-utils/android/FirebasePushManifest.txt'
 		);
+		const expectedModifications = expectedModificationsBuffer.toString(); // Convert Buffer to string
 
 		modifyManifestXML('modifyManifestXML.txt', false);
 		const filecontents = fs.readFileSync('modifyManifestXML.txt', 'utf-8');
@@ -304,7 +310,8 @@ describe('setAdJourney', () => {
 
 	test('Check ad journey code injection for imports', () => {
 		setAdJourney('setAdJourney_test.txt');
-		const filecontents = fs.readFileSync('setAdJourney_test.txt', 'utf-8');
+		const filecontentsBuffer = fs.readFileSync('setAdJourney_test.txt', 'utf-8');
+		const filecontents = filecontentsBuffer.toString(); // Convert Buffer to string
 
 		expect(filecontents).toContain(
 			'import android.os.Bundle;\nimport android.content.Intent;\nimport com.swrve.SwrvePlugin;\n'
@@ -313,24 +320,28 @@ describe('setAdJourney', () => {
 
 	test('Check ad journey code injection for adJourneyHandlerOnNewIntentCreate file', () => {
 		setAdJourney('setAdJourney_test.txt');
-		const filecontents = fs.readFileSync('setAdJourney_test.txt', 'utf-8');
-
+		const filecontentsBuffer = fs.readFileSync('setAdJourney_test.txt', 'utf-8');
+		const filecontents = filecontentsBuffer.toString(); // Convert Buffer to string
+		
 		// check if the adJourneyHandlerOnNewIntentCreate was injected.
-		const expectedAdJourneyHandlerOnNewIntentCreateCode = fs.readFileSync(
+		const expectedAdJourneyHandlerOnNewIntentCreateCodeBuffer = fs.readFileSync(
 			'./plugins/cordova-plugin-swrve/swrve-utils/android/adJourneyHandlerOnNewIntentCreate.txt'
 		);
+		const expectedAdJourneyHandlerOnNewIntentCreateCode = expectedAdJourneyHandlerOnNewIntentCreateCodeBuffer.toString(); // Convert Buffer to string
 
 		expect(filecontents).toContain(expectedAdJourneyHandlerOnNewIntentCreateCode);
 	});
 
 	test('Check ad journey code injection for adJourneyHandlerOnNewIntentCreate file', () => {
 		setAdJourney('setAdJourney_test.txt');
-		const filecontents = fs.readFileSync('setAdJourney_test.txt', 'utf-8');
+		const filecontentsBuffer = fs.readFileSync('setAdJourney_test.txt', 'utf-8');
+		const filecontents = filecontentsBuffer.toString(); // Convert Buffer to string
 
 		// check if the adJourneyHandlerDeeplinks was injected.
-		const expectedadJourneyHandlerDeeplinksCode = fs.readFileSync(
+		const expectedadJourneyHandlerDeeplinksCodeBuffer = fs.readFileSync(
 			'./plugins/cordova-plugin-swrve/swrve-utils/android/adJourneyHandlerDeeplinks.txt'
 		);
+		const expectedadJourneyHandlerDeeplinksCode = expectedadJourneyHandlerDeeplinksCodeBuffer.toString(); // Convert Buffer to string
 
 		expect(filecontents).toContain(expectedadJourneyHandlerDeeplinksCode);
 	});
