@@ -4,7 +4,7 @@ set -e
 set -x
 
 cd public/tests
-cordova platform add android@12.0.1
+cordova platform add android@13.0.0
 cd platforms/android/app/src
 ln -sf ../../../../platform_test_files/android/androidTest/ .
 cd ..

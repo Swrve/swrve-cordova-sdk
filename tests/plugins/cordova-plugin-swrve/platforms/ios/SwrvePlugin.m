@@ -1,11 +1,25 @@
 #import "SwrvePlugin.h"
 #import "SwrvePluginPushHandler.h"
 #import <Cordova/CDV.h>
-#import <SwrveSDK/SwrveCampaign.h>
-#import <SwrveSDk/SwrveCampaignStatus.h>
 
-#define SWRVE_WRAPPER_VERSION "6.0.1"
+#define SWRVE_WRAPPER_VERSION "7.0.0"
 
+@interface SwrvePlugin (InAppCallbacks)
++ (void)inAppMessageAction:(SwrveMessageAction) messageAction messageDetails:(SwrveMessageDetails *)messageDetails selectedButton:(SwrveMessageButtonDetails *)selectedButton;
+@end
+
+@interface SwrvePluginInAppMessageDelegate : NSObject <SwrveInAppMessageDelegate>
+
+@end
+
+@implementation SwrvePluginInAppMessageDelegate
+
+- (void)onAction:(SwrveMessageAction)messageAction messageDetails:(SwrveMessageDetails *)messageDetails selectedButton:(SwrveMessageButtonDetails *)selectedButton {
+    [SwrvePlugin inAppMessageAction:messageAction messageDetails:messageDetails selectedButton:selectedButton];
+}
+@end
+
+static SwrvePluginInAppMessageDelegate *swrveInAppDelegate = nil; // Retain the in-app message delegate for the lifetime of the plugin.
 CDVViewController *globalViewController;
 
 NSString *const SwrveSilentPushPayloadKey = @"_s.SilentPayload";
@@ -18,6 +32,20 @@ NSMutableArray *silentPushNotificationsQueued;
 SwrvePluginPushHandler *swrvePushHandler;
 
 @implementation SwrvePlugin
+
+//for testing purposes only
++ (void)resetForTests {
+    resourcesListenerReady = NO;
+    mustCallResourcesListener = NO;
+    pushNotificationListenerReady = NO;
+    silentPushNotificationListenerReady = NO;
+    [pushNotificationsQueued removeAllObjects];
+    [silentPushNotificationsQueued removeAllObjects];
+    pushNotificationsQueued = [NSMutableArray new];
+    silentPushNotificationsQueued = [NSMutableArray new];
+    swrvePushHandler = nil;
+    globalViewController = nil;
+}
 
 + (void)initWithAppID:(int)appId apiKey:(NSString *)apiKey viewController:(CDVViewController *)viewController {
     [SwrvePlugin initWithAppID:appId apiKey:apiKey config:nil viewController:viewController];
@@ -40,26 +68,17 @@ SwrvePluginPushHandler *swrvePushHandler;
     
     // Apply Essential InApp and Embedded config
     SwrveInAppMessageConfig *inAppConfig = config.inAppMessageConfig;
-    SwrveEmbeddedMessageConfig *embeddedConfig = config.embeddedMessageConfig;
-    
-    inAppConfig.dismissButtonCallback = ^(NSString *campaignSubject, NSString *buttonName, NSString *campaignName){
-        [SwrvePlugin dismissButtonPressed:campaignSubject withButtonName:buttonName];
-    };
-    
-    inAppConfig.clipboardButtonCallback = ^(NSString *processedText) {
-        [SwrvePlugin clipboardButtonPressed:processedText];
-    };
-    
-    inAppConfig.customButtonCallback = ^(NSString *action, NSString *campaignName) {
-        [SwrvePlugin customButtonPressed:action];
-    };
-        
-    embeddedConfig.embeddedMessageCallbackWithPersonalization = ^(SwrveEmbeddedMessage *message, NSDictionary *personalizationProperties) {
-        [SwrvePlugin embeddedCallback:message withPersonalization:personalizationProperties];
-    };
-    
-    config.embeddedMessageConfig = embeddedConfig;
+    if (swrveInAppDelegate == nil) {
+        swrveInAppDelegate = [SwrvePluginInAppMessageDelegate new]; // lazy-init a file-scope static once
+    }
+    inAppConfig.inAppMessageDelegate = swrveInAppDelegate;
     config.inAppMessageConfig = inAppConfig;
+    
+    SwrveEmbeddedMessageConfig *embeddedConfig = config.embeddedMessageConfig;
+    embeddedConfig.embeddedCallback = ^(SwrveEmbeddedMessage *message, NSDictionary *personalizationProperties, bool isControl) {
+        [SwrvePlugin embeddedCallback:message withPersonalization:personalizationProperties isControl:isControl];
+    };
+    config.embeddedMessageConfig = embeddedConfig;
     
     // Set a resource callback
     config.resourcesUpdatedCallback = ^() {
@@ -356,23 +375,18 @@ SwrvePluginPushHandler *swrvePushHandler;
     for (SwrveCampaign *campaign in campaigns) {
         NSMutableDictionary *campaignDictionary = [[NSMutableDictionary alloc] init];
         [campaignDictionary setValue:[NSNumber numberWithUnsignedInteger:[campaign ID]] forKey:@"ID"];
+        NSString *name = [campaign name] != nil ? [campaign name] : @"";
+        [campaignDictionary setValue:name forKey:@"name"];
         [campaignDictionary setValue:[NSNumber numberWithUnsignedInteger:[campaign maxImpressions]] forKey:@"maxImpressions"];
-        [campaignDictionary setValue:[campaign subject] forKey:@"subject"];
+        NSString *subject = campaign.messageCenterDetails != nil ? campaign.messageCenterDetails.subject : @"";
+        [campaignDictionary setValue:subject forKey:@"subject"];
         [campaignDictionary setValue:[NSNumber numberWithUnsignedInteger:[[campaign dateStart] timeIntervalSince1970]] forKey:@"dateStart"];
         [campaignDictionary setValue:[NSNumber numberWithUnsignedInteger:[[campaign dateEnd] timeIntervalSince1970]] forKey:@"dateEnd"];
         [campaignDictionary setValue:@([campaign messageCenter]) forKey:@"messageCenter"];
 
-        NSMutableDictionary *stateDictionary = [NSMutableDictionary dictionaryWithDictionary:[[campaign state] asDictionary]];
-
-        // Remove unused ID
-        [stateDictionary removeObjectForKey:@"ID"];
-
-        // convert the status to a readable format so its consistent across both platforms
-        NSUInteger statusNumber = [[stateDictionary objectForKey:@"status"] integerValue];
-        [stateDictionary setObject:[self translateCampaignStatus:statusNumber] forKey:@"status"];
-        NSDate *downloadDate = [stateDictionary objectForKey:@"downloadDate"];
-        [stateDictionary setValue:[NSNumber numberWithUnsignedInteger:[downloadDate timeIntervalSince1970]] forKey:@"downloadDate"];
+        NSMutableDictionary *stateDictionary = [self getStateDictionaryForCampaign:campaign];
         [campaignDictionary setObject:stateDictionary forKey:@"state"];
+
         [messageAsArray addObject:campaignDictionary];
     }
 
@@ -380,15 +394,36 @@ SwrvePluginPushHandler *swrvePushHandler;
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
+- (NSDictionary *)getStateDictionaryForCampaign:(SwrveCampaign *)campaign {
+    NSMutableDictionary *stateDictionary = [NSMutableDictionary dictionaryWithDictionary:[[campaign state] asDictionary]];
+
+    // Remove unused ID
+    [stateDictionary removeObjectForKey:@"ID"];
+
+    // convert the status to a readable format so its consistent across both platforms
+    NSUInteger statusNumber = [[stateDictionary objectForKey:@"status"] integerValue];
+    [stateDictionary setObject:[self translateCampaignStatus:statusNumber] forKey:@"status"];
+
+    // Convert ALL date objects in the dictionary to timestamps
+    for (NSString *key in [stateDictionary allKeys]) {
+        id value = stateDictionary[key];
+        if ([value isKindOfClass:[NSDate class]]) {
+            NSDate *dateValue = (NSDate *)value;
+            [stateDictionary setValue:@((NSUInteger)[dateValue timeIntervalSince1970]) forKey:key];
+        }
+    }
+    return stateDictionary;
+}
+
 - (NSString *)translateCampaignStatus:(NSUInteger) status {
     switch (status){
-        case SWRVE_CAMPAIGN_STATUS_UNSEEN:
+        case SwrveCampaignStatusUnseen:
             return @"Unseen";
             break;
-        case SWRVE_CAMPAIGN_STATUS_SEEN:
+        case SwrveCampaignStatusSeen:
             return @"Seen";
             break;
-        case SWRVE_CAMPAIGN_STATUS_DELETED:
+        case SwrveCampaignStatusDeleted:
             return @"Deleted";
             break;
         default:
@@ -500,66 +535,109 @@ SwrvePluginPushHandler *swrvePushHandler;
     }
 }
 
-+ (void) embeddedCallback:(SwrveEmbeddedMessage *) embeddedMessage withPersonalization:(NSDictionary *) personalizationProperties {
-    NSMutableDictionary *callback = [NSMutableDictionary new];
-    if (embeddedMessage != nil) {
-        NSMutableDictionary *message = [NSMutableDictionary new];
-        [message setObject:embeddedMessage.buttons forKey:@"buttons"];
-        NSString *embeddedType = (embeddedMessage.type == kSwrveEmbeddedDataTypeJson) ? @"json" : @"other";
-        [message setObject:embeddedType forKey:@"type"];
-        
-        NSString *dataObject = [embeddedMessage.data stringByReplacingOccurrencesOfString:@"\"" withString:@"\\\""];
-        [message setObject:dataObject forKey:@"data"];
-        
-        [message setObject:embeddedMessage.messageID forKey:@"messageID"];
-        [message setObject:[NSNumber numberWithUnsignedInteger:embeddedMessage.campaign.ID] forKey:@"campaignID"];
-        [callback setObject:message forKey:@"message"];
-        
-        if (personalizationProperties != nil) {
-            [callback setObject:personalizationProperties forKey:@"personalizationProperties"];
-        }
-        
-        // Notify the Swrve JS plugin of the embedded call
-        NSError *error;
-        NSData *jsonData = [NSJSONSerialization dataWithJSONObject:callback options:0 error:&error];
-        if (!jsonData) {
-            NSLog(@"Could not serialize the embedded mesage %@", error);
-        } else {
-            NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [SwrvePlugin evaluateString:[NSString stringWithFormat:@"if (window.swrveEmbeddedMessageCallback !== undefined) { swrveEmbeddedMessageCallback('%@'); }", jsonString] onWebView:globalViewController.webView];
-            });
++ (void) embeddedCallback:(SwrveEmbeddedMessage *) embeddedMessage withPersonalization:(NSDictionary *) personalizationProperties isControl:(BOOL)isControl {
+
+    if (!embeddedMessage) return;
+
+    NSMutableDictionary *message  = [NSMutableDictionary new];
+
+    NSString *buttonsString = @"[]";
+    if (embeddedMessage.buttons.count > 0) {
+        buttonsString = [NSString stringWithFormat:@"[%@]", [embeddedMessage.buttons componentsJoinedByString:@", "]];
+    }
+    message[@"buttons"] = buttonsString;
+
+    message[@"type"] = (embeddedMessage.type == SwrveEmbeddedDataTypeJson) ? @"json" : @"other";
+
+    NSString *dataString = embeddedMessage.data ?: @""; // Data should always be a String
+    if (embeddedMessage.type == SwrveEmbeddedDataTypeJson && dataString.length) {
+        NSData *raw = [dataString dataUsingEncoding:NSUTF8StringEncoding];
+        if (raw) {
+            id obj = [NSJSONSerialization JSONObjectWithData:raw options:0 error:nil];
+            if ([obj isKindOfClass:[NSDictionary class]]) {
+                NSData *min = [NSJSONSerialization dataWithJSONObject:obj options:0 error:nil];
+                if (min) {
+                    NSString *minStr = [[NSString alloc] initWithData:min encoding:NSUTF8StringEncoding];
+                    if (minStr.length) dataString = minStr;
+                }
+            }
         }
     }
+    message[@"data"] = dataString;
+
+    message[@"messageId"]  = embeddedMessage.messageID ?: @0;
+    message[@"campaignId"] = @(embeddedMessage.campaign.ID);
+    message[@"priority"]  = @(embeddedMessage.priority.longValue);
+    message[@"isControl"]  = @(isControl);
+
+    NSMutableDictionary *callback = [NSMutableDictionary new];
+    callback[@"message"] = message;
+    if (personalizationProperties) {
+        callback[@"personalizationProperties"] = personalizationProperties;
+    }
+
+    NSError *err = nil;
+    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:callback options:0 error:&err];
+    if (!jsonData) {
+        NSLog(@"SwrvePlugin: embedded serialize error %@", err);
+        return;
+    }
+    NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+    if (!jsonString) return;
+
+    // Escape for single-quoted JS string
+    NSMutableString *escaped = [jsonString mutableCopy];
+    [escaped replaceOccurrencesOfString:@"\\"
+                          withString:@"\\\\"
+                             options:0
+                               range:NSMakeRange(0, escaped.length)];
+    [escaped replaceOccurrencesOfString:@"'"
+                          withString:@"\\'"
+                             options:0
+                               range:NSMakeRange(0, escaped.length)];
+    NSString *jsString = [NSString stringWithFormat:@"if(window.swrveEmbeddedMessageCallback){swrveEmbeddedMessageCallback('%@');}", escaped];
+
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [SwrvePlugin evaluateString:jsString onWebView:globalViewController.webView];
+    });
 }
 
-+ (void) dismissButtonPressed:(NSString *)campaignSubject withButtonName:(NSString *) buttonName {
-    // Check what are the available infos from our callback to return to JS layer.
-    NSMutableDictionary *callback = [NSMutableDictionary new];
-    if (campaignSubject != nil && ![campaignSubject isEqualToString:@""]) {
-        [callback setObject:campaignSubject forKey:@"campaignSubject"];
++ (void) inAppMessageAction:(SwrveMessageAction) messageAction messageDetails:(SwrveMessageDetails *)messageDetails selectedButton:(SwrveMessageButtonDetails *)selectedButton {
+    NSMutableDictionary *callback = [NSMutableDictionary dictionary];
+    callback[@"messageDetailAction"] = stringFromMessageActionEnum(messageAction);
+    
+    // Extract only the properties we need from messageDetails
+    NSMutableDictionary *detailsDict = [NSMutableDictionary dictionary];
+    if (messageDetails) {
+        if (messageDetails.campaignId) detailsDict[@"ID"] = @(messageDetails.campaignId);
+        if (messageDetails.campaignSubject) detailsDict[@"campaignSubject"] = messageDetails.campaignSubject;
+        if (messageDetails.variantId) detailsDict[@"variantId"] = @(messageDetails.variantId);
+        if (messageDetails.messageName) detailsDict[@"messageName"] = messageDetails.messageName;
     }
-    if (buttonName != nil && ![buttonName isEqualToString:@""]) {
-        [callback setObject:buttonName forKey:@"buttonName"];
+    callback[@"messageDetail"] = detailsDict;
+    
+    // Extract only the properties we need from selectedButton
+    if (selectedButton) {
+        NSMutableDictionary *buttonDict = [NSMutableDictionary dictionary];
+        buttonDict[@"buttonName"] = selectedButton.buttonName ?: @"";
+        buttonDict[@"buttonText"] = selectedButton.buttonText ?: @"";
+        buttonDict[@"actionString"] = selectedButton.actionString ?: @"";
+        buttonDict[@"actionType"] = @(selectedButton.actionType);
+        callback[@"messageDetailSelectedButton"] = buttonDict;
     }
 
     NSError *error;
     NSData *jsonData = [NSJSONSerialization dataWithJSONObject:callback options:0 error:&error];
     if (!jsonData) {
-        NSLog(@"Could not serialize callback from Dismiss Button: %@", error);
+        NSLog(@"Could not serialize callback from InAppMessageListener: %@", error);
     } else {
-        // Notify the Swrve JS plugin of the dismiss button click
+        // Notify the Swrve JS plugin (escape single quotes and backslashes for safe embedding in single-quoted JS string)
         NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-        [SwrvePlugin evaluateString:[NSString stringWithFormat:@"if (window.swrveDismissButtonListener !== undefined) { window.swrveDismissButtonListener('%@'); }", jsonString] onWebView:globalViewController.webView];
+        NSMutableString *escaped = [jsonString mutableCopy];
+        [escaped replaceOccurrencesOfString:@"\\" withString:@"\\\\" options:0 range:NSMakeRange(0, escaped.length)];
+        [escaped replaceOccurrencesOfString:@"'" withString:@"\\'" options:0 range:NSMakeRange(0, escaped.length)];
+        [SwrvePlugin evaluateString:[NSString stringWithFormat:@"if (window.swrveInAppMessageListener !== undefined) { window.swrveInAppMessageListener('%@'); }", escaped] onWebView:globalViewController.webView];
     }
-}
-
-+ (void) customButtonPressed:(NSString *) action {
-    [SwrvePlugin evaluateString:[NSString stringWithFormat:@"if (window.swrveCustomButtonListener !== undefined) { window.swrveCustomButtonListener('%@'); }", action] onWebView:globalViewController.webView];
-}
-
-+ (void) clipboardButtonPressed:(NSString *) processedText {
-    [SwrvePlugin evaluateString:[NSString stringWithFormat:@"if (window.swrveClipboardButtonListener !== undefined) { window.swrveClipboardButtonListener('%@'); }", processedText] onWebView:globalViewController.webView];
 }
 
 - (void)pushNotificationListenerReady:(CDVInvokedUrlCommand *)command {
@@ -588,40 +666,6 @@ SwrvePluginPushHandler *swrvePushHandler;
             [silentPushNotificationsQueued removeAllObjects];
         }
     }
-    CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
-    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-}
-
-- (void)customButtonListenerReady:(CDVInvokedUrlCommand *)command {
-
-    CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
-    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-}
-
-- (void)setCustomPayloadForConversationInput:(CDVInvokedUrlCommand *)command {
-    CDVPluginResult *pluginResult = nil;
-    NSMutableDictionary *customPayload = [command.arguments objectAtIndex:0];
-    if ([command.arguments count] == 1) {
-        if (customPayload == nil || [customPayload isKindOfClass:[NSNull class]]) {
-            [SwrveSDK setCustomPayloadForConversationInput:[NSMutableDictionary new]];
-        } else {
-            [SwrveSDK setCustomPayloadForConversationInput:customPayload];
-        }
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
-    } else {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Its necessary to provide at least 1 parameter."];
-    }
-    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-}
-
-- (void)dismissButtonListenerReady:(CDVInvokedUrlCommand *)command {
-    // no longer need to register anything. the callback will work
-    CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
-    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-}
-
-
-- (void)clipboardButtonListenerReady:(CDVInvokedUrlCommand *)command {
     CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
@@ -698,6 +742,13 @@ SwrvePluginPushHandler *swrvePushHandler;
     CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:isStartedString];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
+
+- (void)stopTracking:(CDVInvokedUrlCommand *)command {
+    [SwrveSDK stopTracking];
+    CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
+
 
 #pragma mark - embedded
 
@@ -802,11 +853,26 @@ SwrvePluginPushHandler *swrvePushHandler;
     for (NSDictionary *campaign in campaigns)
     {
         if (campaignId == [[campaign valueForKey:@"id"] integerValue]) {
-            SwrveEmbeddedCampaign *embeddedCampaign = [[SwrveEmbeddedCampaign alloc] initAtTime:[NSDate date] fromDictionary:campaign forController:nil];
+            SwrveEmbeddedCampaign *embeddedCampaign = [[SwrveEmbeddedCampaign alloc] initAt:[NSDate date] from:campaign];
             return embeddedCampaign;
         }
     }
     return nil;
+}
+
+NSString *stringFromMessageActionEnum(SwrveMessageAction enumValue) {
+    switch (enumValue) {
+        case SwrveMessageActionImpression:
+            return @"Impression";
+        case SwrveMessageActionCustom:
+            return @"Custom";
+        case SwrveMessageActionDismiss:
+            return @"Dismiss";
+        case SwrveMessageActionClipboard:
+            return @"CopyToClipboard";
+        default:
+            return @"Default";
+    }
 }
 
 @end

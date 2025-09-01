@@ -103,7 +103,7 @@ function iosSetupServiceExtension() {
 					`"${swrveSDKCommonDirectory}"`
 				);
 				proj.hash.project.objects['XCBuildConfiguration'][ref].buildSettings['IPHONEOS_DEPLOYMENT_TARGET'] =
-					'11.0';
+					'12.0';
 
 				var currentBundleID =
 					proj.hash.project.objects['XCBuildConfiguration'][ref].buildSettings['PRODUCT_BUNDLE_IDENTIFIER'];

@@ -14,6 +14,7 @@ import com.swrve.sdk.Swrve;
 import com.swrve.sdk.SwrveCampaignDisplayer;
 import com.swrve.sdk.SwrveIAPRewards;
 import com.swrve.sdk.SwrveIdentityResponse;
+import com.swrve.sdk.SwrveLogger;
 import com.swrve.sdk.SwrvePushNotificationListener;
 import com.swrve.sdk.SwrveResourcesListener;
 import com.swrve.sdk.SwrveSDK;
@@ -25,12 +26,12 @@ import com.swrve.sdk.config.SwrveConfig;
 import com.swrve.sdk.config.SwrveEmbeddedMessageConfig;
 import com.swrve.sdk.config.SwrveInAppMessageConfig;
 import com.swrve.sdk.messaging.SwrveBaseCampaign;
-import com.swrve.sdk.messaging.SwrveClipboardButtonListener;
-import com.swrve.sdk.messaging.SwrveCustomButtonListener;
-import com.swrve.sdk.messaging.SwrveDismissButtonListener;
 import com.swrve.sdk.messaging.SwrveEmbeddedCampaign;
 import com.swrve.sdk.messaging.SwrveEmbeddedMessage;
-import com.swrve.sdk.messaging.SwrveEmbeddedMessageListener;
+import com.swrve.sdk.messaging.SwrveEmbeddedListener;
+import com.swrve.sdk.messaging.SwrveInAppMessageListener;
+import com.swrve.sdk.messaging.SwrveMessageButtonDetails;
+import com.swrve.sdk.messaging.SwrveMessageDetails;
 import com.swrve.sdk.runnable.UIThreadSwrveResourcesDiffRunnable;
 import com.swrve.sdk.runnable.UIThreadSwrveResourcesRunnable;
 
@@ -56,11 +57,9 @@ import java.util.TimeZone;
 
 public class SwrvePlugin extends CordovaPlugin {
 
-    public static String VERSION = "6.0.1";
+    public static String VERSION = "7.0.0";
     private boolean resourcesListenerReady;
-    private boolean customButtonListenerReady;
-    private boolean dismissButtonListenerReady;
-    private boolean clipboardButtonListenerReady;
+    private boolean inAppMessageListenerReady;
     private boolean embeddedMessageListenerReady;
     private boolean mustCallResourcesListener;
 
@@ -68,7 +67,7 @@ public class SwrvePlugin extends CordovaPlugin {
     private boolean pushNotificationListenerReady;
     private boolean silentPushNotificationListenerReady;
 
-    private static SwrvePlugin instance;
+    private static com.swrve.SwrvePlugin instance;
     private static List<String> pushNotificationsQueued = new ArrayList<>();
     private static List<String> silentPushNotificationsQueued = new ArrayList<>();
 
@@ -107,82 +106,71 @@ public class SwrvePlugin extends CordovaPlugin {
         }
     };
 
-    // SwrveInAppMessageConfig listeners variables
-    private static SwrveCustomButtonListener swrveCustomButtonListener = new SwrveCustomButtonListener() {
+    private static SwrveInAppMessageListener swrveInAppMessageListener = new SwrveInAppMessageListener() {
         @Override
-        public void onAction(String customAction, String campaignName) {
-            // TODO thread back campaignName
-            if (instance != null && instance.customButtonListenerReady) {
-                instance.cordova.getActivity().runOnUiThread(() -> instance.runJS(
-                        "if (window.swrveCustomButtonListener !== undefined) { window.swrveCustomButtonListener('"
-                                + customAction + "'); }"));
-            }
-        }
-    };
+        public void onAction(Context context, SwrveMessageAction action, SwrveMessageDetails messageDetails, SwrveMessageButtonDetails selectedButton) {
 
-    private static SwrveDismissButtonListener swrveDismissButtonListener = new SwrveDismissButtonListener() {
-        @Override
-        public void onAction(String campaignSubject, String buttonName, String campaignName) {
-            // TODO thread back campaignName
-            if (instance != null && instance.dismissButtonListenerReady) {
-                JSONObject callback = new JSONObject();
-                try {
-                    // We do check if we have valid campaignSubject and buttonName to return to JS
-                    if (campaignSubject != null && !campaignSubject.isEmpty()) {
-                        callback.put("campaignSubject", campaignSubject);
-                    }
-                    if (buttonName != null && !buttonName.isEmpty()) {
-                        callback.put("buttonName", buttonName);
-                    }
-                    if (!callback.isNull("buttonName") || !callback.isNull("campaignSubject")) {
-                        instance.cordova.getActivity().runOnUiThread(() -> instance.runJS(
-                                "if (window.swrveDismissButtonListener !== undefined) { window.swrveDismissButtonListener('"
-                                        + callback + "'); }"));
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
+            SwrveLogger.v("SwrvePlugin: SwrveInAppMessageListener onAction called with action: %s", action);
+            JSONObject callback = new JSONObject();
+            try {
+                callback.put("messageDetailAction", action.toString());
+                JSONObject json = messageDetailsToJson(messageDetails);
+                callback.put("messageDetail", json);
+                if (selectedButton != null) {
+                    JSONObject buttonJson = buttonDetailsToJson(selectedButton);
+                    callback.put("messageDetailSelectedButton", buttonJson);
                 }
+                if (instance != null && instance.inAppMessageListenerReady) {
+                    final String raw = callback.toString();
+                    String escaped = raw.replace("\\", "\\\\").replace("'", "\\'");
+                    final String js = "if (window.swrveInAppMessageListener !== undefined) { window.swrveInAppMessageListener('" + escaped + "'); }";
+                    instance.cordova.getActivity().runOnUiThread(() -> instance.runJS(js));
+                    SwrveLogger.v("SwrvePlugin: SwrveInAppMessageListener onAction callback sent to JS (escaped string)");
+                } else {
+                    SwrveLogger.v("SwrvePlugin: SwrveInAppMessageListener onAction callback not sent to JS, listener not ready");
+                }
+            } catch (Exception e) {
+                SwrveLogger.e("SwrvePlugin: Error creating JSON for swrveInAppMessageListener callback", e);
             }
         }
     };
-
-    private static SwrveClipboardButtonListener swrveClipboardButtonListener = new SwrveClipboardButtonListener() {
-        @Override
-        public void onAction(String clipboardContents) {
-            if (instance != null && instance.clipboardButtonListenerReady) {
-                instance.cordova.getActivity().runOnUiThread(() -> instance.runJS(
-                        "if (window.swrveClipboardButtonListener !== undefined) { window.swrveClipboardButtonListener('"
-                                + clipboardContents + "'); }"));
-            }
-        }
-    };
-
 
     // SwrveEmbeddedMessageConfig listener variables
-    private static SwrveEmbeddedMessageListener swrveEmbeddedMessageListener = new SwrveEmbeddedMessageListener() {
+    private static SwrveEmbeddedListener swrveEmbeddedListener = new SwrveEmbeddedListener() {
         @Override
-        public void onMessage(Context context, SwrveEmbeddedMessage message, Map<String, String> personalizationProperties) {
+        public void onMessage(Context context, SwrveEmbeddedMessage message, Map<String, String> personalizationProperties, boolean isControl) {
             if (instance != null && instance.embeddedMessageListenerReady) {
                 JSONObject callback = new JSONObject();
                 try {
                     JSONObject messageJSONObject = new JSONObject();
-                    String dataString = message.getData().replace("\"", "\\\"");
-                    messageJSONObject.put("data", dataString);
-                    messageJSONObject.put("buttons", message.getButtons());
+                    String dataString = message.getData();
+                    if (message.getType() == SwrveEmbeddedMessage.EMBEDDED_CAMPAIGN_TYPE.JSON) {
+                        try {
+                            dataString = new JSONObject(dataString).toString();
+                        } catch (JSONException ignored) {
+                            // ignore
+                        }
+                    }
+                    messageJSONObject.put("data", dataString); // will become a JSONObject if possible
+                    messageJSONObject.put("buttons", message.getButtons()); // will become a JSONArray
                     messageJSONObject.put("type", message.getType().toString());
-                    messageJSONObject.put("campaignID", message.getCampaign().getId());
-                    messageJSONObject.put("messageID", message.getId());
+                    messageJSONObject.put("campaignId", message.getCampaign().getId());
+                    messageJSONObject.put("messageId", message.getId());
+                    messageJSONObject.put("priority", message.getPriority());
+                    messageJSONObject.put("isControl", isControl);
                     callback.put("message", messageJSONObject);
 
-                    if (personalizationProperties != null){
+                    if (personalizationProperties != null) {
                         callback.put("personalizationProperties", personalizationProperties);
                     }
 
-                    instance.cordova.getActivity().runOnUiThread(() -> instance.runJS(
-                            "if (window.swrveEmbeddedMessageCallback !== undefined) { window.swrveEmbeddedMessageCallback('"
-                                    + callback + "'); }"));
+                    final String payload = callback.toString();
+                    final String quoted = JSONObject.quote(payload); // produces safe JS string
+                    instance.cordova.getActivity().runOnUiThread(() ->
+                            instance.runJS("if (window.swrveEmbeddedMessageCallback!==undefined){window.swrveEmbeddedMessageCallback(" + quoted + ");}")
+                    );
                 } catch (JSONException e) {
-                    e.printStackTrace();
+                    SwrveLogger.e("SwrvePlugin: Error creating JSON for swrveEmbeddedMessageCallback", e);
                 }
             }
         }
@@ -198,22 +186,19 @@ public class SwrvePlugin extends CordovaPlugin {
         createInstance(application, appId, apiKey, null);
     }
 
-    public static synchronized void createInstance(Application application, int appId, String apiKey,
-            SwrveConfig config) {
+    public static synchronized void createInstance(Application application, int appId, String apiKey, SwrveConfig config) {
         if (config == null) {
             config = new SwrveConfig();
         }
         config.setNotificationListener(pushNotificationListener);
         config.setSilentPushListener(silentPushNotificationListener);
 
-        // Set in advance listeners from SwrveInAppMessageConfig.
         SwrveInAppMessageConfig.Builder builder = new SwrveInAppMessageConfig.Builder()
-                .customButtonListener(swrveCustomButtonListener).dismissButtonListener(swrveDismissButtonListener)
-                .clipboardButtonListener(swrveClipboardButtonListener);
-
+                .messageListener(swrveInAppMessageListener);
         config.setInAppMessageConfig(builder.build());
 
-        SwrveEmbeddedMessageConfig.Builder embeddedBuilder = new SwrveEmbeddedMessageConfig.Builder().embeddedMessageListener(swrveEmbeddedMessageListener);
+        SwrveEmbeddedMessageConfig.Builder embeddedBuilder = new SwrveEmbeddedMessageConfig.Builder()
+                .embeddedListener(swrveEmbeddedListener);
         config.setEmbeddedMessageConfig(embeddedBuilder.build());
 
         SwrveSDK.createInstance(application, appId, apiKey, config);
@@ -240,7 +225,7 @@ public class SwrvePlugin extends CordovaPlugin {
                     sdk.getUserResources(new SwrveUserResourcesListener() {
                         @Override
                         public void onUserResourcesSuccess(Map<String, Map<String, String>> resources,
-                                String resourcesAsString) {
+                                                           String resourcesAsString) {
                             final String base64Encoded = encodeJsonToBase64(new JSONObject(resources));
                             instance.runJS(
                                     "if (window.swrveProcessResourcesUpdated !== undefined) { window.swrveProcessResourcesUpdated('"
@@ -274,7 +259,7 @@ public class SwrvePlugin extends CordovaPlugin {
     @Override
     public void initialize(CordovaInterface cordova, CordovaWebView webView) {
         super.initialize(cordova, webView);
-        SwrvePlugin.sendPluginVersion();
+        com.swrve.SwrvePlugin.sendPluginVersion();
     }
 
     private HashMap<String, String> getMapFromJSON(JSONObject json) throws JSONException {
@@ -364,13 +349,13 @@ public class SwrvePlugin extends CordovaPlugin {
                 String userId = arguments.getString(0);
                 cordova.getThreadPool().execute(() -> {
                     SwrveSDK.start(cordova.getActivity(), userId);
-                    SwrvePlugin.sendPluginVersion();
+                    com.swrve.SwrvePlugin.sendPluginVersion();
                     callbackContext.success();
                 });
             } else {
                 cordova.getThreadPool().execute(() -> {
                     SwrveSDK.start(cordova.getActivity());
-                    SwrvePlugin.sendPluginVersion();
+                    com.swrve.SwrvePlugin.sendPluginVersion();
                     callbackContext.success();
                 });
             }
@@ -448,27 +433,6 @@ public class SwrvePlugin extends CordovaPlugin {
         } catch (JSONException e) {
             callbackContext.error("JSON_EXCEPTION");
             e.printStackTrace();
-        }
-    }
-
-    private void setPayloadConversationPayload(JSONArray arguments, final CallbackContext callbackContext) {
-        if (arguments.optJSONObject(0) == null) {
-            cordova.getThreadPool().execute(() -> {
-                SwrveSDK.setCustomPayloadForConversationInput(null);
-                callbackContext.success();
-            });
-        } else {
-            try {
-                JSONObject payloads = arguments.getJSONObject(0);
-                final HashMap<String, String> map = getMapFromJSON(payloads);
-                cordova.getThreadPool().execute(() -> {
-                    SwrveSDK.setCustomPayloadForConversationInput(map);
-                    callbackContext.success();
-                });
-            } catch (JSONException e) {
-                callbackContext.error("JSON_EXCEPTION");
-                e.printStackTrace();
-            }
         }
     }
 
@@ -583,7 +547,7 @@ public class SwrvePlugin extends CordovaPlugin {
                     new UIThreadSwrveUserResourcesListener(cordova.getActivity(), new UIThreadSwrveResourcesRunnable() {
                         @Override
                         public void onUserResourcesSuccess(Map<String, Map<String, String>> resources,
-                                String resourcesAsJSON) {
+                                                           String resourcesAsJSON) {
                             callbackContext.success(new JSONObject(resources));
                         }
 
@@ -599,25 +563,25 @@ public class SwrvePlugin extends CordovaPlugin {
             cordova.getThreadPool()
                     .execute(() -> SwrveSDK.getUserResourcesDiff(new UIThreadSwrveUserResourcesDiffListener(
                             cordova.getActivity(), new UIThreadSwrveResourcesDiffRunnable() {
-                                @Override
-                                public void onUserResourcesDiffSuccess(Map<String, Map<String, String>> oldResources,
-                                        Map<String, Map<String, String>> newResources, String resourcesAsJSON) {
-                                    try {
-                                        JSONObject result = new JSONObject();
-                                        result.put("old", new JSONObject(oldResources));
-                                        result.put("new", new JSONObject(newResources));
-                                        callbackContext.success(result);
-                                    } catch (JSONException e) {
-                                        e.printStackTrace();
-                                    }
-                                }
+                        @Override
+                        public void onUserResourcesDiffSuccess(Map<String, Map<String, String>> oldResources,
+                                                               Map<String, Map<String, String>> newResources, String resourcesAsJSON) {
+                            try {
+                                JSONObject result = new JSONObject();
+                                result.put("old", new JSONObject(oldResources));
+                                result.put("new", new JSONObject(newResources));
+                                callbackContext.success(result);
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        }
 
-                                @Override
-                                public void onUserResourcesDiffError(Exception exception) {
-                                    exception.printStackTrace();
-                                    callbackContext.error(exception.getMessage());
-                                }
-                            })));
+                        @Override
+                        public void onUserResourcesDiffError(Exception exception) {
+                            exception.printStackTrace();
+                            callbackContext.error(exception.getMessage());
+                        }
+                    })));
             return true;
         } else if ("getMessageCenterCampaigns".equals((action))) {
             cordova.getThreadPool().execute(() -> {
@@ -628,8 +592,11 @@ public class SwrvePlugin extends CordovaPlugin {
                     for (SwrveBaseCampaign campaign : campaigns) {
                         JSONObject campaignJSON = new JSONObject();
                         campaignJSON.put("ID", campaign.getId());
+                        String name = campaign.getName() != null ? campaign.getName() : "";
+                        campaignJSON.put("name", name);
                         campaignJSON.put("maxImpressions", campaign.getMaxImpressions());
-                        campaignJSON.put("subject", campaign.getSubject());
+                        String subject = campaign.getMessageCenterDetails() != null ? campaign.getMessageCenterDetails().getSubject() : "";
+                        campaignJSON.put("subject", subject);
                         campaignJSON.put("dateStart", (campaign.getStartDate().getTime() / 1000));
                         campaignJSON.put("messageCenter", campaign.isMessageCenter());
                         campaignJSON.put("state", campaign.getSaveableState().toJSON());
@@ -681,23 +648,11 @@ public class SwrvePlugin extends CordovaPlugin {
         }  else if ("refreshCampaignsAndResources".equals(action)) {
             SwrveSDK.refreshCampaignsAndResources();
             return true;
-        } else if ("setCustomPayloadForConversationInput".equals(action)) {
-            if (!isBadArgument(arguments, callbackContext, 1,
-                    "Invalid Arguments - Custom payload for conversation need to be supplied.")) {
-                setPayloadConversationPayload(arguments, callbackContext);
-            }
-            return true;
-        } else if ("resourcesListenerReady".equals(action)) {
+        }  else if ("resourcesListenerReady".equals(action)) {
             setResourcesListenerReady();
             return true;
-        } else if ("dismissButtonListenerReady".equals(action)) {
-            dismissButtonListenerReady = true;
-            return true;
-        } else if ("customButtonListenerReady".equals(action)) {
-            customButtonListenerReady = true;
-            return true;
-        } else if ("clipboardButtonListenerReady".equals(action)) {
-            clipboardButtonListenerReady = true;
+        } else if ("inAppMessageListenerReady".equals(action)) {
+            inAppMessageListenerReady = true;
             return true;
         } else if ("embeddedMessageListenerReady".equals(action)) {
             embeddedMessageListenerReady = true;
@@ -719,6 +674,10 @@ public class SwrvePlugin extends CordovaPlugin {
             return true;
         } else if ("isStarted".equals(action)) {
             callbackContext.success(String.valueOf(SwrveSDK.isStarted()));
+            return true;
+        } else if ("stopTracking".equals(action)) {
+            SwrveSDK.stopTracking();
+            callbackContext.success(); // assume success
             return true;
         }
 
@@ -972,5 +931,44 @@ public class SwrvePlugin extends CordovaPlugin {
     private void notifyOfSilentPushPayload(String base64Payload) {
         runJS("if (window.swrveProcessSilentPushNotification !== undefined) { window.swrveProcessSilentPushNotification('"
                 + base64Payload + "'); }");
+    }
+
+    private static JSONObject messageDetailsToJson(SwrveMessageDetails messageDetails) throws Exception {
+        JSONObject messageDetailJson = new JSONObject();
+
+        JSONArray buttons = new JSONArray();
+        if (messageDetails.getButtons() != null) {
+            for (SwrveMessageButtonDetails button : messageDetails.getButtons()) {
+                buttons.put(buttonDetailsToJson(button));
+            }
+        }
+        String campaignSubject = messageDetails.getCampaignSubject() == null ? "" : messageDetails.getCampaignSubject();
+        messageDetailJson.put("campaignSubject", campaignSubject);
+
+        messageDetailJson.put("campaignId", messageDetails.getCampaignId());
+        messageDetailJson.put("variantId", messageDetails.getVariantId());
+
+        String messageName = messageDetails.getMessageName() == null ? "" : messageDetails.getMessageName();
+        messageDetailJson.put("messageName", messageName);
+        messageDetailJson.put("buttons", buttons);
+
+        return messageDetailJson;
+    }
+
+    private static JSONObject buttonDetailsToJson(SwrveMessageButtonDetails buttonDetails) throws Exception {
+        JSONObject selectedButton = new JSONObject();
+
+        String buttonName = buttonDetails.getButtonName() == null ? "" : buttonDetails.getButtonName();
+        selectedButton.put("buttonName", buttonName);
+
+        String buttonText = buttonDetails.getButtonText() == null ? "" : buttonDetails.getButtonText();
+        selectedButton.put("buttonText", buttonText);
+
+        String actionType = buttonDetails.getActionType() == null ? "" : buttonDetails.getActionType().toString();
+        selectedButton.put("actionType", actionType);
+
+        String actionString = buttonDetails.getActionString() == null ? "" : buttonDetails.getActionString();
+        selectedButton.put("actionString", actionString);
+        return selectedButton;
     }
 }

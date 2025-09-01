@@ -4,8 +4,8 @@
   "displayName": "UnitTests",
   "cordova": {
     "platforms": [
-      "ios",
-      "android"
+      "android",
+      "ios"
     ],
     "plugins": {
       "cordova-plugin-swrve": {}
@@ -18,8 +18,8 @@
     "test": "jest"
   },
   "devDependencies": {
-    "cordova-android": "^12.0.1",
-    "cordova-ios": "^7.0.1",
+    "cordova-android": "^13.0.0",
+    "cordova-ios": "^7.1.1",
     "cordova-plugin-swrve": "file:../SwrvePlugin",
     "jest": "^29.7.0"
   }

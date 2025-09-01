@@ -16,8 +16,8 @@
     <platform name="android">
         <allow-intent href="market:*" />
         <!-- <preference name="AndroidWindowSplashScreenAnimatedIcon" value="res/drawable/icon.png"/> -->
-        <preference name="android-compileSdkVersion" value="33" />
-        <preference name="android-targetSdkVersion" value="33" />
+        <preference name="android-compileSdkVersion" value="35" />
+        <preference name="android-targetSdkVersion" value="35" />
         <preference name="swrve.appId" value="1234" />
         <preference name="swrve.apiKey" value="XXXXX" />
         <preference name="swrve.pushEnabled" value="true" />

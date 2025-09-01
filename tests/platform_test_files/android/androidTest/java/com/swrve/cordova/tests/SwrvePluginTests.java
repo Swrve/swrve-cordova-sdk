@@ -12,9 +12,14 @@ import com.swrve.sdk.SwrvePushNotificationListener;
 import com.swrve.sdk.SwrveSilentPushListener;
 import com.swrve.sdk.SwrveUserResourcesDiffListener;
 import com.swrve.sdk.SwrveUserResourcesListener;
+import com.swrve.sdk.messaging.SwrveActionType;
 import com.swrve.sdk.messaging.SwrveBaseCampaign;
 import com.swrve.sdk.messaging.SwrveCampaignState;
 import com.swrve.sdk.SwrveInAppMessageActivity;
+import com.swrve.sdk.messaging.SwrveInAppMessageListener;
+import com.swrve.sdk.messaging.SwrveMessageButtonDetails;
+import com.swrve.sdk.messaging.SwrveMessageCenterDetails;
+import com.swrve.sdk.messaging.SwrveMessageDetails;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -289,11 +294,25 @@ public class SwrvePluginTests extends SwrvePluginBaseTests {
     }
 
     @Test
-    public void testCustomButtonListener() throws InterruptedException {
-        final String expectedAction = "WHATEVER_ACTION";
-        runJS("window.plugins.swrve.setCustomButtonListener(function(action) { alert('swrve:13:' + action); });");
+    public void testInAppMessageListenerImpression() throws InterruptedException {
+        // @formatter:off
+        final String expectedAction = "{" +
+                    "\"messageDetailAction\":\"Impression\"," +
+                    "\"messageDetail\":{" +
+                        "\"campaignSubject\":\"my_campaignSubject\"," +
+                        "\"campaignId\":1," +
+                        "\"variantId\":2," +
+                        "\"messageName\":\"my_messageName\"," +
+                        "\"buttons\":[]" +
+                    "}" +
+                "}";
+        // @formatter:on
+        runJS("window.plugins.swrve.setInAppMessageListener(function(action) { alert('swrve:13:' + action); });");
         Thread.sleep(SwrveTestHelper.WAITING_SHORT_MILLISEC);
-        configMock.getInAppMessageConfig().getCustomButtonListener().onAction(expectedAction, "campaignName");
+
+        SwrveMessageDetails messageDetails = new SwrveMessageDetails("my_campaignSubject", 1, 2, "my_messageName", null);
+        configMock.getInAppMessageConfig().getMessageListener().onAction(mActivity, SwrveInAppMessageListener.SwrveMessageAction.Impression, messageDetails, null);
+
         final AtomicBoolean receivedActionFromButton = new AtomicBoolean(false);
         mActivity.getJSReturnValueAsync(13, value -> {
             assertEquals(expectedAction, value);
@@ -303,37 +322,139 @@ public class SwrvePluginTests extends SwrvePluginBaseTests {
     }
 
     @Test
-    public void testDismissButtonListener() throws Exception {
-        final String campaignSubject = "some_expected_campaignSubject";
-        final String buttonName = "some_button_name";
-        runJS("window.plugins.swrve.setDismissButtonListener(function(action) { alert('swrve:131:' + JSON.stringify(action)); });");
+    public void testInAppMessageListenerCustom() throws InterruptedException {
+        // @formatter:off
+        final String expectedAction = "{" +
+                    "\"messageDetailAction\":\"Custom\"," +
+                    "\"messageDetail\":{" +
+                        "\"campaignSubject\":\"my_campaignSubject\"," +
+                        "\"campaignId\":1," +
+                        "\"variantId\":2," +
+                        "\"messageName\":\"my_messageName\"," +
+                        "\"buttons\":[]" +
+                    "}," +
+                    "\"messageDetailSelectedButton\":{" +
+                        "\"buttonName\":\"my_buttonName\"," +
+                        "\"buttonText\":\"my_buttonText\"," +
+                        "\"actionType\":\"Custom\"," +
+                        "\"actionString\":\"my_actionString\"" +
+                    "}" +
+                "}";
+        // @formatter:on
+        runJS("window.plugins.swrve.setInAppMessageListener(function(action) { alert('swrve:13:' + action); });");
         Thread.sleep(SwrveTestHelper.WAITING_SHORT_MILLISEC);
 
-        configMock.getInAppMessageConfig().getDismissButtonListener().onAction(campaignSubject, buttonName, "campaignName");
-        final AtomicBoolean receivedActionFromDismiss = new AtomicBoolean(false);
+        SwrveMessageDetails messageDetails = new SwrveMessageDetails("my_campaignSubject", 1, 2, "my_messageName", null);
+        SwrveMessageButtonDetails buttonDetails = new SwrveMessageButtonDetails("my_buttonName", "my_buttonText", SwrveActionType.Custom, "my_actionString");
+        configMock.getInAppMessageConfig().getMessageListener().onAction(mActivity, SwrveInAppMessageListener.SwrveMessageAction.Custom, messageDetails, buttonDetails);
 
-        mActivity.getJSReturnValueAsync(131, value -> {
-            try {
-                JSONObject callback = new JSONObject(value);
-                Assert.assertEquals(campaignSubject, callback.getString("campaignSubject"));
-                Assert.assertEquals(buttonName, callback.getString("buttonName"));
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            receivedActionFromDismiss.set(true);
+        final AtomicBoolean receivedActionFromButton = new AtomicBoolean(false);
+        mActivity.getJSReturnValueAsync(13, value -> {
+            assertEquals(expectedAction, value);
+            receivedActionFromButton.set(true);
         });
-        await().atMost(SwrveTestHelper.WAITING_SHORT, TimeUnit.SECONDS).untilTrue(receivedActionFromDismiss);
+        await().atMost(SwrveTestHelper.WAITING_SHORT, TimeUnit.SECONDS).untilTrue(receivedActionFromButton);
     }
 
     @Test
-    public void testClipboardButtonListener() throws InterruptedException {
-        final String expectedAction = "CLIPBOARD_ACTION";
-        runJS("window.plugins.swrve.setClipboardButtonListener(function(action) { alert('swrve:132:' + action); });");
+    public void testInAppMessageListenerDismiss() throws InterruptedException {
+        // @formatter:off
+        final String expectedAction = "{" +
+                    "\"messageDetailAction\":\"Dismiss\"," +
+                    "\"messageDetail\":{" +
+                        "\"campaignSubject\":\"my_campaignSubject\"," +
+                        "\"campaignId\":1," +
+                        "\"variantId\":2," +
+                        "\"messageName\":\"my_messageName\"," +
+                        "\"buttons\":[]" +
+                    "}," +
+                    "\"messageDetailSelectedButton\":{" +
+                        "\"buttonName\":\"my_buttonName\"," +
+                        "\"buttonText\":\"my_buttonText\"," +
+                        "\"actionType\":\"Dismiss\"," +
+                        "\"actionString\":\"my_actionString\"" +
+                    "}" +
+                "}";
+        // @formatter:on
+        runJS("window.plugins.swrve.setInAppMessageListener(function(action) { alert('swrve:13:' + action); });");
         Thread.sleep(SwrveTestHelper.WAITING_SHORT_MILLISEC);
 
-        configMock.getInAppMessageConfig().getClipboardButtonListener().onAction(expectedAction);
+        SwrveMessageDetails messageDetails = new SwrveMessageDetails("my_campaignSubject", 1, 2, "my_messageName", null);
+        SwrveMessageButtonDetails buttonDetails = new SwrveMessageButtonDetails("my_buttonName", "my_buttonText", SwrveActionType.Dismiss, "my_actionString");
+        configMock.getInAppMessageConfig().getMessageListener().onAction(mActivity, SwrveInAppMessageListener.SwrveMessageAction.Dismiss, messageDetails, buttonDetails);
+
         final AtomicBoolean receivedActionFromButton = new AtomicBoolean(false);
-        mActivity.getJSReturnValueAsync(132, value -> {
+        mActivity.getJSReturnValueAsync(13, value -> {
+            assertEquals(expectedAction, value);
+            receivedActionFromButton.set(true);
+        });
+        await().atMost(SwrveTestHelper.WAITING_SHORT, TimeUnit.SECONDS).untilTrue(receivedActionFromButton);
+    }
+
+    @Test
+    public void testInAppMessageListenerClipboard() throws InterruptedException {
+        // @formatter:off
+        final String expectedAction = "{" +
+                    "\"messageDetailAction\":\"CopyToClipboard\"," +
+                    "\"messageDetail\":{" +
+                        "\"campaignSubject\":\"my_campaignSubject\"," +
+                        "\"campaignId\":1," +
+                        "\"variantId\":2," +
+                        "\"messageName\":\"my_messageName\"," +
+                        "\"buttons\":[]" +
+                    "}," +
+                    "\"messageDetailSelectedButton\":{" +
+                        "\"buttonName\":\"my_buttonName\"," +
+                        "\"buttonText\":\"my_buttonText\"," +
+                        "\"actionType\":\"CopyToClipboard\"," +
+                        "\"actionString\":\"my_actionString\"" +
+                    "}" +
+                "}";
+        // @formatter:on
+        runJS("window.plugins.swrve.setInAppMessageListener(function(action) { alert('swrve:13:' + action); });");
+        Thread.sleep(SwrveTestHelper.WAITING_SHORT_MILLISEC);
+
+        SwrveMessageDetails messageDetails = new SwrveMessageDetails("my_campaignSubject", 1, 2, "my_messageName", null);
+        SwrveMessageButtonDetails buttonDetails = new SwrveMessageButtonDetails("my_buttonName", "my_buttonText", SwrveActionType.CopyToClipboard, "my_actionString");
+        configMock.getInAppMessageConfig().getMessageListener().onAction(mActivity, SwrveInAppMessageListener.SwrveMessageAction.CopyToClipboard, messageDetails, buttonDetails);
+
+        final AtomicBoolean receivedActionFromButton = new AtomicBoolean(false);
+        mActivity.getJSReturnValueAsync(13, value -> {
+            assertEquals(expectedAction, value);
+            receivedActionFromButton.set(true);
+        });
+        await().atMost(SwrveTestHelper.WAITING_SHORT, TimeUnit.SECONDS).untilTrue(receivedActionFromButton);
+    }
+
+    @Test
+    public void testInAppMessageListenerWithQuotes() throws InterruptedException {
+        // @formatter:off
+        final String expectedAction = "{" +
+                    "\"messageDetailAction\":\"CopyToClipboard\"," +
+                    "\"messageDetail\":{" +
+                        "\"campaignSubject\":\"detail's subject\"," +
+                        "\"campaignId\":1," +
+                        "\"variantId\":2," +
+                        "\"messageName\":\"detail's names\"," +
+                        "\"buttons\":[]" +
+                    "}," +
+                    "\"messageDetailSelectedButton\":{" +
+                        "\"buttonName\":\"button's name\"," +
+                        "\"buttonText\":\"button's text\"," +
+                        "\"actionType\":\"CopyToClipboard\"," +
+                        "\"actionString\":\"my_actionString\"" +
+                    "}" +
+                "}";
+        // @formatter:on
+        runJS("window.plugins.swrve.setInAppMessageListener(function(action) { alert('swrve:13:' + action); });");
+        Thread.sleep(SwrveTestHelper.WAITING_SHORT_MILLISEC);
+
+        SwrveMessageDetails messageDetails = new SwrveMessageDetails("detail's subject", 1, 2, "detail's names", null);
+        SwrveMessageButtonDetails buttonDetails = new SwrveMessageButtonDetails("button's name", "button's text", SwrveActionType.CopyToClipboard, "my_actionString");
+        configMock.getInAppMessageConfig().getMessageListener().onAction(mActivity, SwrveInAppMessageListener.SwrveMessageAction.CopyToClipboard, messageDetails, buttonDetails);
+
+        final AtomicBoolean receivedActionFromButton = new AtomicBoolean(false);
+        mActivity.getJSReturnValueAsync(13, value -> {
             assertEquals(expectedAction, value);
             receivedActionFromButton.set(true);
         });
@@ -407,13 +528,17 @@ public class SwrvePluginTests extends SwrvePluginBaseTests {
         final String expectedSubject = "MySweetSubject";
         final int expectedImpressions = 1;
         final boolean expectedMessageCenter = true;
+        final String expectedName = "MyName";
 
         Mockito.doReturn(expectedId).when(mockCampaign).getId();
         Mockito.doReturn(expectedMaxImpressions).when(mockCampaign).getMaxImpressions();
-        Mockito.doReturn(expectedSubject).when(mockCampaign).getSubject();
+        SwrveMessageCenterDetails expectedMessageCenterDetailsMock = Mockito.mock(SwrveMessageCenterDetails.class);
+        Mockito.doReturn(expectedSubject).when(expectedMessageCenterDetailsMock).getSubject();
+        Mockito.doReturn(expectedMessageCenterDetailsMock).when(mockCampaign).getMessageCenterDetails();
         Mockito.doReturn(expectedMessageCenter).when(mockCampaign).isMessageCenter();
         Mockito.doReturn(expectedImpressions).when(mockCampaign).getImpressions();
         Mockito.doReturn(new SwrveCampaignState(null, new Date())).when(mockCampaign).getSaveableState();
+        Mockito.doReturn(expectedName).when(mockCampaign).getName();
 
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
         String dtStart = "2019-01-02T10:00";
@@ -421,7 +546,7 @@ public class SwrvePluginTests extends SwrvePluginBaseTests {
 
         Mockito.doReturn(expectedId).when(mockCampaign).getId();
         Mockito.doReturn(expectedStartDate).when(mockCampaign).getStartDate();
-        final String expectedStartDateAsTimeStamp = "" + mockCampaign.getStartDate().getTime() / 1000;
+        final Long expectedStartDateAsTimeStamp = mockCampaign.getStartDate().getTime() / 1000;
 
         ArrayList<SwrveBaseCampaign> realList = new ArrayList<>();
         realList.add(mockCampaign);
@@ -444,20 +569,21 @@ public class SwrvePluginTests extends SwrvePluginBaseTests {
                 assertNotNull(firstCampaign);
                 assertEquals(firstCampaign.getInt("ID"), expectedId);
                 assertEquals(firstCampaign.getInt("maxImpressions"), expectedMaxImpressions);
-                assertEquals(firstCampaign.getInt("subject"), expectedSubject);
+                assertEquals(firstCampaign.getString("subject"), expectedSubject);
                 assertEquals(firstCampaign.getBoolean("messageCenter"), expectedMessageCenter);
-                assertEquals(firstCampaign.getInt("dateStart"), expectedStartDateAsTimeStamp);
+                Long dateStart = firstCampaign.getLong("dateStart");
+                assertEquals(dateStart, expectedStartDateAsTimeStamp);
+                assertEquals(firstCampaign.getString("name"), expectedName);
 
                 JSONObject campaignState = firstCampaign.getJSONObject("state");
                 assertNotNull(campaignState);
-                assertEquals(campaignState.getInt("next"), 0);
                 assertEquals(campaignState.getInt("impressions"), 0);
                 assertEquals(campaignState.getInt("impressions"), 0);
                 assertEquals(campaignState.getString("status"), "Unseen");
+                hasCompleted.set(true);
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            hasCompleted.set(true);
         });
         await().atMost(SwrveTestHelper.WAITING_SHORT, TimeUnit.SECONDS).untilTrue(hasCompleted);
     }
@@ -635,25 +761,6 @@ public class SwrvePluginTests extends SwrvePluginBaseTests {
     }
 
     @Test
-    public void testCustomPayloadConversation() {
-
-        // Mock and expectations for the test
-        Map<String, String> expectedMap = new HashMap<String, String>();
-        expectedMap.put("someKey", "value");
-
-        runJS("window.plugins.swrve.setCustomPayloadForConversationInput({\"someKey\":\"value\"}, function(forceCallback) { alert('swrve:24:' + forceCallback);}, undefined);");
-
-        // Test the JS Callback.
-        final AtomicBoolean hasCompleted = new AtomicBoolean(false);
-        mActivity.getJSReturnValueAsync(24, value -> {
-            // Check the expectation
-            Mockito.verify(swrveMock, Mockito.atLeastOnce()).setCustomPayloadForConversationInput(expectedMap);
-            hasCompleted.set(true);
-        });
-        await().atMost(SwrveTestHelper.WAITING_SHORT, TimeUnit.SECONDS).untilTrue(hasCompleted);
-    }
-
-    @Test
     public void testHandleDeeplinkLinkToNativeSDK() {
         SwrvePlugin.handleDeeplink(Mockito.any());
         Mockito.verify(swrveMock, Mockito.timeout(SwrveTestHelper.WAITING_LONG_MILLISEC)).handleDeeplink(Mockito.any());
@@ -667,6 +774,6 @@ public class SwrvePluginTests extends SwrvePluginBaseTests {
 
     @Test
     public void testNativeSDKVersion() {
-        assertEquals("Unexpected native version being used.", "10.13.0", SwrveBase.getVersion());
+        assertEquals("Unexpected native version being used.", "11.7.0", SwrveBase.getVersion());
     }
 }

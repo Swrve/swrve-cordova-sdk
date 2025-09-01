@@ -1,41 +1,14 @@
-buildscript {
-    repositories {
-        maven {
-            url "https://maven.google.com"
-        }
-        jcenter()
-    }
-
-    dependencies {
-        classpath 'com.android.tools.build:gradle:7.3.0'
-    }
-}
-
-apply plugin: 'com.android.application'
-
 android {
-    com.android.ddmlib.DdmPreferences.setTimeOut(60000)
-    testOptions {
-        unitTests.returnDefaultValues = true
-    }
-
-    lintOptions {
-        abortOnError false
-    }
     defaultConfig {
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     }
 }
 
 dependencies {
-    repositories {
-        mavenCentral()
-    }
-
     androidTestImplementation 'org.awaitility:awaitility:3.1.6'
-    androidTestImplementation 'junit:junit:4.12'
-    androidTestImplementation "org.mockito:mockito-android:2.15.0"
+    androidTestImplementation 'junit:junit:4.13.2'
+    androidTestImplementation "org.mockito:mockito-android:5.17.0"
     androidTestImplementation 'org.nanohttpd:nanohttpd:2.3.1'
-    androidTestImplementation 'androidx.test:core:1.4.0'
-    androidTestImplementation 'androidx.test:rules:1.4.0'
+    androidTestImplementation 'androidx.test:core:1.6.1'
+    androidTestImplementation 'androidx.test:rules:1.6.1'
 }

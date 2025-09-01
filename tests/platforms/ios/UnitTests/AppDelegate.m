@@ -7,19 +7,7 @@
 - (BOOL)application:(UIApplication*)application didFinishLaunchingWithOptions:(NSDictionary*)launchOptions
 {
     self.viewController = [[MainViewController alloc] init];
-    
-    /****************** SWRVE CHANGES ******************/
-    // Point to local http server since this project is purely for testing purposes and prevent any calls to Swrve
-    SwrveConfig *config = [[SwrveConfig alloc] init];
-    config.pushEnabled = YES;
-    config.eventsServer = @"http://localhost:8083";
-    config.contentServer = @"http://localhost:8085";
-    config.identityServer = @"http://localhost:8086";
-    
-    // Set your app id and api key here
-    [SwrvePlugin initWithAppID:1111 apiKey:@"fake_api_key" config:config viewController:self.viewController];
-    /****************** END OF CHANGES ******************/
-    
+      
     return [super application:application didFinishLaunchingWithOptions:launchOptions];
 }
 

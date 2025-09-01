@@ -50,7 +50,7 @@
       </config>
       <pods use-frameworks="true">
         <!-- Use optimistic operator ~> to get all minor versions up to (but excluding) the next major version.  -->
-        <pod name="SwrveSDK" spec="~> 8.0" />
+        <pod name="SwrveSDK" spec="~> 10.0" />
       </pods>
     </podspec>
   </platform>

@@ -55,7 +55,7 @@ var self = (module.exports = {
 		if (!swrveUtils.isEmptyString(initMode) && initMode === 'MANAGED') {
 			searchFor.push('SwrveConfig *config = [[SwrveConfig alloc] init];');
 			replaceWith.push(
-				'SwrveConfig *config = [[SwrveConfig alloc] init]; \n config.initMode = SWRVE_INIT_MODE_MANAGED; \n'
+				'SwrveConfig *config = [[SwrveConfig alloc] init]; \n config.initMode = SwrveInitModeManaged; \n'
 			);
 
 			if (!swrveUtils.isEmptyString(autoStart)) {
@@ -63,9 +63,9 @@ var self = (module.exports = {
 
 				// we only need to modify the appDelegate if it's false, so we check here.
 				if (!isAddingManagedSetting) {
-					searchFor.push('config.initMode = SWRVE_INIT_MODE_MANAGED;');
+					searchFor.push('config.initMode = SwrveInitModeManaged;');
 					replaceWith.push(
-						'config.initMode = SWRVE_INIT_MODE_MANAGED; \n config.autoStartLastUser = NO;'
+						'config.initMode = SwrveInitModeManaged; \n config.autoStartLastUser = NO;'
 					);
 				}
 			}
@@ -121,7 +121,7 @@ var self = (module.exports = {
 
 		// Set the push event (if present)
 		if (!swrveUtils.isEmptyString(event)) {
-			let nativePushEventsLine = `config.pushEnabled = true; \n    config.pushNotificationEvents = [NSSet setWithObject:@"${event}"];`;
+			let nativePushEventsLine = `config.pushEnabled = true; \n    config.pushNotificationPermissionEvents = [NSSet setWithObject:@"${event}"];`;
 			searchFor.push('config.pushEnabled = true;');
 			replaceWith.push(nativePushEventsLine);
 

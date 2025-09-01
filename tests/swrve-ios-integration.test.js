@@ -1,4 +1,5 @@
 const fs = require('fs');
+const path = require('path');
 
 const {
 	modifyAppDelegate,
@@ -113,7 +114,7 @@ describe('setInitPreferences', () => {
 
 		const filecontents = fs.readFileSync('initPreferences_iOS.txt', 'utf-8');
 		expect(filecontents).toContain('SwrveConfig *config = [[SwrveConfig alloc] init];');
-		expect(filecontents).toContain('config.initMode = SWRVE_INIT_MODE_MANAGED;');
+		expect(filecontents).toContain('config.initMode = SwrveInitModeManaged;');
 		expect(filecontents).not.toContain('config.autoStartLastUser = NO;');
 	});
 
@@ -122,7 +123,7 @@ describe('setInitPreferences', () => {
 
 		const filecontents = fs.readFileSync('initPreferences_iOS.txt', 'utf-8');
 		expect(filecontents).toContain('SwrveConfig *config = [[SwrveConfig alloc] init];');
-		expect(filecontents).toContain('config.initMode = SWRVE_INIT_MODE_MANAGED;');
+		expect(filecontents).toContain('config.initMode = SwrveInitModeManaged;');
 		expect(filecontents).not.toContain('config.autoStartLastUser = NO;');
 	});
 
@@ -130,7 +131,7 @@ describe('setInitPreferences', () => {
 		setInitPreferences('initPreferences_iOS.txt', 'MANAGED', 'false');
 		const filecontents = fs.readFileSync('initPreferences_iOS.txt', 'utf-8');
 		expect(filecontents).toContain('SwrveConfig *config = [[SwrveConfig alloc] init];');
-		expect(filecontents).toContain('config.initMode = SWRVE_INIT_MODE_MANAGED;');
+		expect(filecontents).toContain('config.initMode = SwrveInitModeManaged;');
 		expect(filecontents).toContain('config.autoStartLastUser = NO;');
 	});
 
@@ -247,7 +248,7 @@ describe('setPushNotificationEvents', () => {
 
 		const filecontents = fs.readFileSync('notfication_events_test.txt', 'utf-8');
 		expect(filecontents).toBe(
-			'config.pushEnabled = true; \n    config.pushNotificationEvents = [NSSet setWithObject:@"test_event"];'
+			'config.pushEnabled = true; \n    config.pushNotificationPermissionEvents = [NSSet setWithObject:@"test_event"];'
 		);
 	});
 
@@ -256,7 +257,7 @@ describe('setPushNotificationEvents', () => {
 
 		const filecontents = fs.readFileSync('notfication_events_test.txt', 'utf-8');
 		expect(filecontents).toBe(
-			'config.pushEnabled = true; \n    config.pushNotificationEvents = [NSSet setWithObject:@"test_event"]; \n    config.provisionalPushNotificationEvents = [NSSet setWithObject:@"test_provisional"];'
+			'config.pushEnabled = true; \n    config.pushNotificationPermissionEvents = [NSSet setWithObject:@"test_event"]; \n    config.provisionalPushNotificationEvents = [NSSet setWithObject:@"test_provisional"];'
 		);
 	});
 
@@ -270,14 +271,17 @@ describe('setPushNotificationEvents', () => {
 
 // ---------- setAdJourney -------------
 describe('setAdJourney', () => {
-	beforeEach(() => {
-		fs.appendFileSync('setAdJourney_test.txt', '// <Swrve_adJourney> @end', 'utf-8');
-	});
+  	let file;
+  	beforeEach(() => {
+    	file = path.resolve(__dirname, 'setAdJourney_test.txt');
+    	fs.writeFileSync(file, '// <Swrve_adJourney> @end', 'utf-8');
+  	});
 
-	afterEach(() => {
-		// clean up the file after
-		fs.unlinkSync('setAdJourney_test.txt');
-	});
+  	afterEach(() => {
+   	 if (fs.existsSync(file)) {
+      	fs.unlinkSync(file);
+    }
+ 	});
 
 	test('exists', () => {
 		expect(setAdJourney).toBeDefined();

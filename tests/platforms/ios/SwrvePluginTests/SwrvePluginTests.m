@@ -2,13 +2,7 @@
 #import <OCMock/OCMock.h>
 #import "SwrvePlugin.h"
 
-#import <SwrveSDK/Swrve.h>
-#import <SwrveSDK/SwrveSDK.h>
-#import <SwrveSDK/SwrveCampaign.h>
-#import <SwrveSDK/SwrveCampaignStatus.h>
-#import <SwrveSDKCommon/SwrveCommon.h>
-
-#import <SwrveSDK/SwrveMessageController.h>
+@import SwrveSDK;
 
 #import "AppDelegate.h"
 #import "SwrveTestHelper.h"
@@ -16,9 +10,12 @@
 #import <WebKit/WebKit.h>
 #import <Cordova/CDVWebViewEngineProtocol.h>
 
+@interface SwrvePlugin ()
++ (void)resetForTests;
+@end
 
-@interface Swrve ()
-@property(atomic) SwrveMessageController *messaging;
+@interface SwrveSDK ()
++ (void)resetSwrveSharedInstance;
 @end
 
 @interface SwrvePluginTests : XCTestCase {
@@ -34,14 +31,29 @@
 
 - (void)setUp {
     [super setUp];
+    [SwrvePlugin resetForTests];
+    [SwrveSDK resetSwrveSharedInstance];
+    
     appDelegate = [[UIApplication sharedApplication] delegate];
     controller = appDelegate.viewController;
+
+    /****************** SWRVE CHANGES ******************/
+    // Point to local http server since this project is purely for testing purposes and prevent any calls to Swrve
+    SwrveConfig *config = [[SwrveConfig alloc] init];
+    config.pushEnabled = YES;
+    config.eventsServer = @"http://localhost:8083";
+    config.contentServer = @"http://localhost:8085";
+    config.identityServer = @"http://localhost:8086";
+    
+    // Set your app id and api key here
+    [SwrvePlugin initWithAppID:1111 apiKey:@"fake_api_key" config:config viewController:controller];
+    /****************** END OF CHANGES ******************/
+      
     swrveMock = OCMPartialMock([SwrveSDK sharedInstance]);
 }
 
 - (void)tearDown {
     [super tearDown];
-    [swrveMock stopMocking];
 }
 
 #pragma mark - wait / helper functions
@@ -281,7 +293,6 @@
 }
 
 - (void)testUserResources {
-
     // Mock the Async callback for User Resources
     [[[swrveMock expect] andDo:^(NSInvocation *invocation) {
 
@@ -326,13 +337,13 @@
     [[[swrveMock expect] andDo:^(NSInvocation *invocation) {
 
         // define the new diffCallback
-        void (^SwrveUserResourcesDiffCallback)(NSDictionary * oldResourcesValues, NSDictionary * newResourcesValues, NSString * resourcesAsJSON) = nil;
+        void (^SwrveUserResourcesDiffCallback)(NSDictionary * oldResourcesValues, NSDictionary * newResourcesValues, NSString * resourcesAsJSON, BOOL fromServer, NSError *error) = nil;
 
         // The block is the last argument that is passed into the given function
         [invocation getArgument:&SwrveUserResourcesDiffCallback atIndex:[[invocation methodSignature]numberOfArguments] - 1];
 
         //populate the mocked callback with content
-        SwrveUserResourcesDiffCallback(@{@"house":@{@"cost": @"550"}}, @{@"house":@{@"cost": @"666"}}, @"test string");
+        SwrveUserResourcesDiffCallback(@{@"house":@{@"cost": @"550"}}, @{@"house":@{@"cost": @"666"}}, @"test string", YES, nil);
 
     }] userResourcesDiffWithListener:OCMOCK_ANY];
     
@@ -406,23 +417,29 @@
     OCMVerifyAllWithDelay(swrveMock, 1);
 }
 
-- (void)testCustomButtonListener {
-    NSString *expectedAction = @"custom_action_from_server";
+- (void)testInAppMessageListenerImpression {
+    NSString *expectedAction = @"{\"messageDetail\":{\"ID\":1,\"variantId\":2,\"messageName\":\"my_messageName\",\"campaignSubject\":\"my_campaignSubject\"},\"messageDetailAction\":\"Impression\"}";
 
     [self waitForAplicationStart];
-    [self evaluateJS:@"window.plugins.swrve.setCustomButtonListener(function(action) { window.testCustomAction = action; });" withCompletionHandler:nil];
-    
-    XCTAssertNotNil([self->swrveMock messaging].customButtonCallback, @"customButtonCallback should NOT be null");
+    [self evaluateJS:@"window.plugins.swrve.setInAppMessageListener(function(action) { window.testInAppMessageAction = action; });" withCompletionHandler:nil];
 
-    void (^testCallback)(NSString *action, NSString *campaignName) = [self->swrveMock messaging].customButtonCallback;
-
-    testCallback(expectedAction, @"");
+    XCTAssertNotNil([self->swrveMock messaging].inAppMessageConfig.inAppMessageDelegate, @"inAppMessageDelegate should NOT be null");
+    id<SwrveInAppMessageDelegate> delegate = [self->swrveMock messaging].inAppMessageConfig.inAppMessageDelegate;
+    SwrveMessageAction actionType = SwrveMessageActionImpression;
+    SwrveMessageDetails *details = [[SwrveMessageDetails alloc] initWith:@"my_campaignSubject"
+                                                              campaignId:1
+                                                               variantId:2
+                                                             messageName:@"my_messageName"
+                                                                 buttons:@[]];
+    if ([delegate respondsToSelector:@selector(onAction:messageDetails:selectedButton:)]) {
+        [delegate onAction:actionType messageDetails:details selectedButton:nil];
+    }
 
     __block bool complete = false;
     __block NSString *action = nil;
     XCTestExpectation *expectation = [self expectationWithDescription:@"responseReceived"];
     [SwrveTestHelper waitForBlock:0.005 conditionBlock:^BOOL(){
-        NSString *js = [NSString stringWithFormat:@"window.testCustomAction"];
+        NSString *js = [NSString stringWithFormat:@"window.testInAppMessageAction"];
         [self evaluateJS:js withCompletionHandler:^(id result) {
             action = result;
             complete = (result != nil);
@@ -433,24 +450,37 @@
     [self waitForExpectationsWithTimeout:10 handler:nil];
     
     XCTAssertEqualObjects(expectedAction, action);
+    
+    [self evaluateJS:@"window.testInAppMessageAction = undefined;" withCompletionHandler:nil];
 }
 
-- (void)testClipboardButtonListener {
-    NSString *expectedClipboard = @"custom_clipboard";
-    
+- (void)testInAppMessageListenerCustom {
+    NSString *expectedAction = @"{\"messageDetail\":{\"ID\":1,\"variantId\":2,\"messageName\":\"my_messageName\",\"campaignSubject\":\"my_campaignSubject\"},\"messageDetailSelectedButton\":{\"actionType\":1,\"actionString\":\"my_actionString\",\"buttonName\":\"my_buttonName\",\"buttonText\":\"my_buttonText\"},\"messageDetailAction\":\"Custom\"}";
+
     [self waitForAplicationStart];
-    [self evaluateJS:@"window.plugins.swrve.setClipboardButtonListener(function(clipboard) { window.testCustomClipboard = clipboard; });"
-    withCompletionHandler:nil];
-    
-    XCTAssertNotNil([self->swrveMock messaging].dismissButtonCallback, @"dismissButtonCallback should NOT be null");
-    void (^clipboardButtonCallback)(NSString *clipboard) = [self->swrveMock messaging].clipboardButtonCallback;
-    clipboardButtonCallback(expectedClipboard);
+    [self evaluateJS:@"window.plugins.swrve.setInAppMessageListener(function(action) { window.testInAppMessageAction = action; });" withCompletionHandler:nil];
+
+    XCTAssertNotNil([self->swrveMock messaging].inAppMessageConfig.inAppMessageDelegate, @"inAppMessageDelegate should NOT be null");
+    id<SwrveInAppMessageDelegate> delegate = [self->swrveMock messaging].inAppMessageConfig.inAppMessageDelegate;
+    SwrveMessageAction actionType = SwrveMessageActionCustom;
+    SwrveMessageDetails *details = [[SwrveMessageDetails alloc] initWith:@"my_campaignSubject"
+                                                              campaignId:1
+                                                               variantId:2
+                                                             messageName:@"my_messageName"
+                                                                 buttons:@[]];
+    SwrveMessageButtonDetails *button = [[SwrveMessageButtonDetails alloc] initWith:@"my_buttonName"
+                                                                         buttonText:@"my_buttonText"
+                                                                         actionType:kSwrveActionCustom
+                                                                       actionString:@"my_actionString"];
+    if ([delegate respondsToSelector:@selector(onAction:messageDetails:selectedButton:)]) {
+        [delegate onAction:actionType messageDetails:details selectedButton:button];
+    }
 
     __block bool complete = false;
     __block NSString *action = nil;
     XCTestExpectation *expectation = [self expectationWithDescription:@"responseReceived"];
     [SwrveTestHelper waitForBlock:0.005 conditionBlock:^BOOL(){
-        NSString *js = [NSString stringWithFormat:@"window.testCustomClipboard"];
+        NSString *js = [NSString stringWithFormat:@"window.testInAppMessageAction"];
         [self evaluateJS:js withCompletionHandler:^(id result) {
             action = result;
             complete = (result != nil);
@@ -460,33 +490,40 @@
     
     [self waitForExpectationsWithTimeout:10 handler:nil];
     
-    XCTAssertEqualObjects(expectedClipboard, action);
+    XCTAssertEqualObjects(expectedAction, action);
+    
+    [self evaluateJS:@"window.testInAppMessageAction = undefined;" withCompletionHandler:nil];
 }
 
-- (void)testDismissButtonListener {
-    // Mocked variables
-    NSString *campaignSubjectMocked = @"mocked_campaignSubject";
-    NSString *buttonNameMocked = @"mocked_buttonName";
-    NSDictionary *expectedCallback = @{
-                                       @"campaignSubject": campaignSubjectMocked,
-                                       @"buttonName": buttonNameMocked,
-                                       };
+- (void)testInAppMessageListenerDismiss {
+    NSString *expectedAction = @"{\"messageDetail\":{\"ID\":1,\"variantId\":2,\"messageName\":\"my_messageName\",\"campaignSubject\":\"my_campaignSubject\"},\"messageDetailSelectedButton\":{\"actionType\":1,\"actionString\":\"my_actionString\",\"buttonName\":\"my_buttonName\",\"buttonText\":\"my_buttonText\"},\"messageDetailAction\":\"Dismiss\"}";
 
     [self waitForAplicationStart];
-    [self evaluateJS:@"window.plugins.swrve.setDismissButtonListener(function(callback) { window.testDismissCallback = callback; });"
-    withCompletionHandler:nil];
-    
-    XCTAssertNotNil([self->swrveMock messaging].dismissButtonCallback, @"customButtonCallback should NOT be null");
-    void (^testCallback)(NSString *campaignSubject, NSString *buttonName, NSString *campaignName) = [self->swrveMock messaging].dismissButtonCallback;
-    testCallback(campaignSubjectMocked, buttonNameMocked, @"");
+    [self evaluateJS:@"window.plugins.swrve.setInAppMessageListener(function(action) { window.testInAppMessageAction = action; });" withCompletionHandler:nil];
+
+    XCTAssertNotNil([self->swrveMock messaging].inAppMessageConfig.inAppMessageDelegate, @"inAppMessageDelegate should NOT be null");
+    id<SwrveInAppMessageDelegate> delegate = [self->swrveMock messaging].inAppMessageConfig.inAppMessageDelegate;
+    SwrveMessageAction actionType = SwrveMessageActionDismiss;
+    SwrveMessageDetails *details = [[SwrveMessageDetails alloc] initWith:@"my_campaignSubject"
+                                                              campaignId:1
+                                                               variantId:2
+                                                             messageName:@"my_messageName"
+                                                                 buttons:@[]];
+    SwrveMessageButtonDetails *button = [[SwrveMessageButtonDetails alloc] initWith:@"my_buttonName"
+                                                                         buttonText:@"my_buttonText"
+                                                                         actionType:kSwrveActionCustom
+                                                                       actionString:@"my_actionString"];
+    if ([delegate respondsToSelector:@selector(onAction:messageDetails:selectedButton:)]) {
+        [delegate onAction:actionType messageDetails:details selectedButton:button];
+    }
 
     __block bool complete = false;
-    __block NSString *json = nil;
+    __block NSString *action = nil;
     XCTestExpectation *expectation = [self expectationWithDescription:@"responseReceived"];
     [SwrveTestHelper waitForBlock:0.005 conditionBlock:^BOOL(){
-        NSString *js = [NSString stringWithFormat:@"window.testDismissCallback"];
+        NSString *js = [NSString stringWithFormat:@"window.testInAppMessageAction"];
         [self evaluateJS:js withCompletionHandler:^(id result) {
-            json = result;
+            action = result;
             complete = (result != nil);
         }];
         return complete;
@@ -494,12 +531,92 @@
     
     [self waitForExpectationsWithTimeout:10 handler:nil];
     
-    NSDictionary *listenerCallback = [NSJSONSerialization JSONObjectWithData:[json dataUsingEncoding:NSUTF8StringEncoding] options:kNilOptions error:nil];
-    XCTAssertEqualObjects(listenerCallback, expectedCallback);
-    XCTAssertEqualObjects([listenerCallback objectForKey:@"campaignSubject"], campaignSubjectMocked);
-    XCTAssertEqualObjects([listenerCallback objectForKey:@"buttonName"], buttonNameMocked);
+    XCTAssertEqualObjects(expectedAction, action);
+    
+    [self evaluateJS:@"window.testInAppMessageAction = undefined;" withCompletionHandler:nil];
 }
 
+- (void)testInAppMessageListenerClipboard {
+    NSString *expectedAction = @"{\"messageDetail\":{\"ID\":1,\"variantId\":2,\"messageName\":\"my_messageName\",\"campaignSubject\":\"my_campaignSubject\"},\"messageDetailSelectedButton\":{\"actionType\":1,\"actionString\":\"my_actionString\",\"buttonName\":\"my_buttonName\",\"buttonText\":\"my_buttonText\"},\"messageDetailAction\":\"CopyToClipboard\"}";
+
+    [self waitForAplicationStart];
+    [self evaluateJS:@"window.plugins.swrve.setInAppMessageListener(function(action) { window.testInAppMessageAction = action; });" withCompletionHandler:nil];
+
+    XCTAssertNotNil([self->swrveMock messaging].inAppMessageConfig.inAppMessageDelegate, @"inAppMessageDelegate should NOT be null");
+    id<SwrveInAppMessageDelegate> delegate = [self->swrveMock messaging].inAppMessageConfig.inAppMessageDelegate;
+    SwrveMessageAction actionType = SwrveMessageActionClipboard;
+    SwrveMessageDetails *details = [[SwrveMessageDetails alloc] initWith:@"my_campaignSubject"
+                                                              campaignId:1
+                                                               variantId:2
+                                                             messageName:@"my_messageName"
+                                                                 buttons:@[]];
+    SwrveMessageButtonDetails *button = [[SwrveMessageButtonDetails alloc] initWith:@"my_buttonName"
+                                                                         buttonText:@"my_buttonText"
+                                                                         actionType:kSwrveActionCustom
+                                                                       actionString:@"my_actionString"];
+    if ([delegate respondsToSelector:@selector(onAction:messageDetails:selectedButton:)]) {
+        [delegate onAction:actionType messageDetails:details selectedButton:button];
+    }
+
+    __block bool complete = false;
+    __block NSString *action = nil;
+    XCTestExpectation *expectation = [self expectationWithDescription:@"responseReceived"];
+    [SwrveTestHelper waitForBlock:0.005 conditionBlock:^BOOL(){
+        NSString *js = [NSString stringWithFormat:@"window.testInAppMessageAction"];
+        [self evaluateJS:js withCompletionHandler:^(id result) {
+            action = result;
+            complete = (result != nil);
+        }];
+        return complete;
+    } expectation:expectation];
+    
+    [self waitForExpectationsWithTimeout:10 handler:nil];
+    
+    XCTAssertEqualObjects(expectedAction, action);
+    
+    [self evaluateJS:@"window.testInAppMessageAction = undefined;" withCompletionHandler:nil];
+}
+
+- (void)testInAppMessageListenerWithQuotes {
+    NSString *expectedAction = @"{\"messageDetail\":{\"ID\":1,\"variantId\":2,\"messageName\":\"detail's name\",\"campaignSubject\":\"detail's subject\"},\"messageDetailSelectedButton\":{\"actionType\":1,\"actionString\":\"my_actionString\",\"buttonName\":\"button's name\",\"buttonText\":\"button's text\"},\"messageDetailAction\":\"CopyToClipboard\"}";
+
+    [self waitForAplicationStart];
+    [self evaluateJS:@"window.plugins.swrve.setInAppMessageListener(function(action) { window.testInAppMessageAction = action; });" withCompletionHandler:nil];
+
+    XCTAssertNotNil([self->swrveMock messaging].inAppMessageConfig.inAppMessageDelegate, @"inAppMessageDelegate should NOT be null");
+    id<SwrveInAppMessageDelegate> delegate = [self->swrveMock messaging].inAppMessageConfig.inAppMessageDelegate;
+    SwrveMessageAction actionType = SwrveMessageActionClipboard;
+    SwrveMessageDetails *details = [[SwrveMessageDetails alloc] initWith:@"detail's subject"
+                                                              campaignId:1
+                                                               variantId:2
+                                                             messageName:@"detail's name"
+                                                                 buttons:@[]];
+    SwrveMessageButtonDetails *button = [[SwrveMessageButtonDetails alloc] initWith:@"button's name"
+                                                                         buttonText:@"button's text"
+                                                                         actionType:kSwrveActionCustom
+                                                                       actionString:@"my_actionString"];
+    if ([delegate respondsToSelector:@selector(onAction:messageDetails:selectedButton:)]) {
+        [delegate onAction:actionType messageDetails:details selectedButton:button];
+    }
+
+    __block bool complete = false;
+    __block NSString *action = nil;
+    XCTestExpectation *expectation = [self expectationWithDescription:@"responseReceived"];
+    [SwrveTestHelper waitForBlock:0.005 conditionBlock:^BOOL(){
+        NSString *js = [NSString stringWithFormat:@"window.testInAppMessageAction"];
+        [self evaluateJS:js withCompletionHandler:^(id result) {
+            action = result;
+            complete = (result != nil);
+        }];
+        return complete;
+    } expectation:expectation];
+    
+    [self waitForExpectationsWithTimeout:10 handler:nil];
+    
+    XCTAssertEqualObjects(expectedAction, action);
+    
+    [self evaluateJS:@"window.testInAppMessageAction = undefined;" withCompletionHandler:nil];
+}
 
 - (void)testCustomPushPayloadListener {
     [self waitForAplicationStart];
@@ -704,16 +821,21 @@
     id swrveMessagingMock = OCMClassMock([SwrveMessageController class]);
     SwrveCampaign *campaignMock = OCMClassMock([SwrveCampaign class]);
     SwrveCampaignState *campaignStateMock = OCMClassMock([SwrveCampaignState class]);
+    SwrveMessageCenterDetails *messageCenterDetailsMock = OCMClassMock([SwrveMessageCenterDetails class]);
 
     // Mock Campaign State
     OCMStub([campaignStateMock campaignID]).andReturn(44);
-    OCMStub([campaignStateMock status]).andReturn(SWRVE_CAMPAIGN_STATUS_UNSEEN);
+//    OCMStub([campaignStateMock status]).andReturn(SWRVE_CAMPAIGN_STATUS_UNSEEN); TODO
     OCMStub([campaignStateMock impressions]).andReturn(0);
     //OCMStub([campaignStateMock next]).andReturn(0);
+    
+    // Mock Message Center Details
+    OCMStub([messageCenterDetailsMock subject]).andReturn(@"IAM subject");
 
     // Mock Campaign
     OCMStub([campaignMock ID]).andReturn(44);
-    OCMStub([campaignMock subject]).andReturn(@"IAM subject");
+    OCMStub([campaignMock messageCenterDetails]).andReturn(messageCenterDetailsMock);
+    OCMStub([campaignMock name]).andReturn(@"MyName");
     OCMStub([campaignMock messageCenter]).andReturn(true);
     OCMStub([campaignMock maxImpressions]).andReturn(11111);
     OCMStub([campaignMock dateStart]).andReturn([NSDate dateWithTimeIntervalSince1970:1362671700]);
@@ -751,6 +873,7 @@
     XCTAssertNotNil(firstCampaign, @"Campaign from Message Center should not be null");
     XCTAssertEqualObjects([firstCampaign objectForKey:@"subject"], @"IAM subject");
     XCTAssertEqual([[firstCampaign objectForKey:@"ID"] integerValue], 44);
+    XCTAssertEqualObjects([firstCampaign objectForKey:@"name"], @"MyName");
     XCTAssertTrue([firstCampaign objectForKey:@"messageCenter"], @"messageCenter should be true");
     XCTAssertEqual([[firstCampaign objectForKey:@"maxImpressions"] integerValue], 11111);
     XCTAssertEqual([[firstCampaign objectForKey:@"dateStart"] integerValue], 1362671700);
@@ -785,29 +908,6 @@
     [self waitForAplicationStart];
     [self evaluateJS:@"window.plugins.swrve.removeMessageCenterCampaign(44, undefined, undefined);" withCompletionHandler:nil];
     OCMVerifyAllWithDelay(swrveMock, 5);
-}
-
-- (void)testCustomPayloadForConversationInput {
-    NSMutableDictionary *dict = [NSMutableDictionary new];
-    [dict setObject:@"someObj" forKey:@"someKey"];
-    OCMExpect([swrveMock setCustomPayloadForConversationInput:dict]).andDo(nil);
-    
-    [self waitForAplicationStart];
-    [self evaluateJS:@"window.plugins.swrve.setCustomPayloadForConversationInput({\"someKey\":\"someObj\"}, function(forceCallback) { window.testCustomPayloadForConversationInput = `success`}, undefined);"
- withCompletionHandler:nil];
-    
-    __block bool complete = false;
-    XCTestExpectation *expectation = [self expectationWithDescription:@"responseReceived"];
-    [SwrveTestHelper waitForBlock:0.005 conditionBlock:^BOOL(){
-        NSString *js = [NSString stringWithFormat:@"window.testCustomPayloadForConversationInput"];
-        [self evaluateJS:js withCompletionHandler:^(id result) {
-            complete = ([result isEqualToString:@"success"]);
-        }];
-        return complete;
-    } expectation:expectation];
-    
-    [self waitForExpectationsWithTimeout:10 handler:nil];
-    [swrveMock verify];
 }
 
 - (void)testStartWithValidUserId {
@@ -853,7 +953,7 @@
 }
 
 - (void)testNativeSDKVersion {
-    XCTAssertEqualObjects(@SWRVE_SDK_VERSION, @"8.11.0");
+    XCTAssertEqualObjects(@SWRVE_SDK_VERSION, @"10.7.0");
 }
 
 @end

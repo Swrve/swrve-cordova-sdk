@@ -1,5 +1,5 @@
 #import <Cordova/CDV.h>
-#import <SwrveSDK/SwrveSDK.h>
+@import SwrveSDK;
 
 @interface SwrvePlugin : CDVPlugin
 
@@ -38,5 +38,6 @@
 - (void)embeddedMessageButtonWasPressed:(CDVInvokedUrlCommand *) command;
 - (void)getPersonalizedEmbeddedMessageData:(CDVInvokedUrlCommand *) command;
 - (void)getPersonalizedText:(CDVInvokedUrlCommand *) command;
+- (void)stopTracking:(CDVInvokedUrlCommand *)command;
 
 @end
