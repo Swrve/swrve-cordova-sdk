@@ -46,7 +46,7 @@
     config.identityServer = @"http://localhost:8086";
     
     // Set your app id and api key here
-    [SwrvePlugin initWithAppID:1111 apiKey:@"fake_api_key" config:config viewController:controller];
+    [SwrvePlugin initWithAppID:1111 apiKey:@"fake_api_key" config:config];
     /****************** END OF CHANGES ******************/
       
     swrveMock = OCMPartialMock([SwrveSDK sharedInstance]);
@@ -953,7 +953,7 @@
 }
 
 - (void)testNativeSDKVersion {
-    XCTAssertEqualObjects(@SWRVE_SDK_VERSION, @"10.7.0");
+    XCTAssertEqualObjects(@SWRVE_SDK_VERSION, @"10.8.0");
 }
 
 @end

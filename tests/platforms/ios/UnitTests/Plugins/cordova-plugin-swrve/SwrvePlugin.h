@@ -3,8 +3,8 @@
 
 @interface SwrvePlugin : CDVPlugin
 
-+ (void)initWithAppID:(int)appId apiKey:(NSString *)apiKey viewController:(CDVViewController *)viewController;
-+ (void)initWithAppID:(int)appId apiKey:(NSString *)apiKey config:(SwrveConfig *)config viewController:(CDVViewController *)viewController;
++ (void)initWithAppID:(int)appId apiKey:(NSString *)apiKey;
++ (void)initWithAppID:(int)appId apiKey:(NSString *)apiKey config:(SwrveConfig *)config;
 + (void)didReceiveNotificationResponse:(UNNotificationResponse *)response;
 + (BOOL)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo withBackgroundCompletionHandler:(void (^)(UIBackgroundFetchResult, NSDictionary *))completionHandler API_AVAILABLE(ios(7.0));
 

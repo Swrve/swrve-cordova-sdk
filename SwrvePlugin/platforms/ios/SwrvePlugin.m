@@ -2,7 +2,7 @@
 #import "SwrvePluginPushHandler.h"
 #import <Cordova/CDV.h>
 
-#define SWRVE_WRAPPER_VERSION "7.0.0"
+#define SWRVE_WRAPPER_VERSION "8.0.0"
 
 @interface SwrvePlugin (InAppCallbacks)
 + (void)inAppMessageAction:(SwrveMessageAction) messageAction messageDetails:(SwrveMessageDetails *)messageDetails selectedButton:(SwrveMessageButtonDetails *)selectedButton;
@@ -19,8 +19,8 @@
 }
 @end
 
+static SwrvePlugin *sharedInstance = nil;
 static SwrvePluginInAppMessageDelegate *swrveInAppDelegate = nil; // Retain the in-app message delegate for the lifetime of the plugin.
-CDVViewController *globalViewController;
 
 NSString *const SwrveSilentPushPayloadKey = @"_s.SilentPayload";
 BOOL resourcesListenerReady;
@@ -44,17 +44,24 @@ SwrvePluginPushHandler *swrvePushHandler;
     pushNotificationsQueued = [NSMutableArray new];
     silentPushNotificationsQueued = [NSMutableArray new];
     swrvePushHandler = nil;
-    globalViewController = nil;
 }
 
-+ (void)initWithAppID:(int)appId apiKey:(NSString *)apiKey viewController:(CDVViewController *)viewController {
-    [SwrvePlugin initWithAppID:appId apiKey:apiKey config:nil viewController:viewController];
+- (void)pluginInitialize {
+    [super pluginInitialize];
+    sharedInstance = self;
 }
 
-+ (void)initWithAppID:(int)appId apiKey:(NSString *)apiKey config:(SwrveConfig *)config viewController:(CDVViewController *)viewController {
++ (instancetype)sharedInstance {
+    return sharedInstance;
+}
+
++ (void)initWithAppID:(int)appId apiKey:(NSString *)apiKey {
+    [SwrvePlugin initWithAppID:appId apiKey:apiKey config:nil];
+}
+
++ (void)initWithAppID:(int)appId apiKey:(NSString *)apiKey config:(SwrveConfig *)config {
     pushNotificationsQueued = [[NSMutableArray alloc] init];
     silentPushNotificationsQueued = [[NSMutableArray alloc] init];
-    globalViewController = viewController;
     if (config == nil) {
         config = [[SwrveConfig alloc] init];
         config.pushEnabled = YES;
@@ -94,13 +101,19 @@ SwrvePluginPushHandler *swrvePushHandler;
     [SwrvePlugin sendPluginVersion];
 }
 
-+ (void)evaluateString:(NSString *)jsString onWebView:(UIView *)webView {
-    if ([webView respondsToSelector:@selector(stringByEvaluatingJavaScriptFromString:)]) {
-    } else {
-        [globalViewController.commandDelegate evalJs:jsString];
-    }
-}
++ (void)evaluateString:(NSString *)jsString {
+    SwrvePlugin *plugin = [SwrvePlugin sharedInstance];
 
+    if (plugin && plugin.commandDelegate) {
+        // Use the commandDelegate from the shared instance to evaluate JS
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [plugin.commandDelegate evalJs:jsString];
+        });
+    } else {
+        NSLog(@"SwrvePlugin Error: Plugin not initialized or command delegate is nil, cannot evaluate JavaScript.");
+    }
+  
+}
 + (NSString *)base64Encode:(NSData *)data {
     NSString *currentVersion = [[UIDevice currentDevice] systemVersion];
     if ([currentVersion compare:@"7.0" options:NSNumericSearch] != NSOrderedAscending) {
@@ -183,11 +196,11 @@ SwrvePluginPushHandler *swrvePushHandler;
 }
 
 + (void)notifySwrvePluginOfPushNotification:(NSString *)base64Json {
-    [SwrvePlugin evaluateString:[NSString stringWithFormat:@"if (window.swrveProcessPushNotification !== undefined) { window.swrveProcessPushNotification('%@'); }", base64Json] onWebView:globalViewController.webView];
+    [SwrvePlugin evaluateString:[NSString stringWithFormat:@"if (window.swrveProcessPushNotification !== undefined) { window.swrveProcessPushNotification('%@'); }", base64Json]];
 }
 
 + (void)notifySwrvePluginOfSilentPushNotification:(NSString *)base64Json {
-    [SwrvePlugin evaluateString:[NSString stringWithFormat:@"if (window.swrveProcessSilentPushNotification !== undefined) { window.swrveProcessSilentPushNotification('%@'); }", base64Json] onWebView:globalViewController.webView];
+    [SwrvePlugin evaluateString:[NSString stringWithFormat:@"if (window.swrveProcessSilentPushNotification !== undefined) { window.swrveProcessSilentPushNotification('%@'); }", base64Json]];
 }
 
 // Serrialize an entire dictionary or serrialize a key in the dic.
@@ -529,9 +542,8 @@ SwrvePluginPushHandler *swrvePushHandler;
         NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
         NSData *jsonData = [jsonString dataUsingEncoding:NSUTF8StringEncoding];
         NSString *base64Json = [SwrvePlugin base64Encode:jsonData];
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [SwrvePlugin evaluateString:[NSString stringWithFormat:@"if (window.swrveProcessResourcesUpdated !== undefined) { swrveProcessResourcesUpdated('%@'); }", base64Json] onWebView:globalViewController.webView];
-        });
+        
+        [SwrvePlugin evaluateString:[NSString stringWithFormat:@"if (window.swrveProcessResourcesUpdated !== undefined) { swrveProcessResourcesUpdated('%@'); }", base64Json]];
     }
 }
 
@@ -597,9 +609,8 @@ SwrvePluginPushHandler *swrvePushHandler;
                                range:NSMakeRange(0, escaped.length)];
     NSString *jsString = [NSString stringWithFormat:@"if(window.swrveEmbeddedMessageCallback){swrveEmbeddedMessageCallback('%@');}", escaped];
 
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [SwrvePlugin evaluateString:jsString onWebView:globalViewController.webView];
-    });
+    
+    [SwrvePlugin evaluateString:jsString];
 }
 
 + (void) inAppMessageAction:(SwrveMessageAction) messageAction messageDetails:(SwrveMessageDetails *)messageDetails selectedButton:(SwrveMessageButtonDetails *)selectedButton {
@@ -636,7 +647,7 @@ SwrvePluginPushHandler *swrvePushHandler;
         NSMutableString *escaped = [jsonString mutableCopy];
         [escaped replaceOccurrencesOfString:@"\\" withString:@"\\\\" options:0 range:NSMakeRange(0, escaped.length)];
         [escaped replaceOccurrencesOfString:@"'" withString:@"\\'" options:0 range:NSMakeRange(0, escaped.length)];
-        [SwrvePlugin evaluateString:[NSString stringWithFormat:@"if (window.swrveInAppMessageListener !== undefined) { window.swrveInAppMessageListener('%@'); }", escaped] onWebView:globalViewController.webView];
+        [SwrvePlugin evaluateString:[NSString stringWithFormat:@"if (window.swrveInAppMessageListener !== undefined) { window.swrveInAppMessageListener('%@'); }", escaped]];
     }
 }
 

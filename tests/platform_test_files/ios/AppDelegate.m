@@ -17,7 +17,7 @@
     config.identityServer = @"http://localhost:8086";
     
     // Set your app id and api key here
-    [SwrvePlugin initWithAppID:1111 apiKey:@"fake_api_key" config:config viewController:self.viewController];
+    [SwrvePlugin initWithAppID:1111 apiKey:@"fake_api_key" config:config];
     /****************** END OF CHANGES ******************/
     
     return [super application:application didFinishLaunchingWithOptions:launchOptions];

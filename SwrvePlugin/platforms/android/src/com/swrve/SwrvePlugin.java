@@ -44,6 +44,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.lang.reflect.Method;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -57,7 +58,7 @@ import java.util.TimeZone;
 
 public class SwrvePlugin extends CordovaPlugin {
 
-    public static String VERSION = "7.0.0";
+    public static String VERSION = "8.0.0";
     private boolean resourcesListenerReady;
     private boolean inAppMessageListenerReady;
     private boolean embeddedMessageListenerReady;
@@ -124,7 +125,7 @@ public class SwrvePlugin extends CordovaPlugin {
                     final String raw = callback.toString();
                     String escaped = raw.replace("\\", "\\\\").replace("'", "\\'");
                     final String js = "if (window.swrveInAppMessageListener !== undefined) { window.swrveInAppMessageListener('" + escaped + "'); }";
-                    instance.cordova.getActivity().runOnUiThread(() -> instance.runJS(js));
+                    instance.runJS(js);
                     SwrveLogger.v("SwrvePlugin: SwrveInAppMessageListener onAction callback sent to JS (escaped string)");
                 } else {
                     SwrveLogger.v("SwrvePlugin: SwrveInAppMessageListener onAction callback not sent to JS, listener not ready");
@@ -166,9 +167,9 @@ public class SwrvePlugin extends CordovaPlugin {
 
                     final String payload = callback.toString();
                     final String quoted = JSONObject.quote(payload); // produces safe JS string
-                    instance.cordova.getActivity().runOnUiThread(() ->
-                            instance.runJS("if (window.swrveEmbeddedMessageCallback!==undefined){window.swrveEmbeddedMessageCallback(" + quoted + ");}")
-                    );
+                    
+                    instance.runJS("if (window.swrveEmbeddedMessageCallback!==undefined){window.swrveEmbeddedMessageCallback(" + quoted + ");}");
+                    
                 } catch (JSONException e) {
                     SwrveLogger.e("SwrvePlugin: Error creating JSON for swrveEmbeddedMessageCallback", e);
                 }
@@ -684,19 +685,57 @@ public class SwrvePlugin extends CordovaPlugin {
         return false;
     }
 
-    private void runJS(String js) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            SystemWebView systemWebView = (SystemWebView) webView.getView();
-            systemWebView.evaluateJavascript(js, new ValueCallback<String>() {
-                @Override
-                public void onReceiveValue(String s) {
+
+
+        private void runJS(String js) {
+        final Activity activity = cordova.getActivity();
+
+        activity.runOnUiThread(() -> {
+            try {
+                // --- Try Capacitor path first ---
+                if (tryRunJSWithCapacitor(activity, js)) {
+                    return; // Executed successfully in Capacitor
                 }
-            });
-        } else {
-            // Fallback method
-            webView.loadUrl("javascript:" + js);
+
+                // --- Cordova path (SystemWebView) ---
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                    SystemWebView systemWebView = (SystemWebView) webView.getView();
+                    systemWebView.evaluateJavascript(js, value -> {
+                    });
+                } else {
+                    // --- Fallback for older Android versions ---
+                    webView.loadUrl("javascript:" + js);
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+    private boolean tryRunJSWithCapacitor(Activity activity, String js) {
+        try {
+            Class<?> bridgeActivityClass = Class.forName("com.getcapacitor.BridgeActivity");
+            if (!bridgeActivityClass.isInstance(activity)) {
+                return false;
+            }
+
+            Method getBridgeMethod = bridgeActivityClass.getMethod("getBridge");
+            Object bridge = getBridgeMethod.invoke(activity);
+            if (bridge == null) {
+                return false;
+            }
+
+            Method evalMethod = bridge.getClass().getMethod("evaluateJavaScript", String.class);
+            evalMethod.invoke(bridge, js);
+            return true;
+
+        } catch (Exception e) {
+            // Capacitor not available or failed — allow fallback to Cordova
+            return false;
         }
     }
+
 
     // region Method for CustomPush and SilentPush handlers.
 

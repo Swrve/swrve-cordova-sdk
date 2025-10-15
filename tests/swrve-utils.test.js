@@ -92,7 +92,7 @@ describe('setAppIdAndApiKey', () => {
 	beforeEach(() => {
 		fs.appendFileSync(
 			'ios_example.txt',
-			'[SwrvePlugin initWithAppID: <SwrveAppId> apiKey: @"<SwrveKey>" config:config viewController:self.viewController];',
+			'[SwrvePlugin initWithAppID: <SwrveAppId> apiKey: @"<SwrveKey>" config:config];',
 			'utf-8'
 		);
 		fs.appendFileSync(
@@ -112,7 +112,7 @@ describe('setAppIdAndApiKey', () => {
 		setAppIdAndApiKey(`ios_example.txt`, 12345, `MyApiKey`);
 		let iosExample = fs.readFileSync(`ios_example.txt`, 'utf-8');
 		expect(iosExample).toContain(
-			`[SwrvePlugin initWithAppID: 12345 apiKey: @"MyApiKey" config:config viewController:self.viewController];`
+			`[SwrvePlugin initWithAppID: 12345 apiKey: @"MyApiKey" config:config];`
 		);
 
 		setAppIdAndApiKey(`android_example.txt`, 12345, `MyApiKey`);
@@ -124,7 +124,7 @@ describe('setAppIdAndApiKey', () => {
 		setAppIdAndApiKey(`ios_example.txt`, 12345, null);
 		let iosExample = fs.readFileSync(`ios_example.txt`, 'utf-8');
 		expect(iosExample).toContain(
-			`[SwrvePlugin initWithAppID: 12345 apiKey: @"<SwrveKey>" config:config viewController:self.viewController];`
+			`[SwrvePlugin initWithAppID: 12345 apiKey: @"<SwrveKey>" config:config];`
 		);
 
 		setAppIdAndApiKey(`android_example.txt`, 12345, null);
@@ -136,7 +136,7 @@ describe('setAppIdAndApiKey', () => {
 		setAppIdAndApiKey(`ios_example.txt`, null, `MyApiKey`);
 		let iosExample = fs.readFileSync(`ios_example.txt`, 'utf-8');
 		expect(iosExample).toContain(
-			`[SwrvePlugin initWithAppID: <SwrveAppId> apiKey: @"MyApiKey" config:config viewController:self.viewController];`
+			`[SwrvePlugin initWithAppID: <SwrveAppId> apiKey: @"MyApiKey" config:config];`
 		);
 
 		setAppIdAndApiKey(`android_example.txt`, null, `MyApiKey`);
