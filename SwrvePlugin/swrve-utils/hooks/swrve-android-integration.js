@@ -86,38 +86,18 @@ var self = (module.exports = {
 		return `${targetDirectory}java/${packagePath}/`;
 	},
 
-	modifyManifestXML(manifestFilePath, pushEnabled) {
+	modifyManifestXML(manifestFilePath) {
 		var manifestData = fs.readFileSync(manifestFilePath, 'utf8');
 
-		if (pushEnabled) {
-			if (!manifestData.includes('com.swrve.sdk.SwrveFirebaseMessagingService')) {
-				let searchForManifest = [ 'android:supportsRtl="true"' ];
-				let replaceWithManifest = [ 'android:name=".Application" android:supportsRtl="true"' ];
-
-				// Add MessagingServices
-				var firebasePushManifest = fs.readFileSync(
-					path.join('plugins', 'cordova-plugin-swrve', 'swrve-utils', 'android', 'FirebasePushManifest.txt')
-				);
-
-				searchForManifest.push('</activity>');
-				replaceWithManifest.push(firebasePushManifest);
-
-				// Finally, write all of it to the Manifest.xml
-				swrveUtils.searchAndReplace(manifestFilePath, searchForManifest, replaceWithManifest);
-			} else {
-				console.log('Swrve: Manifest.xml already has MessagingServices added to it');
-			}
+		// Register the Application class. The FCM service is declared by the swrve-firebase library (12.x+), not injected here.
+		if (!manifestData.includes('android:name=".Application"')) {
+			swrveUtils.searchAndReplace(
+				manifestFilePath,
+				[ 'android:supportsRtl="true"' ],
+				[ 'android:name=".Application" android:supportsRtl="true"' ]
+			);
 		} else {
-			/** Push Not Enabled */
-			if (!manifestData.includes('android:name=".Application"')) {
-				swrveUtils.searchAndReplace(
-					manifestFilePath,
-					[ 'android:supportsRtl="true"' ],
-					[ 'android:name=".Application" android:supportsRtl="true"' ]
-				);
-			} else {
-				console.log('Swrve: Manifest.xml already has Application class added to it');
-			}
+			console.log('Swrve: Manifest.xml already has Application class added to it');
 		}
 	},
 

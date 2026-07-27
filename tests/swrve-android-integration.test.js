@@ -201,44 +201,22 @@ describe('modifyManifestXML', () => {
 		expect(modifyManifestXML).toBeDefined();
 	});
 
-	test('completely modifies Manifest.xml with push enabled', () => {
-		const expectedModificationsBuffer = fs.readFileSync(
-			'./plugins/cordova-plugin-swrve/swrve-utils/android/FirebasePushManifest.txt'
-		);
-		const expectedModifications = expectedModificationsBuffer.toString(); // Convert Buffer to string
-
-		modifyManifestXML('modifyManifestXML.txt', true);
+	test('adds the Application class to the manifest', () => {
+		modifyManifestXML('modifyManifestXML.txt');
 		const filecontents = fs.readFileSync('modifyManifestXML.txt', 'utf-8');
 		expect(filecontents).toContain('android:name=".Application" android:supportsRtl="true"');
-		expect(filecontents).toContain(expectedModifications);
 	});
 
-	test('completely modifies Manifest.xml with push disabled', () => {
-		const expectedModificationsBuffer = fs.readFileSync(
-			'./plugins/cordova-plugin-swrve/swrve-utils/android/FirebasePushManifest.txt'
-		);
-		const expectedModifications = expectedModificationsBuffer.toString(); // Convert Buffer to string
-
-		modifyManifestXML('modifyManifestXML.txt', false);
+	test('does not inject the Firebase messaging service (declared by the swrve-firebase library)', () => {
+		modifyManifestXML('modifyManifestXML.txt');
 		const filecontents = fs.readFileSync('modifyManifestXML.txt', 'utf-8');
-		expect(filecontents).toContain('android:name=".Application" android:supportsRtl="true"');
-		expect(filecontents).not.toContain(expectedModifications);
+		expect(filecontents).not.toContain('com.swrve.sdk.SwrveFirebaseMessagingService');
 	});
 
-	test('does nothing if Manifest.xml is already edited (push enabled)', () => {
-		// change contents of modifyManifestXML.txt
-		fs.writeFileSync('modifyManifestXML.txt', 'com.swrve.sdk.SwrveFirebaseMessagingService', 'utf-8');
-		modifyManifestXML('modifyManifestXML.txt', true);
-
-		const filecontents = fs.readFileSync('modifyManifestXML.txt', 'utf-8');
-		// no changes should have occured
-		expect(filecontents).toBe('com.swrve.sdk.SwrveFirebaseMessagingService');
-	});
-
-	test('does nothing if Manifest.xml is already edited (push disabled)', () => {
+	test('does nothing if the Application class is already added', () => {
 		// change contents of modifyManifestXML.txt
 		fs.writeFileSync('modifyManifestXML.txt', 'android:name=".Application"', 'utf-8');
-		modifyManifestXML('modifyManifestXML.txt', false);
+		modifyManifestXML('modifyManifestXML.txt');
 
 		const filecontents = fs.readFileSync('modifyManifestXML.txt', 'utf-8');
 		// no changes should have occured

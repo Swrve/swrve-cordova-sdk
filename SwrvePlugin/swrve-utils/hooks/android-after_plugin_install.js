@@ -67,7 +67,7 @@ async function androidSetupApplicationWithoutPush() {
 
 		//modify manifest.xml
 		const manifestFilePath = path.join('platforms', 'android', 'app', 'src', 'main', 'AndroidManifest.xml');
-		swrveIntegration.modifyManifestXML(manifestFilePath, false);
+		swrveIntegration.modifyManifestXML(manifestFilePath);
 	} catch (err) {
 		console.error(err);
 	}
@@ -112,13 +112,7 @@ async function androidSetupApplicationFirebase() {
 
 		// Manifest.xml
 		const manifestFilePath = path.join('platforms', 'android', 'app', 'src', 'main', 'AndroidManifest.xml');
-		if(swrveUtils.isEmptyString(handlingGoogleServices) || swrveUtils.convertToBoolean(handlingGoogleServices) == false) {
-			console.log(`Swrve: swrve.handlingGoogleServices is blank/false so adding SwrveFirebaseMessagingService.`);
-			swrveIntegration.modifyManifestXML(manifestFilePath, true);
-		} else {
-			console.log(`Swrve: swrve.handlingGoogleServices is true so Firebase Messages must be forwarded in code to Swrve.`);
-			swrveIntegration.modifyManifestXML(manifestFilePath, false);
-		}
+		swrveIntegration.modifyManifestXML(manifestFilePath);
 
 		// these are required image assets for notifications
 		var drawableFiles = [ 'icon.png', 'material_icon.png' ];

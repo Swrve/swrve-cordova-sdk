@@ -2,7 +2,7 @@
 #import "SwrvePluginPushHandler.h"
 #import <Cordova/CDV.h>
 
-#define SWRVE_WRAPPER_VERSION "8.0.0"
+#define SWRVE_WRAPPER_VERSION "9.0.0"
 
 @interface SwrvePlugin (InAppCallbacks)
 + (void)inAppMessageAction:(SwrveMessageAction) messageAction messageDetails:(SwrveMessageDetails *)messageDetails selectedButton:(SwrveMessageButtonDetails *)selectedButton;

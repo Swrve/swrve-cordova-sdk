@@ -11,11 +11,6 @@
         </activity>
         <activity android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale" android:exported="true" android:label="@string/activity_name" android:launchMode="singleTop" android:name="com.swrve.cordova.tests.MainTestActivity" android:theme="@style/Theme.AppCompat" android:windowSoftInputMode="adjustResize">
         </activity>
-        <service android:exported="true" android:name="com.swrve.sdk.SwrveFirebaseMessagingService">
-            <intent-filter>
-                <action android:name="com.google.firebase.MESSAGING_EVENT" />
-            </intent-filter>
-        </service>
     </application>
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />

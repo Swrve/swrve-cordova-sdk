@@ -1,8 +1,0 @@
-</activity>
-<!-- Begin SwrveChanges -->
-<service android:exported="true" android:name="com.swrve.sdk.SwrveFirebaseMessagingService">
-    <intent-filter>
-        <action android:name="com.google.firebase.MESSAGING_EVENT" />
-    </intent-filter>
-</service>
-<!-- End of SwrveChanges changes -->

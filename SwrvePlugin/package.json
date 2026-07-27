@@ -1,6 +1,6 @@
 {
     "name": "cordova-plugin-swrve",
-    "version": "8.0.0",
+    "version": "9.0.0",
     "description": "Android and iOS Cordova plugin for Swrve.",
     "cordova": {
         "id": "cordova-plugin-swrve",
@@ -24,7 +24,7 @@
     "author": "Swrve",
     "license": "Apache 2.0",
     "dependencies": {
-        "xcode": "^2.0.0"
+        "xcode": "^3.0.1"
     },
     "bugs": {
         "url": "https://github.com/Swrve/swrve-cordova-sdk/issues"

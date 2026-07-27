@@ -774,6 +774,6 @@ public class SwrvePluginTests extends SwrvePluginBaseTests {
 
     @Test
     public void testNativeSDKVersion() {
-        assertEquals("Unexpected native version being used.", "11.8.0", SwrveBase.getVersion());
+        assertEquals("Unexpected native version being used.", "12.2.1", SwrveBase.getVersion()); // cordova only support 12 series
     }
 }

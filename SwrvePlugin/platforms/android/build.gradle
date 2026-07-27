@@ -10,5 +10,5 @@ android {
 
 dependencies {
     // Use all minor versions up to (but excluding) the next major version. 
-    api 'com.swrve.sdk.android:swrve-firebase:11.+'
+    api 'com.swrve.sdk.android:swrve-firebase:12.+'
 }
